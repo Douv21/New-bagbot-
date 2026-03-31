@@ -48,4 +48,4 @@ client.on('messageCreate', async (message) => {
   }
 });
 
-client.login('MTQ4ODQ5NjQ2MTUzNTUxMDYwOA.GR8Nvq.Ucza9HPrZh7z5i2Ww6GcgfoXS4S4DMiPP93amY'); // Mais utilise les Secrets GitHub pour plus de sécurité !
+client.login('TON_TOKEN_ICI'); // Mais utilise les Secrets GitHub pour plus de sécurité !
