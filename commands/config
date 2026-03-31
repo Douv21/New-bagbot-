@@ -1,0 +1,44 @@
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('config')
+    .setDescription('Configuration du bot (Panel intégré)')
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild) // Seulement pour les admins
+    
+    // SOUS-COMMANDE : AUTOROLE
+    .addSubcommand(sub =>
+      sub.setName('autorole')
+        .setDescription('Modifier l\'apparence du module de rôles')
+        .addStringOption(opt => opt.setName('titre').setDescription('Nouveau titre de l\'embed'))
+        .addStringOption(opt => opt.setName('image').setDescription('Lien URL du GIF ou de l\'image d\'arrière-plan'))
+        .addStringOption(opt => opt.setName('couleur').setDescription('Code couleur Hex (ex: #FF0000)'))
+    )
+    
+    // SOUS-COMMANDE : ACCÈS (Gestion des permissions du panel)
+    .addSubcommand(sub =>
+      sub.setName('permissions')
+        .setDescription('Qui peut configurer le bot ?')
+        .addRoleOption(opt => opt.setName('role').setDescription('Le rôle autorisé').setRequired(true))
+    ),
+
+  async execute(interaction) {
+    const sub = interaction.options.getSubcommand();
+
+    if (sub === 'autorole') {
+      const newTitle = interaction.options.getString('titre');
+      const newImage = interaction.options.getString('image');
+      
+      // Ici, on simule la mise à jour de ta "Base de données" JSON
+      // Dans un vrai bot, on ferait : db.save(guildId, { title: newTitle, image: newImage })
+
+      const previewEmbed = new EmbedBuilder()
+        .setTitle(newTitle || "Titre mis à jour")
+        .setImage(newImage || null)
+        .setDescription("✅ Configuration enregistrée ! Voici l'aperçu de votre nouveau visuel.")
+        .setColor('#00FF00');
+
+      return interaction.reply({ embeds: [previewEmbed], ephemeral: true });
+    }
+  }
+};
