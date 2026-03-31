@@ -1,9 +1,8 @@
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const PluginManager = require('./core/pluginManager');
 const startAPI = require('./core/api');
 require('dotenv').config();
 
-// 1. Initialisation du Client Discord avec les intents nécessaires
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -13,66 +12,75 @@ const client = new Client({
     ]
 });
 
-// 2. Initialisation du Gestionnaire de Plugins (Le Cerveau)
-// Il va scanner le dossier /plugins pour trouver tes modules (Auto-role, etc.)
 const manager = new PluginManager(client);
 
-client.once('ready', async () => {
-    console.log('-------------------------------------------');
-    console.log(`✅ Bot en ligne : ${client.user.tag}`);
-    console.log(`🤖 ID du Bot : ${client.user.id}`);
-    
-    // Chargement dynamique des modules style Home Assistant
-    try {
-        manager.loadAll();
-        console.log(`📦 Modules chargés avec succès.`);
-    } catch (err) {
-        console.error(`❌ Erreur lors du chargement des modules :`, err);
-    }
-
-    // Lancement de l'API pour le Panel Web
-    try {
-        startAPI(manager);
-    } catch (err) {
-        console.error(`🌐 Erreur lors du lancement de l'API :`, err);
-    }
-    
-    console.log('-------------------------------------------');
+client.once('ready', () => {
+    console.log(`✅ Bot connecté : ${client.user.tag}`);
+    manager.loadAll();
+    startAPI(manager);
 });
 
-// 3. Gestion des interactions (Boutons, Commandes Slash)
 client.on('interactionCreate', async (interaction) => {
-    // Si c'est une commande Slash (/config)
-    if (interaction.isChatInputCommand()) {
-        const command = interaction.client.commands?.get(interaction.commandName);
-        if (!command) return;
+    // 1. COMMANDE DE CONFIGURATION (Pour envoyer l'embed avec le GIF)
+    if (interaction.isChatInputCommand() && interaction.commandName === 'setup-roles') {
+        const plugin = manager.plugins.get('autorole');
+        if (!plugin) return interaction.reply("❌ Plugin non trouvé.");
+
+        const { visuals, options } = plugin.data;
+
+        const embed = new EmbedBuilder()
+            .setTitle(visuals.title)
+            .setDescription(visuals.description)
+            .setImage(visuals.gif_url)
+            .setColor(visuals.color)
+            .setFooter({ text: visuals.footer });
+
+        const row = new ActionRowBuilder();
+        options.forEach(opt => {
+            row.addComponents(
+                new ButtonBuilder()
+                    .setCustomId(opt.id)
+                    .setLabel(opt.label)
+                    .setEmoji(opt.emoji)
+                    .setStyle(ButtonStyle[opt.style])
+            );
+        });
+
+        await interaction.reply({ embeds: [embed], components: [row] });
+    }
+
+    // 2. GESTION DES CLICS SUR LES BOUTONS (Recherche par NOM)
+    if (interaction.isButton()) {
+        const plugin = manager.plugins.get('autorole');
+        if (!plugin) return;
+
+        // On cherche l'option qui correspond au bouton cliqué
+        const option = plugin.data.options.find(opt => opt.id === interaction.customId);
+        if (!option) return;
+
+        // RECHERCHE DU RÔLE PAR SON NOM
+        const role = interaction.guild.roles.cache.find(r => r.name === option.roleName);
+
+        if (!role) {
+            return interaction.reply({ 
+                content: `❌ Le rôle "**${option.roleName}**" est introuvable sur ce serveur.`, 
+                ephemeral: true 
+            });
+        }
 
         try {
-            await command.execute(interaction);
-        } catch (error) {
-            console.error(error);
-            await interaction.reply({ content: 'Une erreur est survenue !', ephemeral: true });
-        }
-    }
-
-    // Si c'est un bouton (Système Auto-Role)
-    if (interaction.isButton()) {
-        if (interaction.customId.startsWith('role_')) {
-            const roleId = interaction.customId.replace('role_', '');
-            const role = interaction.guild.roles.cache.get(roleId);
-
-            if (!role) return interaction.reply({ content: "Rôle introuvable.", ephemeral: true });
-
-            if (interaction.member.roles.cache.has(roleId)) {
+            if (interaction.member.roles.cache.has(role.id)) {
                 await interaction.member.roles.remove(role);
-                await interaction.reply({ content: `Rôle ${role.name} retiré !`, ephemeral: true });
+                await interaction.reply({ content: `✅ Rôle **${role.name}** retiré !`, ephemeral: true });
             } else {
                 await interaction.member.roles.add(role);
-                await interaction.reply({ content: `Rôle ${role.name} ajouté !`, ephemeral: true });
+                await interaction.reply({ content: `✅ Rôle **${role.name}** ajouté !`, ephemeral: true });
             }
+        } catch (err) {
+            console.error(err);
+            await interaction.reply({ content: "❌ Je n'ai pas les permissions pour gérer ce rôle.", ephemeral: true });
         }
     }
 });
 
-// 4. Connexion au Token (Secret GitHub)
 client.login(process.env.DISCORD_TOKEN);
