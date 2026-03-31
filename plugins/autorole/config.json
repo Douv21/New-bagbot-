@@ -1,13 +1,28 @@
 {
-  "name": "Auto-Rôles Dynamique",
+  "name": "Sélecteur de Rôles",
   "enabled": true,
   "permissions": ["ManageRoles"],
   "visuals": {
-    "title": "Sélection des Rôles",
-    "image_url": "https://media.giphy.com/media/v1.Y2lkPTc5.../giphy.gif",
-    "color": "#5865F2"
+    "title": "🎭 Personnalise ton profil",
+    "description": "Clique sur les boutons ci-dessous pour obtenir ou retirer un rôle spécifique sur le serveur.",
+    "gif_url": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJndnZueXp6bm9ueXp6bm9ueXp6bm9ueXp6bm9ueXp6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKMGpxof4ZpT79e/giphy.gif",
+    "color": "#5865F2",
+    "footer": "Système BagBot Modulaire"
   },
   "options": [
-    { "roleId": "000000", "label": "Membre", "emoji": "👤" }
+    {
+      "id": "role_membre",
+      "label": "Membre",
+      "roleId": "TON_ID_DE_ROLE_ICI",
+      "emoji": "👤",
+      "style": "Primary"
+    },
+    {
+      "id": "role_notif",
+      "label": "Notifications",
+      "roleId": "TON_AUTRE_ID_DE_ROLE_ICI",
+      "emoji": "🔔",
+      "style": "Secondary"
+    }
   ]
 }
