@@ -1,1 +1,15 @@
-a
+{
+  "enabled": true,
+  "embed": {
+    "title": "Choisis tes rôles !",
+    "description": "Clique sur les boutons pour t'ajouter des accès.",
+    "color": "#5865F2",
+    "image": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjEx.../giphy.gif",
+    "footer": "Système de rôles automatique"
+  },
+  "roles": [
+    { "id": "ID_DU_ROLE_1", "label": "Joueur", "emoji": "🎮" },
+    { "id": "ID_DU_ROLE_2", "label": "Annonces", "emoji": "📢" }
+  ]
+}
+
