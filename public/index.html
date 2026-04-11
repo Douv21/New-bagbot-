@@ -1,23 +1,144 @@
-<label>Récupérer un message existant (ID)</label>
-<input type="text" id="messageId" placeholder="ID du message (laisser vide pour un nouveau)">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BagBot Dashboard</title>
+    <style>
+        :root { --bg: #121417; --card: #181a1d; --accent: #ff4d4d; --sidebar: #0b0c0e; --text: #f2f3f5; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; overflow-x: hidden; }
+        
+        /* Sidebar Responsive */
+        .sidebar { width: 260px; background: var(--sidebar); height: 100vh; position: fixed; left: 0; transition: 0.3s; z-index: 1000; border-right: 1px solid #222; }
+        .sidebar.closed { left: -260px; }
+        .main { flex: 1; margin-left: 260px; padding: 20px; transition: 0.3s; width: 100%; box-sizing: border-box; }
+        .main.full { margin-left: 0; }
 
-<label>Mode de fonctionnement</label>
-<select id="roleMode">
-    <option value="normal">Normal (Ajout/Retrait)</option>
-    <option value="inverse">Inversé (Retrait au clic)</option>
-    <option value="definitif">Ajout définitif</option>
-    <option value="retrait">Retrait définitif</option>
-</select>
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .main { margin-left: 0; padding: 10px; }
+            .sidebar { left: -260px; }
+            .sidebar.open { left: 0; }
+        }
+
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .menu-btn { background: none; border: none; color: white; font-size: 28px; cursor: pointer; }
+
+        /* Panels */
+        .panel { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #282a2e; max-width: 800px; margin: auto; }
+        .tabs { display: flex; background: #2f3136; border-radius: 8px; margin-bottom: 20px; overflow: hidden; }
+        .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .tab.active { background: var(--accent); color: white; font-weight: bold; }
+
+        label { display: block; margin: 15px 0 5px; font-size: 12px; color: #8e9297; text-transform: uppercase; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        
+        .btn-send { background: var(--accent); color: white; border: none; padding: 18px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 25px; cursor: pointer; font-size: 16px; }
+        .btn-upload { background: #4f545c; border: none; color: white; padding: 10px; border-radius: 4px; cursor: pointer; margin-bottom: 5px; width: 100%; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+    <div style="padding: 30px; font-size: 1.4rem; font-weight: 900; color: var(--accent); text-align: center;">BAG BOT V2</div>
+    <div style="padding: 15px 25px; background: #1a1a1a; border-left: 4px solid var(--accent);">🎭 Rôles-Réactions</div>
+    <div style="padding: 15px 25px; color: #555;">🛡️ Modération</div>
+</div>
+
+<div class="main" id="main">
+    <div class="header">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <h2 style="margin:0;">Configuration Rôles</h2>
+    </div>
+
+    <div class="panel">
+        <div class="tabs">
+            <div class="tab active" id="t-simple" onclick="setMode('simple')">Simple</div>
+            <div class="tab" id="t-embed" onclick="setMode('embed')">Embed</div>
+        </div>
+
+        <label>Récupérer un message existant (ID)</label>
+        <input type="text" id="messageId" placeholder="ID du message (laisser vide pour un nouveau)">
+
+        <label>Salon Discord</label>
+        <select id="channelId"><option>Chargement...</option></select>
+
+        <label>Rôle à attribuer</label>
+        <select id="roleId"><option>Chargement...</option></select>
+
+        <label>Mode de fonctionnement</label>
+        <select id="roleMode">
+            <option value="normal">Normal (Ajout/Retrait)</option>
+            <option value="inverse">Inversé (Retrait au clic)</option>
+            <option value="definitif">Ajout définitif</option>
+            <option value="retrait">Retrait définitif</option>
+        </select>
+
+        <div id="simple-fields">
+            <label>Contenu du message</label>
+            <textarea id="simpleContent" rows="3" placeholder="Texte du message..."></textarea>
+        </div>
+
+        <div id="embed-fields" style="display:none;">
+            <label>Titre de l'Embed</label>
+            <input type="text" id="title" placeholder="Ex: Auto-Rôles">
+            <label>Description</label>
+            <textarea id="description" rows="3"></textarea>
+            <label>Image</label>
+            <button class="btn-upload" onclick="document.getElementById('imageFile').click()">📁 Télécharger un fichier</button>
+            <input type="file" id="imageFile" style="display:none" accept="image/*">
+            <input type="text" id="imageUrl" placeholder="Ou URL https://...">
+        </div>
+
+        <label>Type de composant</label>
+        <select id="displayType">
+            <option value="button">Bouton</option>
+            <option value="select">Menu Déroulant</option>
+        </select>
+
+        <button class="btn-send" id="deployBtn" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
+    </div>
+</div>
 
 <script>
-async function deploy() {
-    const btn = document.querySelector('.btn-send');
-    btn.innerText = "Envoi en cours...";
-    
-    try {
+    let currentMode = 'simple';
+
+    function toggleSidebar() {
+        const sb = document.getElementById('sidebar');
+        const main = document.getElementById('main');
+        if (window.innerWidth > 768) {
+            sb.classList.toggle('closed');
+            main.classList.toggle('full');
+        } else {
+            sb.classList.toggle('open');
+        }
+    }
+
+    function setMode(m) {
+        currentMode = m;
+        document.getElementById('t-simple').classList.toggle('active', m === 'simple');
+        document.getElementById('t-embed').classList.toggle('active', m === 'embed');
+        document.getElementById('simple-fields').style.display = m === 'simple' ? 'block' : 'none';
+        document.getElementById('embed-fields').style.display = m === 'embed' ? 'block' : 'none';
+    }
+
+    async function loadData() {
+        try {
+            const [c, r] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
+            const channels = await c.json();
+            const roles = await r.json();
+            document.getElementById('channelId').innerHTML = channels.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
+            document.getElementById('roleId').innerHTML = roles.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
+        } catch(e) { console.error("Erreur de chargement API"); }
+    }
+
+    async function deploy() {
+        const btn = document.getElementById('deployBtn');
+        btn.innerText = "SABRE LASER EN ACTION...";
+        btn.disabled = true;
+
         const formData = new FormData();
-        // On récupère TOUS les champs sans exception
-        formData.append('mode', mode);
+        formData.append('mode', currentMode);
         formData.append('channelId', document.getElementById('channelId').value);
         formData.append('roleId', document.getElementById('roleId').value);
         formData.append('roleMode', document.getElementById('roleMode').value);
@@ -26,19 +147,24 @@ async function deploy() {
         formData.append('content', document.getElementById('simpleContent').value);
         formData.append('title', document.getElementById('title').value);
         formData.append('description', document.getElementById('description').value);
+        formData.append('imageUrl', document.getElementById('imageUrl').value);
         
-        const file = document.getElementById('imageFile').files[0];
-        if (file) formData.append('imageFile', file);
+        const fileInput = document.getElementById('imageFile');
+        if (fileInput.files[0]) formData.append('imageFile', fileInput.files[0]);
 
-        const res = await fetch('/update-bot', { method: 'POST', body: formData });
-        const result = await res.json();
-        
-        if(result.success) alert("✅ Action effectuée sur Discord !");
-        else alert("❌ Erreur : " + result.error);
-    } catch (e) {
-        alert("❌ Crash du navigateur : " + e.message);
-    } finally {
-        btn.innerText = "DÉPLOYER SUR DISCORD";
+        try {
+            const res = await fetch('/update-bot', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) alert("🚀 Envoyé avec succès !");
+            else alert("❌ Erreur : " + data.message);
+        } catch (e) {
+            alert("❌ Erreur de connexion au serveur.");
+        } finally {
+            btn.innerText = "DÉPLOYER SUR DISCORD";
+            btn.disabled = false;
+        }
     }
-}
+    loadData();
 </script>
+</body>
+</html>
