@@ -1,36 +1,36 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, AttachmentBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, AttachmentBuilder, PermissionFlagsBits } = require('discord.js');
 const multer = require('multer');
 const fs = require('fs');
 const upload = multer({ dest: 'public/uploads/' });
 
 module.exports = function(app, client) {
-    // Création du dossier d'upload s'il n'existe pas
     if (!fs.existsSync('public/uploads')) fs.mkdirSync('public/uploads', { recursive: true });
 
-    // Route API : Salons
     app.get('/api/channels', (req, res) => {
         const guild = client.guilds.cache.first();
-        if (!guild) return res.status(500).json({ error: "Serveur Discord introuvable" });
+        if (!guild) return res.json([]);
+        // On ne montre que les salons où le bot peut envoyer des messages
         const channels = guild.channels.cache
-            .filter(c => c.type === 0)
+            .filter(c => c.type === 0 && c.permissionsFor(client.user).has(PermissionFlagsBits.SendMessages))
             .map(c => ({ id: c.id, name: c.name }));
         res.json(channels);
     });
 
-    // Route API : Rôles
     app.get('/api/roles', (req, res) => {
         const guild = client.guilds.cache.first();
-        if (!guild) return res.status(500).json({ error: "Serveur Discord introuvable" });
+        if (!guild) return res.json([]);
         const roles = guild.roles.cache
             .filter(r => !r.managed && r.name !== "@everyone")
             .map(r => ({ id: r.id, name: r.name }));
         res.json(roles);
     });
 
-    // Route API : Envoi du message
     app.post('/api/deploy', upload.single('imageFile'), async (req, res) => {
         try {
             const { channelId, roleId, mode, displayType, messageId, content, title, description } = req.body;
+            
+            if (!channelId || !roleId) throw new Error("Sélectionnez un salon et un rôle.");
+
             const channel = await client.channels.fetch(channelId);
             const role = await channel.guild.roles.fetch(roleId);
             
@@ -38,8 +38,8 @@ module.exports = function(app, client) {
 
             if (mode === 'embed') {
                 const embed = new EmbedBuilder()
-                    .setTitle(title || "Rôles")
-                    .setDescription(description || "Cliquez ci-dessous")
+                    .setTitle(title || "Attribution de rôle")
+                    .setDescription(description || `Cliquez pour obtenir le rôle ${role.name}`)
                     .setColor("#ff4d4d");
                 
                 if (req.file) {
@@ -49,14 +49,14 @@ module.exports = function(app, client) {
                 }
                 msgOptions.embeds = [embed];
             } else {
-                msgOptions.content = content || "Recevez votre rôle :";
+                msgOptions.content = content || `Appuyez ci-dessous pour le rôle **${role.name}**`;
             }
 
             const row = new ActionRowBuilder();
             const cid = `role_normal_${roleId}`;
             
             if (displayType === 'select') {
-                row.addComponents(new StringSelectMenuBuilder().setCustomId(cid).addOptions([{ label: role.name, value: roleId }]));
+                row.addComponents(new StringSelectMenuBuilder().setCustomId(cid).setPlaceholder("Choisir...").addOptions([{ label: role.name, value: roleId }]));
             } else {
                 row.addComponents(new ButtonBuilder().setCustomId(cid).setLabel(role.name).setStyle(ButtonStyle.Danger));
             }
@@ -68,9 +68,11 @@ module.exports = function(app, client) {
             } else {
                 await channel.send(msgOptions);
             }
+            
             res.json({ success: true });
         } catch (err) {
-            res.status(500).json({ success: false, message: err.message });
+            console.error("Erreur Discord:", err.message);
+            res.status(500).json({ success: false, message: "Erreur Discord : " + err.message });
         }
     });
 };
