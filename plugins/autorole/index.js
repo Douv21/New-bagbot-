@@ -1,70 +1,70 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Dashboard</title>
-    <style>
-        :root { --bg: #0a0a0a; --side: #111; --accent: #ff4d4d; --text: #fff; }
-        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 260px; background: var(--side); transition: 0.3s; border-right: 1px solid #222; position: relative; flex-shrink: 0; }
-        .sidebar.collapsed { width: 80px; }
-        .toggle-btn { position: absolute; right: -15px; top: 20px; background: var(--accent); border: none; color: #fff; border-radius: 5px; cursor: pointer; padding: 5px 10px; z-index: 100; }
-        .nav-item { padding: 20px; display: flex; align-items: center; color: #888; cursor: pointer; white-space: nowrap; text-decoration: none; }
-        .nav-item.active { color: #fff; background: #1a1a1a; border-left: 4px solid var(--accent); }
-        .nav-text { margin-left: 20px; }
-        .content { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
-        .card { background: #151515; padding: 30px; border-radius: 12px; border: 1px solid #222; width: 100%; max-width: 600px; }
-        h1 { color: var(--accent); margin-top: 0; }
-        label { display: block; margin: 20px 0 8px; font-size: 0.8rem; color: var(--accent); font-weight: bold; text-transform: uppercase; }
-        select, input { width: 100%; padding: 14px; background: #222; border: 1px solid #333; color: #fff; border-radius: 6px; box-sizing: border-box; }
-        .btn { background: var(--accent); color: #fff; border: none; padding: 16px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 30px; }
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid #222; display: flex; overflow-x: auto; }
-            .sidebar-header, .toggle-btn { display: none; }
-            .nav-item { padding: 15px; }
-            .nav-item.active { border-bottom: 3px solid var(--accent); border-left: none; }
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+
+module.exports = function(app, client) {
+    
+    // --- API : Récupérer les salons pour le Dashboard ---
+    app.get('/api/channels', async (req, res) => {
+        const guild = client.guilds.cache.first();
+        if (!guild) return res.json([]);
+        const channels = guild.channels.cache
+            .filter(c => c.type === 0) // Salons textuels uniquement
+            .map(c => ({ id: c.id, name: c.name }));
+        res.json(channels);
+    });
+
+    // --- API : Récupérer les rôles pour le Dashboard ---
+    app.get('/api/roles', async (req, res) => {
+        const guild = client.guilds.cache.first();
+        if (!guild) return res.json([]);
+        const roles = guild.roles.cache
+            .filter(r => r.name !== "@everyone" && !r.managed)
+            .map(r => ({ id: r.id, name: r.name }));
+        res.json(roles);
+    });
+
+    // --- API : Recevoir la commande du Dashboard ---
+    app.post('/update-bot', async (req, res) => {
+        const { title, roleId, channelId } = req.body;
+        try {
+            const channel = await client.channels.fetch(channelId);
+            const embed = new EmbedBuilder()
+                .setTitle(title || "Rôles-Réactions")
+                .setDescription("Cliquez sur le bouton ci-dessous pour obtenir ou retirer votre rôle.")
+                .setColor("#ff4d4d");
+
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                    .setCustomId(`role_${roleId}`)
+                    .setLabel("Obtenir le rôle")
+                    .setStyle(ButtonStyle.Danger)
+            );
+
+            await channel.send({ embeds: [embed], components: [row] });
+            res.json({ success: true, message: "Panneau déployé !" });
+        } catch (err) {
+            res.status(500).json({ success: false, message: err.message });
         }
-    </style>
-</head>
-<body>
-    <div class="sidebar" id="sidebar">
-        <button class="toggle-btn" onclick="toggleSide()">☰</button>
-        <div style="padding: 25px; font-weight: bold; color: var(--accent); text-align: center;" class="nav-text">BAG BOT V2</div>
-        <div class="nav-item">🏠 <span class="nav-text">Général</span></div>
-        <div class="nav-item active">🎭 <span class="nav-text">Rôles-Réactions</span></div>
-    </div>
-    <div class="content">
-        <div class="card">
-            <h1>Rôles-Réactions</h1>
-            <label>Nom du panneau</label>
-            <input type="text" id="title" placeholder="Ex: Rôles Notifications">
-            <label>Sélectionner le Salon</label>
-            <select id="channels"><option>Chargement...</option></select>
-            <label>Rôle à attribuer</label>
-            <select id="roles"><option>Chargement...</option></select>
-            <button class="btn" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
-        </div>
-    </div>
-    <script>
-        function toggleSide() { document.getElementById('sidebar').classList.toggle('collapsed'); }
-        async function init() {
-            try {
-                const [cReq, rReq] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
-                const channels = await cReq.json();
-                const roles = await rReq.json();
-                document.getElementById('channels').innerHTML = channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-                document.getElementById('roles').innerHTML = roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-            } catch (e) { console.error("Erreur API"); }
+    });
+
+    // --- LOGIQUE : Gestion du clic sur le bouton ---
+    client.on('interactionCreate', async (interaction) => {
+        if (!interaction.isButton() || !interaction.customId.startsWith('role_')) return;
+
+        const roleId = interaction.customId.replace('role_', '');
+        const role = interaction.guild.roles.cache.get(roleId);
+
+        if (!role) return interaction.reply({ content: "❌ Rôle introuvable.", ephemeral: true });
+
+        try {
+            if (interaction.member.roles.cache.has(role.id)) {
+                await interaction.member.roles.remove(role);
+                await interaction.reply({ content: `➖ Rôle **${role.name}** retiré !`, ephemeral: true });
+            } else {
+                await interaction.member.roles.add(role);
+                await interaction.reply({ content: `➕ Rôle **${role.name}** ajouté !`, ephemeral: true });
+            }
+        } catch (error) {
+            interaction.reply({ content: "❌ Erreur de permissions (mon rôle est peut-être trop bas).", ephemeral: true });
         }
-        async function deploy() {
-            const data = { title: document.getElementById('title').value, channelId: document.getElementById('channels').value, roleId: document.getElementById('roles').value };
-            await fetch('/update-bot', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-            alert("✅ Envoyé !");
-        }
-        init();
-    </script>
-</body>
-</html>
-        
+    });
+};
