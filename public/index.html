@@ -1,116 +1,131 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, AttachmentBuilder } = require('discord.js');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BagBot Builder</title>
+    <style>
+        :root { --bg: #0f1012; --card: #18191c; --accent: #ff4d4d; --text: #f2f3f5; }
+        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); padding: 15px; }
+        .panel { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #282a2e; max-width: 500px; margin: auto; }
+        .tabs { display: flex; background: #2f3136; border-radius: 8px; margin-bottom: 15px; overflow: hidden; }
+        .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; }
+        .tab.active { background: var(--accent); font-weight: bold; }
+        label { display: block; margin: 12px 0 5px; font-size: 11px; color: #8e9297; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 10px; background: #202225; border: 1px solid #111; color: white; border-radius: 6px; box-sizing: border-box; }
+        .preview { margin-top: 20px; padding: 15px; background: #2f3136; border-radius: 8px; border-left: 4px solid var(--accent); }
+        #pre-img { width: 100%; border-radius: 4px; margin-top: 10px; display: none; }
+        .btn-send { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
 
-// Configuration du stockage des images
-const storage = multer.diskStorage({
-    destination: 'public/uploads/',
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
+<div class="panel">
+    <div class="tabs">
+        <div class="tab active" onclick="setMode('simple', this)">Simple</div>
+        <div class="tab" onclick="setMode('embed', this)">Embed</div>
+    </div>
+
+    <label>ID Message (Modifier)</label>
+    <input type="text" id="messageId" placeholder="Laisser vide pour un nouveau">
+
+    <label>Salon</label>
+    <select id="channelId"><option value="">Chargement...</option></select>
+
+    <label>Rôle</label>
+    <select id="roleId"><option value="">Chargement...</option></select>
+
+    <label>Mode de fonctionnement</label>
+    <select id="roleMode">
+        <option value="normal">Normal (Ajout/Retrait)</option>
+        <option value="inverse">Inversé</option>
+        <option value="definitif">Définitif</option>
+    </select>
+
+    <div id="simple-fields">
+        <label>Texte</label>
+        <textarea id="simpleContent" rows="2" oninput="updatePreview()"></textarea>
+    </div>
+
+    <div id="embed-fields" style="display:none;">
+        <label>Titre</label>
+        <input type="text" id="title" oninput="updatePreview()">
+        <label>Description</label>
+        <textarea id="description" rows="2" oninput="updatePreview()"></textarea>
+        <label>Image</label>
+        <button type="button" onclick="document.getElementById('imageFile').click()" style="width:100%; margin-bottom:5px;">📁 Téléverser fichier</button>
+        <input type="file" id="imageFile" style="display:none" accept="image/*" onchange="previewFile(this)">
+        <input type="text" id="imageUrl" placeholder="Ou URL image..." oninput="updatePreview()">
+    </div>
+
+    <div class="preview">
+        <div id="pre-title" style="font-weight:bold;">Aperçu</div>
+        <div id="pre-desc">...</div>
+        <img id="pre-img">
+    </div>
+
+    <button class="btn-send" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
+</div>
+
+<script>
+    let currentMode = 'simple';
+
+    function setMode(m, el) {
+        currentMode = m;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('simple-fields').style.display = m === 'simple' ? 'block' : 'none';
+        document.getElementById('embed-fields').style.display = m === 'embed' ? 'block' : 'none';
+        updatePreview();
     }
-});
-const upload = multer({ storage: storage });
 
-module.exports = function(app, client) {
-    // S'assurer que le dossier existe
-    if (!fs.existsSync('public/uploads')) fs.mkdirSync('public/uploads', { recursive: true });
-
-    // API pour charger les salons et rôles
-    app.get('/api/channels', async (req, res) => {
-        const guild = client.guilds.cache.first();
-        if (!guild) return res.json([]);
-        res.json(guild.channels.cache.filter(c => c.type === 0).map(c => ({ id: c.id, name: c.name })));
-    });
-
-    app.get('/api/roles', async (req, res) => {
-        const guild = client.guilds.cache.first();
-        if (!guild) return res.json([]);
-        res.json(guild.roles.cache.filter(r => r.name !== "@everyone" && !r.managed).map(r => ({ id: r.id, name: r.name })));
-    });
-
-    // Route principale de déploiement
-    app.post('/update-bot', upload.single('imageFile'), async (req, res) => {
-        try {
-            const { mode, channelId, roleId, content, title, description, imageUrl, displayType, messageId, roleMode } = req.body;
-
-            if (!channelId || channelId === "undefined") {
-                return res.status(400).json({ success: false, message: "ID du salon invalide." });
-            }
-
-            const channel = await client.channels.fetch(channelId);
-            const role = await channel.guild.roles.fetch(roleId);
-            let messageOptions = { embeds: [], components: [], files: [] };
-
-            // Construction du contenu
-            if (mode === 'simple') {
-                messageOptions.content = content || "Sélectionnez votre rôle :";
-            } else {
-                const embed = new EmbedBuilder()
-                    .setTitle(title || "Rôles")
-                    .setDescription(description || "Cliquez pour obtenir le rôle")
-                    .setColor("#ff4d4d");
-
-                if (req.file) {
-                    const file = new AttachmentBuilder(req.file.path);
-                    embed.setImage(`attachment://${path.basename(req.file.path)}`);
-                    messageOptions.files = [file];
-                } else if (imageUrl) {
-                    embed.setImage(imageUrl);
-                }
-                messageOptions.embeds = [embed];
-            }
-
-            // Ajout du bouton ou menu
-            const row = new ActionRowBuilder();
-            const customId = `role_${roleMode || 'normal'}_${roleId}`;
-            
-            if (displayType === 'select') {
-                row.addComponents(new StringSelectMenuBuilder()
-                    .setCustomId(customId)
-                    .addOptions([{ label: role ? role.name : "Rôle", value: roleId }]));
-            } else {
-                row.addComponents(new ButtonBuilder()
-                    .setCustomId(customId)
-                    .setLabel(role ? role.name : "Rôle")
-                    .setStyle(ButtonStyle.Danger));
-            }
-            messageOptions.components = [row];
-
-            // Envoi ou Modification
-            if (messageId && messageId.length > 10) {
-                const targetMsg = await channel.messages.fetch(messageId);
-                await targetMsg.edit(messageOptions);
-            } else {
-                await channel.send(messageOptions);
-            }
-
-            res.json({ success: true });
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ success: false, message: err.message });
+    function previewFile(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = document.getElementById('pre-img');
+                img.src = e.target.result;
+                img.style.display = 'block';
+            };
+            reader.readAsDataURL(input.files[0]);
         }
-    });
+    }
 
-    // Gestion des interactions (Logique DraftBot)
-    client.on('interactionCreate', async (i) => {
-        if (!i.isButton() && !i.isStringSelectMenu()) return;
-        if (!i.customId.startsWith('role_')) return;
+    function updatePreview() {
+        const title = document.getElementById('title').value || "Titre";
+        const desc = currentMode === 'simple' ? document.getElementById('simpleContent').value : document.getElementById('description').value;
+        document.getElementById('pre-title').innerText = currentMode === 'simple' ? "Message" : title;
+        document.getElementById('pre-desc').innerText = desc || "...";
+    }
 
-        const [_, mode, roleId] = i.customId.split('_');
-        const hasRole = i.member.roles.cache.has(roleId);
+    async function load() {
+        const [c, r] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
+        const channels = await c.json();
+        const roles = await r.json();
+        document.getElementById('channelId').innerHTML = channels.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
+        document.getElementById('roleId').innerHTML = roles.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
+    }
 
-        try {
-            if (mode === 'normal') {
-                hasRole ? await i.member.roles.remove(roleId) : await i.member.roles.add(roleId);
-            } else if (mode === 'inverse') {
-                hasRole ? await i.member.roles.add(roleId) : await i.member.roles.remove(roleId);
-            } else if (mode === 'definitif' && !hasRole) {
-                await i.member.roles.add(roleId);
-            }
-            await i.reply({ content: "Mise à jour effectuée !", ephemeral: true });
-        } catch (e) {
-            await i.reply({ content: "Erreur : Vérifiez la hiérarchie des rôles.", ephemeral: true });
-        }
-    });
-};
+    async function deploy() {
+        const fd = new FormData();
+        fd.append('mode', currentMode);
+        fd.append('channelId', document.getElementById('channelId').value);
+        fd.append('roleId', document.getElementById('roleId').value);
+        fd.append('roleMode', document.getElementById('roleMode').value);
+        fd.append('messageId', document.getElementById('messageId').value);
+        fd.append('content', document.getElementById('simpleContent').value);
+        fd.append('title', document.getElementById('title').value);
+        fd.append('description', document.getElementById('description').value);
+        fd.append('imageUrl', document.getElementById('imageUrl').value);
+        
+        const file = document.getElementById('imageFile').files[0];
+        if (file) fd.append('imageFile', file);
+
+        const res = await fetch('/update-bot', { method: 'POST', body: fd });
+        const data = await res.json();
+        alert(data.success ? "✅ Succès !" : "❌ Erreur : " + data.message);
+    }
+    load();
+</script>
+</body>
+</html>
