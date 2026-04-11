@@ -3,69 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot | Dashboard Expert</title>
+    <title>BagBot | Dashboard Ultimate</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --accent: #ff4d4d; --bg: #111214; --card: #2b2d31; --text: #dbdee1; --sidebar: #0b0b0b; --draft-coral: #d37f6a; }
+        :root { --accent: #ff4d4d; --bg: #111214; --card: #2b2d31; --text: #dbdee1; --sidebar: #0b0b0b; --draft-coral: #d37f6a; --delete: #ed4245; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 15px; display: flex; flex-direction: column; align-items: center; }
 
-        /* --- APERÇU DISCORD (EMBED) --- */
+        /* --- APERÇU DISCORD --- */
         .discord-msg { background: #313338; border-radius: 8px; padding: 15px; display: flex; gap: 12px; width: 100%; max-width: 500px; margin-bottom: 20px; box-sizing: border-box; }
         .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
         .embed { background: #1e1f22; border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; position: relative; width: 100%; }
         
-        /* Zones de téléversement (Upload Slots) */
-        .upload-zone { border: 1px dashed #4e5058; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(0,0,0,0.2); overflow: hidden; position: relative; transition: 0.2s; }
-        .upload-zone:hover { border-color: white; background: rgba(255,255,255,0.05); }
+        .upload-zone { border: 1px dashed #4e5058; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(0,0,0,0.2); overflow: hidden; position: relative; }
         .upload-zone img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
+        .thumb-slot { position: absolute; top: 15px; right: 15px; width: 60px; height: 60px; }
+        .banner-slot { width: 100%; min-height: 100px; margin: 10px 0; }
         
-        .thumb-slot { position: absolute; top: 15px; right: 15px; width: 65px; height: 65px; }
-        .banner-slot { width: 100%; min-height: 120px; margin: 10px 0; }
-        
-        .embed-author { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: white; margin-bottom: 10px; cursor: pointer; }
-        .author-icon { width: 22px; height: 22px; border-radius: 50%; border: 1px dashed #444; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .embed-title { font-size: 16px; font-weight: 700; color: white; margin-bottom: 5px; outline: none; }
         .embed-desc { font-size: 14px; color: #dbdee1; outline: none; min-height: 20px; white-space: pre-wrap; }
-        .embed-footer { font-size: 12px; color: #949ba4; display: flex; align-items: center; gap: 5px; margin-top: 10px; cursor: pointer; }
 
-        /* --- PANNEAU DE CONFIGURATION --- */
-        .card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #1a1a1a; width: 100%; max-width: 500px; box-sizing: border-box; }
+        /* --- CONFIGURATION --- */
+        .card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #1a1a1a; width: 100%; max-width: 500px; box-sizing: border-box; margin-bottom: 20px; }
         .label-style { font-size: 11px; color: #b5bac1; text-transform: uppercase; font-weight: 800; margin: 15px 0 8px; display: block; }
-        select { width: 100%; background: #1e1f22; border: 1px solid #111; color: white; padding: 14px; border-radius: 8px; font-size: 15px; margin-bottom: 10px; outline: none; cursor: pointer; }
+        select { width: 100%; background: #1e1f22; border: 1px solid #111; color: white; padding: 14px; border-radius: 8px; font-size: 15px; margin-bottom: 10px; outline: none; }
 
-        /* Lignes de réactions */
         .reaction-row { background: #1e1f22; border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; border: 1px solid #111; }
-        .emoji-trigger { width: 45px; height: 45px; background: #2b2d31; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; border: 1px solid transparent; }
-        .emoji-trigger:hover { border-color: var(--draft-coral); }
-        .emoji-trigger img { width: 28px; height: 28px; }
+        .emoji-trigger { width: 40px; height: 40px; background: #2b2d31; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
 
         .btn-add { background: var(--draft-coral); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; text-transform: uppercase; }
         .btn-deploy { background: var(--accent); color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: 800; cursor: pointer; margin-top: 10px; text-transform: uppercase; }
 
-        /* --- SÉLECTEUR EMOJI AVANCÉ --- */
-        #emojiPicker { position: fixed; bottom: 0; left: 0; width: 100%; height: 75vh; background: #111214; border-top: 1px solid #333; display: none; flex-direction: column; z-index: 10000; border-radius: 15px 15px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
-        .picker-header { padding: 15px; border-bottom: 1px solid #222; }
-        .search-bar { width: 100%; background: #1e1f22; border: none; padding: 12px; border-radius: 6px; color: white; box-sizing: border-box; outline: none; }
+        /* --- SECTION MESSAGES CRÉÉS --- */
+        .history-title { width: 100%; max-width: 500px; font-size: 14px; font-weight: 800; color: #949ba4; text-transform: uppercase; margin: 20px 0 10px; display: flex; align-items: center; gap: 10px; }
+        .history-title::after { content: ""; flex: 1; height: 1px; background: #333; }
         
+        .msg-item { background: #1e1f22; border-radius: 10px; padding: 15px; margin-bottom: 10px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .msg-info b { color: white; display: block; font-size: 14px; }
+        .msg-info span { font-size: 12px; color: #888; }
+        .msg-btns { display: flex; gap: 10px; }
+        .btn-mini { padding: 8px 12px; border-radius: 5px; border: none; font-weight: 700; cursor: pointer; font-size: 12px; }
+        .btn-edit { background: #4e5058; color: white; }
+        .btn-del { background: rgba(237, 66, 69, 0.1); color: var(--delete); border: 1px solid var(--delete); }
+
+        /* --- SÉLECTEUR EMOJI (DRAFTBOT) --- */
+        #emojiPicker { position: fixed; bottom: 0; left: 0; width: 100%; height: 70vh; background: #111214; border-top: 1px solid #333; display: none; flex-direction: column; z-index: 10000; border-radius: 20px 20px 0 0; }
         .emoji-body { display: flex; flex: 1; overflow: hidden; }
-        .emoji-sidebar { width: 55px; background: var(--sidebar); display: flex; flex-direction: column; align-items: center; padding-top: 20px; gap: 25px; border-right: 1px solid #222; }
-        .emoji-sidebar i, .emoji-sidebar .srv-icon { font-size: 20px; color: #888; cursor: pointer; transition: 0.2s; }
-        .emoji-sidebar i.active { color: var(--accent); }
-        .srv-icon { width: 28px; height: 28px; border-radius: 6px; background: #333; overflow: hidden; border: 1px solid transparent; }
-
+        .emoji-sidebar { width: 55px; background: var(--sidebar); display: flex; flex-direction: column; align-items: center; padding-top: 20px; gap: 25px; }
         .emoji-scroll { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; }
-        .section-title { font-size: 11px; color: #949ba4; font-weight: 800; text-transform: uppercase; margin: 20px 0 10px; }
-        .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
-        .emoji-item { font-size: 32px; text-align: center; cursor: pointer; transition: 0.1s; display: flex; align-items: center; justify-content: center; }
-        .emoji-item:active { transform: scale(1.4); }
-        .emoji-item img { width: 32px; height: 32px; }
-
-        .picker-footer { padding: 15px; text-align: center; background: var(--sidebar); border-top: 1px solid #222; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+        .emoji-item { font-size: 30px; text-align: center; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <h3 style="margin: 20px 0;">Configuration BagBot</h3>
+    <h3 style="margin-bottom: 25px;">BagBot Dashboard</h3>
 
     <div class="discord-msg">
         <div class="avatar"></div>
@@ -74,75 +65,44 @@
                 <i class="fas fa-plus" id="icon-thumb"></i>
                 <img id="view-thumb" style="display:none">
             </div>
-
-            <div class="embed-author" onclick="openUploader('author')">
-                <div class="author-icon" id="author-slot">
-                    <i class="fas fa-user-plus" id="icon-author" style="font-size: 10px; color:#444;"></i>
-                    <img id="view-author" style="display:none">
-                </div>
-                <span contenteditable="true" id="p-author-name">Nom de l'auteur</span>
-            </div>
-
-            <div class="embed-title" contenteditable="true" id="p-title">Role accès</div>
-            <div class="embed-desc" contenteditable="true" id="p-desc">Cliquez ici pour écrire la description...</div>
-
+            <div class="embed-title" contenteditable="true" id="p-title">Titre du rôle</div>
+            <div class="embed-desc" contenteditable="true" id="p-desc">Description du message...</div>
             <div class="upload-zone banner-slot" onclick="openUploader('banner')">
-                <i class="fas fa-image" id="icon-banner" style="font-size: 24px;"></i>
+                <i class="fas fa-image" id="icon-banner"></i>
                 <img id="view-banner" style="display:none">
-            </div>
-
-            <div class="embed-footer" onclick="openUploader('footer')">
-                <div class="author-icon" style="width:16px; height:16px;">
-                    <img id="view-footer" style="display:none">
-                </div>
-                <span contenteditable="true">Footer • Aujourd'hui à 16:30</span>
             </div>
         </div>
     </div>
 
     <div class="card">
-        <span class="label-style">Salon de destination</span>
-        <select id="channel-list"><option value="">Chargement des salons...</option></select>
+        <span class="label-style">Salon Discord</span>
+        <select id="channel-list"><option>Chargement...</option></select>
         
-        <div id="reactions-container">
-            </div>
+        <div id="reactions-container"></div>
 
-        <button class="btn-add" onclick="createReactionRow()">Ajouter un rôle réaction</button>
-        <button class="btn-deploy" onclick="deploy()">Déployer sur Discord</button>
+        <button class="btn-add" onclick="createReactionRow()">AJOUTER UN RÔLE RÉACTION</button>
+        <button class="btn-deploy" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
+    </div>
+
+    <div class="history-title">Messages déjà créés</div>
+    <div id="history-container" style="width: 100%; max-width: 500px;">
+        <p style="text-align:center; color:#555; font-size:12px;">Aucun message trouvé.</p>
     </div>
 
     <div id="emojiPicker">
-        <div class="picker-header"><input type="text" class="search-bar" placeholder="Rechercher un émoji..."></div>
+        <div style="padding:15px;"><input type="text" style="width:100%; background:#1e1f22; border:none; padding:10px; color:white; border-radius:5px;" placeholder="Rechercher..."></div>
         <div class="emoji-body">
             <div class="emoji-sidebar">
-                <div class="srv-icon" id="srv-btn" onclick="goToSec('sec-srv')">
-                    <img src="https://draftbot.fr/assets/img/logo.png" width="100%">
-                </div>
-                <i class="fas fa-smile active" onclick="goToSec('sec-smileys')"></i>
-                <i class="fas fa-utensils" onclick="goToSec('sec-food')"></i>
-                <i class="fas fa-futbol"></i>
-                <i class="fas fa-lightbulb"></i>
+                <i class="fas fa-clock" onclick="document.getElementById('sec-std').scrollIntoView()"></i>
+                <i class="fas fa-smile" onclick="document.getElementById('sec-std').scrollIntoView()"></i>
             </div>
-            <div class="emoji-scroll" id="scroll-box">
-                <div id="sec-srv">
-                    <div class="section-title">Émojis du serveur</div>
-                    <div class="emoji-grid" id="grid-server">
-                        <span style="color:#444; font-size:12px; grid-column: span 6;">Aucun émoji serveur trouvé</span>
-                    </div>
-                </div>
-                <div id="sec-smileys">
-                    <div class="section-title">Smileys & Émotions</div>
-                    <div class="emoji-grid" id="grid-smileys"></div>
-                </div>
-                <div id="sec-food">
-                    <div class="section-title">Nourriture & Boissons</div>
-                    <div class="emoji-grid" id="grid-food"></div>
+            <div class="emoji-scroll">
+                <div id="sec-std">
+                    <div class="emoji-grid" id="grid-std"></div>
                 </div>
             </div>
         </div>
-        <div class="picker-footer">
-            <button onclick="closeEmoji()" style="background:none; border:none; color:var(--accent); font-weight:800; cursor:pointer;">FERMER</button>
-        </div>
+        <button onclick="closeEmoji()" style="padding:15px; background:none; border:none; color:var(--accent); font-weight:800;">FERMER</button>
     </div>
 
     <input type="file" id="media-input" style="display:none" onchange="handleMedia(this)">
@@ -151,84 +111,96 @@
     const API_IP = "http://192.168.1.133:49500";
     let rolesData = [];
     let activeBtn = null;
-    let currentUploadZone = null;
+    let currentZone = null;
 
-    // 1. Initialisation
     async function init() {
         loadStandardEmojis();
         try {
-            const [cRes, rRes, eRes] = await Promise.all([
+            const [cRes, rRes, mRes] = await Promise.all([
                 fetch(`${API_IP}/api/channels`),
                 fetch(`${API_IP}/api/roles`),
-                fetch(`${API_IP}/api/emojis`)
+                fetch(`${API_IP}/api/messages`) // Récupère les messages existants
             ]);
             
             const channels = await cRes.json();
             rolesData = await rRes.json();
-            const serverEmojis = await eRes.json();
+            const savedMessages = await mRes.json();
 
-            document.getElementById('channel-list').innerHTML = channels.map(c => 
-                `<option value="${c.id}"># ${c.name}</option>`).join('');
+            document.getElementById('channel-list').innerHTML = channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            
+            // Affichage de l'historique
+            renderHistory(savedMessages);
 
-            if(serverEmojis.length > 0) {
-                document.getElementById('grid-server').innerHTML = serverEmojis.map(e => 
-                    `<span class="emoji-item" onclick="pickEmoji('${e.id}', true, '${e.url}')"><img src="${e.url}"></span>`).join('');
-            }
-        } catch(e) { console.error("Erreur API : Vérifiez que le bot est lancé sur l'IP " + API_IP); }
+        } catch(e) { console.error("API Error"); }
     }
 
-    // 2. Gestion des Médias
-    function openUploader(zone) { currentUploadZone = zone; document.getElementById('media-input').click(); }
-    function handleMedia(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => {
-                const img = document.getElementById(`view-${currentUploadZone}`);
-                const icon = document.getElementById(`icon-${currentUploadZone}`);
-                if(icon) icon.style.display = 'none';
-                img.src = e.target.result;
-                img.style.display = 'block';
-            };
-            reader.readAsDataURL(input.files[0]);
+    // Gestion de l'historique (Modifier/Supprimer)
+    function renderHistory(messages) {
+        const container = document.getElementById('history-container');
+        if(!messages.length) return;
+
+        container.innerHTML = messages.map(m => `
+            <div class="msg-item">
+                <div class="msg-info">
+                    <b>${m.title || "Sans titre"}</b>
+                    <span>Salon: #${m.channelName}</span>
+                </div>
+                <div class="msg-btns">
+                    <button class="btn-mini btn-edit" onclick="editMessage('${m.id}')">EDITER</button>
+                    <button class="btn-mini btn-del" onclick="deleteMessage('${m.id}')">SUPPRIMER</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function deleteMessage(id) {
+        if(confirm("Supprimer définitivement ce message ?")) {
+            await fetch(`${API_IP}/api/messages/${id}`, { method: 'DELETE' });
+            init(); // Rafraîchir
         }
     }
 
-    // 3. Réactions
+    function editMessage(id) {
+        // Logique pour charger les données du message dans l'aperçu haut
+        alert("Chargement du message " + id + "...");
+    }
+
+    // Autres fonctions (Emojis, Upload, etc.)
     function createReactionRow() {
         const div = document.createElement('div');
         div.className = 'reaction-row';
         div.innerHTML = `
             <div class="emoji-trigger" onclick="openEmoji(this)">😀</div>
             <select style="margin:0; flex:1;">
-                <option value="">Lier un rôle...</option>
+                <option value="">Rôle...</option>
                 ${rolesData.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
             </select>
-            <i class="fas fa-trash-alt" style="color:#444; cursor:pointer;" onclick="this.parentElement.remove()"></i>
+            <i class="fas fa-trash-alt" style="color:#444;" onclick="this.parentElement.remove()"></i>
         `;
         document.getElementById('reactions-container').appendChild(div);
     }
 
-    // 4. Sélecteur Emoji
     function openEmoji(btn) { activeBtn = btn; document.getElementById('emojiPicker').style.display = 'flex'; }
     function closeEmoji() { document.getElementById('emojiPicker').style.display = 'none'; }
-    function pickEmoji(val, isCustom, url) {
-        if(isCustom) activeBtn.innerHTML = `<img src="${url}">`;
-        else activeBtn.innerText = val;
-        closeEmoji();
-    }
-    function goToSec(id) { document.getElementById(id).scrollIntoView({behavior: "smooth"}); }
+    function setEmoji(val) { activeBtn.innerText = val; closeEmoji(); }
 
     function loadStandardEmojis() {
-        const smileys = ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕'];
-        const food = ['🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌽','🥕','🥔','🍠','🥐','🍞','🥖','🥨','🥯','🧀','🥚','🍳','🥞','🥓','🥩','🍗','🍖','🌭','🍔','🍟','🍕'];
-        
-        document.getElementById('grid-smileys').innerHTML = smileys.map(e => `<span class="emoji-item" onclick="pickEmoji('${e}', false)">${e}</span>`).join('');
-        document.getElementById('grid-food').innerHTML = food.map(e => `<span class="emoji-item" onclick="pickEmoji('${e}', false)">${e}</span>`).join('');
+        const list = ['😀','🔥','🔞','✅','❌','⭐','🌙','💎','🎁','🛡️','📜','📸','🎭'];
+        document.getElementById('grid-std').innerHTML = list.map(e => `<span class="emoji-item" onclick="setEmoji('${e}')">${e}</span>`).join('');
     }
 
-    async function deploy() {
-        alert("Tentative de déploiement sur Discord...");
-        // Logique Fetch POST vers /api/deploy
+    function openUploader(z) { currentZone = z; document.getElementById('media-input').click(); }
+    function handleMedia(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = document.getElementById(`view-${currentZone}`);
+                document.getElementById(`icon-${currentUploadZone || currentZone}`).style.display = 'none';
+                img.src = e.target.result;
+                img.style.display = 'block';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
     }
 
     window.onload = init;
