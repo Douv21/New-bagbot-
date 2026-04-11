@@ -5,96 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BAGBOT PANEL</title>
     <style>
-        body { background: #0f1012; color: white; font-family: sans-serif; padding: 20px; }
-        .card { background: #18191c; padding: 20px; border-radius: 10px; max-width: 450px; margin: auto; border: 1px solid #333; }
-        label { display: block; margin-top: 15px; color: #888; font-size: 12px; font-weight: bold; }
-        select, input, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 5px; box-sizing: border-box; margin-top: 5px; }
-        .btn { background: #ff4d4d; color: white; border: none; width: 100%; padding: 15px; border-radius: 5px; font-weight: bold; margin-top: 25px; cursor: pointer; }
-        .btn:disabled { background: #555; }
+        body { background: #0f1012; color: white; font-family: sans-serif; padding: 15px; }
+        .card { background: #18191c; padding: 20px; border-radius: 10px; border: 1px solid #333; max-width: 400px; margin: auto; }
+        label { display: block; margin-top: 15px; color: #888; font-size: 11px; font-weight: bold; }
+        select, input, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 5px; box-sizing: border-box; }
+        .btn { background: #ff4d4d; color: white; border: none; width: 100%; padding: 15px; border-radius: 5px; font-weight: bold; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
-
 <div class="card">
-    <h2 style="text-align:center; color:#ff4d4d;">BAGBOT V2</h2>
-    
-    <label>SALON DISCORD</label>
-    <select id="cId"><option>Chargement...</option></select>
-
-    <label>RÔLE</label>
-    <select id="rId"><option>Chargement...</option></select>
-
-    <label>MODE</label>
-    <select id="mode" onchange="toggleMode()">
-        <option value="simple">Message Simple</option>
-        <option value="embed">Embed (Image/Titre)</option>
-    </select>
-
-    <div id="simple-fields">
-        <label>MESSAGE</label>
-        <textarea id="txt">Cliquez ci-dessous !</textarea>
-    </div>
-
-    <div id="embed-fields" style="display:none;">
-        <label>TITRE</label><input type="text" id="tit">
-        <label>DESCRIPTION</label><textarea id="des"></textarea>
-        <label>IMAGE</label><input type="file" id="img">
-    </div>
-
+    <h3 style="text-align:center;">BAGBOT V2</h3>
+    <label>SALON</label><select id="cId"></select>
+    <label>RÔLE</label><select id="rId"></select>
+    <label>MESSAGE</label><textarea id="txt">Cliquez ci-dessous</textarea>
     <label>AFFICHAGE</label>
-    <select id="disp">
-        <option value="button">Bouton Rouge</option>
-        <option value="select">Menu Déroulant</option>
-    </select>
-
-    <button class="btn" id="go" onclick="send()">DÉPLOYER SUR DISCORD</button>
+    <select id="disp"><option value="button">Bouton</option><option value="select">Menu</option></select>
+    <button class="btn" onclick="send()">LANCER LE DÉPLOIEMENT</button>
 </div>
-
 <script>
-    function toggleMode() {
-        const isEmbed = document.getElementById('mode').value === 'embed';
-        document.getElementById('simple-fields').style.display = isEmbed ? 'none' : 'block';
-        document.getElementById('embed-fields').style.display = isEmbed ? 'block' : 'none';
-    }
-
     async function load() {
-        try {
-            const [cRes, rRes] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
-            const chans = await cRes.json();
-            const roles = await rRes.json();
-            document.getElementById('cId').innerHTML = chans.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
-            document.getElementById('rId').innerHTML = roles.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
-        } catch(e) { alert("Erreur de chargement des données"); }
+        const [cR, rR] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
+        const chans = await cR.json(); const roles = await rR.json();
+        document.getElementById('cId').innerHTML = chans.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
+        document.getElementById('rId').innerHTML = roles.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
     }
-
     async function send() {
-        const btn = document.getElementById('go');
-        btn.disabled = true;
-        btn.innerText = "ENVOI...";
-
         const fd = new FormData();
         fd.append('channelId', document.getElementById('cId').value);
         fd.append('roleId', document.getElementById('rId').value);
-        fd.append('mode', document.getElementById('mode').value);
-        fd.append('displayType', document.getElementById('disp').value);
         fd.append('content', document.getElementById('txt').value);
-        fd.append('title', document.getElementById('tit').value);
-        fd.append('description', document.getElementById('des').value);
-        if (document.getElementById('img').files[0]) fd.append('imageFile', document.getElementById('img').files[0]);
+        fd.append('displayType', document.getElementById('disp').value);
+        fd.append('mode', 'simple');
 
         try {
             const res = await fetch('/api/deploy', { method: 'POST', body: fd });
             const data = await res.json();
-            if (data.success) alert("✅ Déployé avec succès !");
-            else alert("❌ Erreur : " + data.message);
-        } catch(e) {
-            alert("❌ Erreur de connexion au serveur");
-        }
-        btn.disabled = false;
-        btn.innerText = "DÉPLOYER SUR DISCORD";
+            alert(data.success ? "✅ Succès !" : "❌ Erreur : " + data.message);
+        } catch(e) { alert("❌ Erreur de connexion au serveur"); }
     }
     load();
 </script>
-
 </body>
 </html>
