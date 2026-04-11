@@ -3,84 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Admin</title>
+    <title>BagBot Admin V2</title>
     <style>
-        :root { --accent: #ff4d4d; --bg: #0f1012; }
-        body { margin: 0; font-family: sans-serif; background: var(--bg); color: white; display: flex; }
-        .sidebar { width: 260px; background: #0b0c0e; height: 100vh; position: fixed; left: -260px; transition: 0.3s; z-index: 1000; }
+        :root { --accent: #ff4d4d; --bg: #0f1012; --card: #18191c; }
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: white; display: flex; }
+        
+        /* Sidebar */
+        .sidebar { width: 260px; background: #0b0c0e; height: 100vh; position: fixed; left: -260px; transition: 0.3s; z-index: 1000; border-right: 1px solid #222; }
         .sidebar.open { left: 0; }
+        .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+        .close-btn { background: none; border: none; color: var(--accent); font-size: 30px; cursor: pointer; }
+
+        /* Main Content */
         .main { flex: 1; padding: 20px; width: 100%; box-sizing: border-box; }
-        .panel { background: #18191c; border-radius: 12px; padding: 20px; max-width: 500px; margin: auto; border: 1px solid #282a2e; }
+        .menu-toggle { background: #2f3136; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; margin-bottom: 15px; }
+        
+        .panel { background: var(--card); border-radius: 12px; padding: 20px; max-width: 500px; margin: auto; border: 1px solid #282a2e; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
         .tabs { display: flex; background: #2f3136; border-radius: 8px; margin-bottom: 20px; padding: 4px; }
-        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; color: #888; }
+        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; color: #888; transition: 0.2s; }
         .tab.active { background: var(--accent); color: white; font-weight: bold; }
-        label { display: block; margin: 12px 0 4px; font-size: 11px; color: #8e9297; text-transform: uppercase; }
-        select, input, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 6px; box-sizing: border-box; }
-        .btn-send { background: var(--accent); color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+
+        label { display: block; margin: 15px 0 5px; font-size: 11px; color: #8e9297; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
+        select, input, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 6px; box-sizing: border-box; outline: none; }
+        select:focus, input:focus { border-color: var(--accent); }
+        
+        .btn-deploy { background: var(--accent); color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 25px; cursor: pointer; font-size: 14px; }
+        .btn-deploy:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
+
 <div class="sidebar" id="sidebar">
-    <div style="padding:20px; display:flex; justify-content:space-between;"><b>BAG BOT V2</b><button onclick="toggleMenu()" style="background:none; border:none; color:red; font-size:24px;">×</button></div>
-</div>
-<div class="main">
-    <button onclick="toggleMenu()" style="background:#2f3136; color:white; border:none; padding:10px; border-radius:6px; margin-bottom:15px;">☰ Menu</button>
-    <div class="panel">
-        <div class="tabs">
-            <div class="tab active" id="ts" onclick="setMode('simple')">Simple</div>
-            <div class="tab" id="te" onclick="setMode('embed')">Embed</div>
-        </div>
-        <label>Salon</label><select id="channelId"><option>Chargement...</option></select>
-        <label>Rôle</label><select id="roleId"><option>Chargement...</option></select>
-        <div id="fs"><label>Message</label><textarea id="txt">Cliquez ici</textarea></div>
-        <div id="fe" style="display:none;">
-            <label>Titre</label><input type="text" id="tit">
-            <label>Description</label><textarea id="des"></textarea>
-            <label>Image</label><input type="file" id="img">
-        </div>
-        <label>ID Message (Optionnel)</label><input type="text" id="mid">
-        <label>Affichage</label><select id="disp"><option value="button">Bouton</option><option value="select">Menu</option></select>
-        <button class="btn-send" id="btn" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
+    <div class="sidebar-header">
+        <b style="color: var(--accent)">BAG BOT V2</b>
+        <button class="close-btn" onclick="toggleMenu()">×</button>
+    </div>
+    <div style="padding: 20px; color: #aaa; font-size: 14px;">
+        <div style="padding: 10px; background: #1a1a1a; border-left: 4px solid var(--accent);">🎭 Rôles Automatiques</div>
     </div>
 </div>
+
+<div class="main">
+    <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+    
+    <div class="panel">
+        <div class="tabs">
+            <div class="tab active" id="tab-simple" onclick="setMode('simple')">Simple</div>
+            <div class="tab" id="tab-embed" onclick="setMode('embed')">Embed</div>
+        </div>
+
+        <label>Salon Discord</label>
+        <select id="channelId"><option value="">Chargement des salons...</option></select>
+
+        <label>Rôle à attribuer</label>
+        <select id="roleId"><option value="">Chargement des rôles...</option></select>
+
+        <div id="form-simple">
+            <label>Texte du message</label>
+            <textarea id="textContent" rows="3">Cliquez sur le bouton pour recevoir votre rôle !</textarea>
+        </div>
+
+        <div id="form-embed" style="display:none;">
+            <label>Titre de l'Embed</label>
+            <input type="text" id="embedTitle" placeholder="Ex: Rôles Couleurs">
+            <label>Description</label>
+            <textarea id="embedDesc" rows="3" placeholder="Ex: Choisissez votre couleur préférée..."></textarea>
+            <label>Bannière (Image)</label>
+            <input type="file" id="embedImage" accept="image/*">
+        </div>
+
+        <label>ID Message (Pour modifier un message existant)</label>
+        <input type="text" id="messageId" placeholder="Laisser vide pour un nouveau message">
+
+        <label>Type d'affichage</label>
+        <select id="displayType">
+            <option value="button">Bouton Rouge</option>
+            <option value="select">Menu Déroulant</option>
+        </select>
+
+        <button class="btn-deploy" id="btnDeploy" onclick="executeDeploy()">DÉPLOYER SUR DISCORD</button>
+    </div>
+</div>
+
 <script>
-    let mode = 'simple';
+    let currentMode = 'simple';
+
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
+
     function setMode(m) {
-        mode = m;
-        document.getElementById('ts').className = m === 'simple' ? 'tab active' : 'tab';
-        document.getElementById('te').className = m === 'embed' ? 'tab active' : 'tab';
-        document.getElementById('fs').style.display = m === 'simple' ? 'block' : 'none';
-        document.getElementById('fe').style.display = m === 'embed' ? 'block' : 'none';
+        currentMode = m;
+        document.getElementById('tab-simple').classList.toggle('active', m === 'simple');
+        document.getElementById('tab-embed').classList.toggle('active', m === 'embed');
+        document.getElementById('form-simple').style.display = m === 'simple' ? 'block' : 'none';
+        document.getElementById('form-embed').style.display = m === 'embed' ? 'block' : 'none';
     }
-    async function load() {
+
+    // Chargement initial des données
+    async function loadDiscordData() {
         try {
-            const cR = await fetch('/api/chans');
-            const rR = await fetch('/api/rols');
-            const c = await cR.json(); const r = await rR.json();
-            document.getElementById('channelId').innerHTML = c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
-            document.getElementById('roleId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
-        } catch(e) { document.getElementById('channelId').innerHTML = '<option>Erreur Connexion</option>'; }
+            const [chansRes, rolesRes] = await Promise.all([
+                fetch('/api/get-channels'),
+                fetch('/api/get-roles')
+            ]);
+            
+            const chans = await chansRes.json();
+            const roles = await rolesRes.json();
+
+            document.getElementById('channelId').innerHTML = chans.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            document.getElementById('roleId').innerHTML = roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+        } catch (err) {
+            console.error("Erreur de chargement:", err);
+            alert("Erreur de connexion au bot. Vérifiez que PM2 est lancé.");
+        }
     }
-    async function deploy() {
-        const fd = new FormData();
-        fd.append('channelId', document.getElementById('channelId').value);
-        fd.append('roleId', document.getElementById('roleId').value);
-        fd.append('mode', mode);
-        fd.append('displayType', document.getElementById('disp').value);
-        fd.append('messageId', document.getElementById('mid').value.trim());
-        fd.append('content', document.getElementById('txt').value);
-        fd.append('title', document.getElementById('tit').value);
-        fd.append('description', document.getElementById('des').value);
-        if (document.getElementById('img').files[0]) fd.append('imageFile', document.getElementById('img').files[0]);
+
+    async function executeDeploy() {
+        const btn = document.getElementById('btnDeploy');
+        const cId = document.getElementById('channelId').value;
+        const rId = document.getElementById('roleId').value;
+
+        if (!cId || !rId) return alert("Sélectionnez un salon et un rôle !");
+
+        btn.disabled = true;
+        btn.innerText = "ENVOI EN COURS...";
+
+        const formData = new FormData();
+        formData.append('channelId', cId);
+        formData.append('roleId', rId);
+        formData.append('mode', currentMode);
+        formData.append('displayType', document.getElementById('displayType').value);
+        formData.append('messageId', document.getElementById('messageId').value.trim());
+        formData.append('content', document.getElementById('textContent').value);
+        formData.append('title', document.getElementById('embedTitle').value);
+        formData.append('description', document.getElementById('embedDesc').value);
+        
+        const fileInput = document.getElementById('embedImage');
+        if (fileInput.files[0]) formData.append('imageFile', fileInput.files[0]);
 
         try {
-            const res = await fetch('/api/send', { method: 'POST', body: fd });
-            const d = await res.json();
-            alert(d.success ? "✅ Envoyé !" : "❌ " + d.message);
-        } catch(e) { alert("❌ Erreur de connexion"); }
+            const response = await fetch('/api/deploy-action', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                alert("✅ Message déployé avec succès !");
+            } else {
+                alert("❌ Erreur : " + result.message);
+            }
+        } catch (err) {
+            alert("❌ Erreur de connexion au serveur.");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "DÉPLOYER SUR DISCORD";
+        }
     }
-    load();
+
+    // Lancement au démarrage
+    loadDiscordData();
 </script>
+
 </body>
 </html>
