@@ -7,69 +7,69 @@ const upload = multer({ dest: 'public/uploads/' });
 module.exports = function(app, client) {
     if (!fs.existsSync('public/uploads')) fs.mkdirSync('public/uploads', { recursive: true });
 
-    app.get('/api/channels', async (req, res) => {
+    app.get('/api/channels', (req, res) => {
         const guild = client.guilds.cache.first();
         if (!guild) return res.json([]);
-        // On s'assure que l'ID est bien envoyé comme une String
-        res.json(guild.channels.cache.filter(c => c.type === 0).map(c => ({ id: String(c.id), name: c.name })));
+        res.json(guild.channels.cache.filter(c => c.type === 0).map(c => ({ id: c.id, name: c.name })));
     });
 
-    app.get('/api/roles', async (req, res) => {
+    app.get('/api/roles', (req, res) => {
         const guild = client.guilds.cache.first();
         if (!guild) return res.json([]);
-        res.json(guild.roles.cache.filter(r => r.name !== "@everyone" && !r.managed).map(r => ({ id: String(r.id), name: r.name })));
+        res.json(guild.roles.cache.filter(r => r.name !== "@everyone" && !r.managed).map(r => ({ id: r.id, name: r.name })));
     });
 
     app.post('/update-bot', upload.single('imageFile'), async (req, res) => {
         try {
-            // Extraction et nettoyage strict des IDs
-            const channelId = req.body.channelId ? String(req.body.channelId).trim() : null;
-            const roleId = req.body.roleId ? String(req.body.roleId).trim() : null;
-            const messageId = req.body.messageId ? String(req.body.messageId).trim() : null;
+            // Extraction directe - On force l'ID en String pour Discord
+            const channelId = String(req.body.channelId);
+            const roleId = String(req.body.roleId);
 
-            if (!channelId || channelId === "undefined" || !/^\d+$/.test(channelId)) {
-                return res.status(400).json({ success: false, message: "ID Salon invalide (Snowflake manquant)" });
+            if (channelId === "undefined" || channelId.length < 10) {
+                return res.status(400).json({ success: false, message: "ID Salon manquant ou invalide." });
             }
 
             const channel = await client.channels.fetch(channelId);
             const role = await channel.guild.roles.fetch(roleId);
             
-            let messageOptions = { embeds: [], components: [], files: [] };
+            let options = { embeds: [], components: [], files: [] };
 
-            if (req.body.mode === 'simple') {
-                messageOptions.content = req.body.content || "Sélectionnez votre rôle :";
-            } else {
+            // Construction du message
+            if (req.body.mode === 'embed') {
                 const embed = new EmbedBuilder()
-                    .setTitle(req.body.title || "Rôles")
-                    .setDescription(req.body.description || "Cliquez ci-dessous")
+                    .setTitle(req.body.title || "Sélection")
+                    .setDescription(req.body.description || " ")
                     .setColor("#ff4d4d");
-
+                
                 if (req.file) {
-                    const file = new AttachmentBuilder(req.file.path, { name: 'banner.png' });
-                    embed.setImage('attachment://banner.png');
-                    messageOptions.files = [file];
-                } else if (req.body.imageUrl) {
-                    embed.setImage(req.body.imageUrl);
+                    const file = new AttachmentBuilder(req.file.path, { name: 'img.png' });
+                    embed.setImage('attachment://img.png');
+                    options.files = [file];
                 }
-                messageOptions.embeds = [embed];
+                options.embeds = [embed];
+            } else {
+                options.content = req.body.content || "Choisissez votre rôle :";
             }
 
+            // Bouton ou Menu
             const row = new ActionRowBuilder();
-            const customId = `role_${req.body.roleMode || 'normal'}_${roleId}`;
+            const cid = `role_normal_${roleId}`;
             
             if (req.body.displayType === 'select') {
-                row.addComponents(new StringSelectMenuBuilder().setCustomId(customId).addOptions([{ label: role.name, value: roleId }]));
+                row.addComponents(new StringSelectMenuBuilder().setCustomId(cid).addOptions([{ label: role.name, value: roleId }]));
             } else {
-                row.addComponents(new ButtonBuilder().setCustomId(customId).setLabel(role.name).setStyle(ButtonStyle.Danger));
+                row.addComponents(new ButtonBuilder().setCustomId(cid).setLabel(role.name).setStyle(ButtonStyle.Danger));
             }
-            messageOptions.components = [row];
+            options.components = [row];
 
-            if (messageId && messageId.length > 15) {
-                const targetMsg = await channel.messages.fetch(messageId);
-                await targetMsg.edit(messageOptions);
+            // Envoi
+            if (req.body.messageId && req.body.messageId.length > 15) {
+                const msg = await channel.messages.fetch(req.body.messageId);
+                await msg.edit(options);
             } else {
-                await channel.send(messageOptions);
+                await channel.send(options);
             }
+
             res.json({ success: true });
         } catch (err) {
             console.error(err);
