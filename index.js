@@ -1,86 +1,71 @@
-const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const PluginManager = require('./core/pluginManager');
-const startAPI = require('./core/api');
+const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, REST, Routes } = require('discord.js');
+const express = require('express');
 require('dotenv').config();
 
 const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers
-    ]
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages]
 });
 
-const manager = new PluginManager(client);
+// --- CONFIGURATION ---
+const PORT = 49500;
+const BOT_ID = "TON_ID_DE_BOT_ICI"; // <--- METS TON ID ICI
+const ROLE_ID = "ID_DU_ROLE_A_DONNER"; // <--- METS L'ID DU ROLE ICI
 
-client.once('ready', () => {
-    console.log(`✅ Bot connecté : ${client.user.tag}`);
-    manager.loadAll();
-    startAPI(manager);
+// --- DASHBOARD ---
+const app = express();
+app.use(express.static('public'));
+app.listen(PORT, () => console.log(`🌐 Dashboard: http://192.168.1.133:${PORT}`));
+
+// --- COMMANDES ---
+const commands = [{ name: 'refresh-panel', description: 'Affiche le panneau de rôles' }];
+const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+
+client.once('ready', async () => {
+    console.log(`✅ Connecté en tant que ${client.user.tag}`);
+    try {
+        await rest.put(Routes.applicationCommands(BOT_ID), { body: commands });
+        console.log('✅ Commande /refresh-panel enregistrée');
+    } catch (e) { console.error("Erreur deploy:", e); }
 });
 
+// --- LOGIQUE ---
 client.on('interactionCreate', async (interaction) => {
-    // 1. COMMANDE DE CONFIGURATION (Pour envoyer l'embed avec le GIF)
-    if (interaction.isChatInputCommand() && interaction.commandName === 'setup-roles') {
-        const plugin = manager.plugins.get('autorole');
-        if (!plugin) return interaction.reply("❌ Plugin non trouvé.");
+    if (interaction.isChatInputCommand() && interaction.commandName === 'refresh-panel') {
+        try {
+            const embed = new EmbedBuilder()
+                .setTitle("🎒 Sélection des Rôles")
+                .setDescription("Clique sur le bouton pour obtenir ton rôle.")
+                .setColor("#5865F2");
 
-        const { visuals, options } = plugin.data;
-
-        const embed = new EmbedBuilder()
-            .setTitle(visuals.title)
-            .setDescription(visuals.description)
-            .setImage(visuals.gif_url)
-            .setColor(visuals.color)
-            .setFooter({ text: visuals.footer });
-
-        const row = new ActionRowBuilder();
-        options.forEach(opt => {
-            row.addComponents(
+            const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
-                    .setCustomId(opt.id)
-                    .setLabel(opt.label)
-                    .setEmoji(opt.emoji)
-                    .setStyle(ButtonStyle[opt.style])
+                    .setCustomId('role_toggle')
+                    .setLabel('Obtenir le Rôle')
+                    .setStyle(ButtonStyle.Primary)
             );
-        });
 
-        await interaction.reply({ embeds: [embed], components: [row] });
+            await interaction.reply({ embeds: [embed], components: [row] });
+        } catch (err) {
+            console.error("Erreur interaction:", err);
+        }
     }
 
-    // 2. GESTION DES CLICS SUR LES BOUTONS (Recherche par NOM)
-    if (interaction.isButton()) {
-        const plugin = manager.plugins.get('autorole');
-        if (!plugin) return;
-
-        // On cherche l'option qui correspond au bouton cliqué
-        const option = plugin.data.options.find(opt => opt.id === interaction.customId);
-        if (!option) return;
-
-        // RECHERCHE DU RÔLE PAR SON NOM
-        const role = interaction.guild.roles.cache.find(r => r.name === option.roleName);
-
-        if (!role) {
-            return interaction.reply({ 
-                content: `❌ Le rôle "**${option.roleName}**" est introuvable sur ce serveur.`, 
-                ephemeral: true 
-            });
-        }
+    if (interaction.isButton() && interaction.customId === 'role_toggle') {
+        const role = interaction.guild.roles.cache.get(ROLE_ID);
+        if (!role) return interaction.reply({ content: "❌ Rôle introuvable. Vérifie l'ID dans le code.", ephemeral: true });
 
         try {
-            if (interaction.member.roles.cache.has(role.id)) {
+            if (interaction.member.roles.cache.has(ROLE_ID)) {
                 await interaction.member.roles.remove(role);
-                await interaction.reply({ content: `✅ Rôle **${role.name}** retiré !`, ephemeral: true });
+                await interaction.reply({ content: `➖ Rôle ${role.name} retiré !`, ephemeral: true });
             } else {
                 await interaction.member.roles.add(role);
-                await interaction.reply({ content: `✅ Rôle **${role.name}** ajouté !`, ephemeral: true });
+                await interaction.reply({ content: `➕ Rôle ${role.name} ajouté !`, ephemeral: true });
             }
-        } catch (err) {
-            console.error(err);
-            await interaction.reply({ content: "❌ Je n'ai pas les permissions pour gérer ce rôle.", ephemeral: true });
+        } catch (e) {
+            await interaction.reply({ content: "⚠️ Erreur de permissions. Mon rôle doit être au-dessus.", ephemeral: true });
         }
     }
 });
 
-client.login(process.env.DISCORD_TOKEN);
+client.login(process.env.TOKEN);
