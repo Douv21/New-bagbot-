@@ -9,7 +9,7 @@ const commands = [
 ];
 
 // Vérification que le token est présent
-if (!process.env.TOKEN) {
+if (!process.env.DISCORD_TOKEN) {
     console.error("❌ Erreur : Le TOKEN n'est pas défini dans le fichier .env");
     process.exit(1);
 }
@@ -23,7 +23,7 @@ const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
         // On utilise l'ID du bot qui est dans l'URL de ta page Developer ou tu peux le mettre en dur ici
         // Remplace "ID_DE_TON_BOT" par les chiffres de l'ID de ton bot
         await rest.put(
-            Routes.applicationCommands("ID_DE_TON_BOT"), 
+            Routes.applicationCommands("1488496461535510608"), 
             { body: commands },
         );
 
