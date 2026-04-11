@@ -3,50 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Admin</title>
+    <title>BagBot | Dashboard</title>
     <style>
-        :root { --accent: #ff4d4d; --bg: #121212; }
-        body { background: var(--bg); color: white; font-family: sans-serif; padding: 20px; }
-        .panel { background: #1e1e1e; padding: 20px; border-radius: 10px; max-width: 450px; margin: auto; }
-        label { display: block; margin-top: 15px; color: #bbb; font-size: 12px; }
-        select, input, textarea { width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; }
-        .btn { background: var(--accent); color: white; border: none; width: 100%; padding: 15px; border-radius: 5px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+        :root { --accent: #ff4d4d; --bg: #0f1012; --panel: #18191c; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; display: flex; }
+        .main { flex: 1; padding: 20px; box-sizing: border-box; }
+        .card { background: var(--panel); border-radius: 12px; padding: 25px; max-width: 500px; margin: 20px auto; border: 1px solid #282a2e; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .tabs { display: flex; background: #2f3136; border-radius: 8px; margin-bottom: 25px; padding: 4px; }
+        .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; border-radius: 6px; color: #888; transition: 0.2s; }
+        .tab.active { background: var(--accent); color: white; font-weight: bold; }
+        label { display: block; margin: 15px 0 5px; font-size: 11px; color: #8e9297; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
+        select, input, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        select:focus, input:focus { border-color: var(--accent); outline: none; }
+        .btn { background: var(--accent); color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 25px; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        .btn:hover { background: #ff3333; transform: translateY(-2px); }
+        .btn:disabled { background: #444; cursor: not-allowed; }
     </style>
 </head>
 <body>
-    <div class="panel">
-        <h2 style="text-align:center;">ADMINISTRATION</h2>
-        <label>SALON</label><select id="cId"></select>
-        <label>RÔLE</label><select id="rId"></select>
-        <label>MESSAGE</label><textarea id="msg">Cliquez ici</textarea>
-        <button class="btn" onclick="send()">DÉPLOYER</button>
+<div class="main">
+    <div class="card">
+        <h2 style="text-align:center; margin-top:0; color:var(--accent);">BAGBOT ADMIN</h2>
+        <div class="tabs">
+            <div class="tab active" id="tab-simple" onclick="setMode('simple')">SIMPLE</div>
+            <div class="tab" id="tab-embed" onclick="setMode('embed')">EMBED</div>
+        </div>
+
+        <label>Salon de destination</label>
+        <select id="channelId"><option>Chargement des salons...</option></select>
+
+        <label>Rôle à attribuer</label>
+        <select id="roleId"><option>Chargement des rôles...</option></select>
+
+        <div id="section-simple">
+            <label>Message texte</label>
+            <textarea id="content" rows="3">Cliquez sur le bouton pour obtenir votre rôle !</textarea>
+        </div>
+
+        <div id="section-embed" style="display:none;">
+            <label>Titre de l'Embed</label><input type="text" id="title" placeholder="Rôles Automatiques">
+            <label>Description</label><textarea id="description" rows="3" placeholder="Choisissez votre rôle ci-dessous..."></textarea>
+            <label>Bannière Image (Optionnel)</label><input type="file" id="imageFile" accept="image/*">
+        </div>
+
+        <label>Type d'affichage</label>
+        <select id="displayType">
+            <option value="button">Bouton Rouge</option>
+            <option value="select">Menu Déroulant</option>
+        </select>
+
+        <button class="btn" id="deployBtn" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
     </div>
+</div>
 
-    <script>
-        async function load() {
-            try {
-                const [cR, rR] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
-                const c = await cR.json(); const r = await rR.json();
-                document.getElementById('cId').innerHTML = c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
-                document.getElementById('rId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
-            } catch(e) { alert("Erreur de chargement des salons"); }
-        }
+<script>
+    let currentMode = 'simple';
+    function setMode(m) {
+        currentMode = m;
+        document.getElementById('tab-simple').className = m === 'simple' ? 'tab active' : 'tab';
+        document.getElementById('tab-embed').className = m === 'embed' ? 'tab active' : 'tab';
+        document.getElementById('section-simple').style.display = m === 'simple' ? 'block' : 'none';
+        document.getElementById('section-embed').style.display = m === 'embed' ? 'block' : 'none';
+    }
 
-        async function send() {
-            const fd = new FormData();
-            fd.append('channelId', document.getElementById('cId').value);
-            fd.append('roleId', document.getElementById('rId').value);
-            fd.append('content', document.getElementById('msg').value);
-            fd.append('mode', 'simple');
-            fd.append('displayType', 'button');
+    async function loadData() {
+        try {
+            const [cR, rR] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
+            const channels = await cR.json();
+            const roles = await rR.json();
+            document.getElementById('channelId').innerHTML = channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            document.getElementById('roleId').innerHTML = roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+        } catch(e) { console.error("Erreur de chargement"); }
+    }
 
-            try {
-                const res = await fetch('/api/deploy', { method: 'POST', body: fd });
-                const data = await res.json();
-                if (data.success) alert("✅ Déployé !"); else alert("❌ Erreur : " + data.message);
-            } catch(e) { alert("❌ Erreur de connexion au serveur"); }
-        }
-        load();
-    </script>
+    async function deploy() {
+        const btn = document.getElementById('deployBtn');
+        btn.disabled = true; btn.innerText = "ENVOI EN COURS...";
+
+        const formData = new FormData();
+        formData.append('channelId', document.getElementById('channelId').value);
+        formData.append('roleId', document.getElementById('roleId').value);
+        formData.append('mode', currentMode);
+        formData.append('displayType', document.getElementById('displayType').value);
+        formData.append('content', document.getElementById('content').value);
+        formData.append('title', document.getElementById('title').value);
+        formData.append('description', document.getElementById('description').value);
+        
+        const fileInput = document.getElementById('imageFile');
+        if (fileInput.files[0]) formData.append('imageFile', fileInput.files[0]);
+
+        try {
+            const res = await fetch('/api/deploy', { method: 'POST', body: formData });
+            const result = await res.json();
+            if (result.success) alert("✅ Envoyé avec succès sur Discord !");
+            else alert("❌ Erreur : " + result.message);
+        } catch(e) { alert("❌ Erreur de connexion au serveur."); }
+        
+        btn.disabled = false; btn.innerText = "DÉPLOYER SUR DISCORD";
+    }
+    loadData();
+</script>
 </body>
 </html>
