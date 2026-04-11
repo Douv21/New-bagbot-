@@ -6,24 +6,27 @@ const upload = multer({ dest: 'public/uploads/' });
 module.exports = function(app, client) {
     if (!fs.existsSync('public/uploads')) fs.mkdirSync('public/uploads', { recursive: true });
 
-    // Récupération des données
+    // Test de connexion simple
+    app.get('/ping', (req, res) => res.json({ status: "ok", bot: client.user.tag }));
+
     app.get('/get-channels', (req, res) => {
         const guild = client.guilds.cache.first();
         if (!guild) return res.json([]);
-        res.json(guild.channels.cache.filter(c => c.type === 0).map(c => ({ id: c.id, name: c.name })));
+        const chans = guild.channels.cache.filter(c => c.type === 0).map(c => ({ id: String(c.id), name: c.name }));
+        res.json(chans);
     });
 
     app.get('/get-roles', (req, res) => {
         const guild = client.guilds.cache.first();
         if (!guild) return res.json([]);
-        res.json(guild.roles.cache.filter(r => !r.managed && r.name !== "@everyone").map(r => ({ id: r.id, name: r.name })));
+        const roles = guild.roles.cache.filter(r => !r.managed && r.name !== "@everyone").map(r => ({ id: String(r.id), name: r.name }));
+        res.json(roles);
     });
 
-    // Envoi du message
     app.post('/deploy-bot', upload.single('imageFile'), async (req, res) => {
         try {
             const { channelId, roleId, mode, displayType, messageId, content, title, description } = req.body;
-            if (!channelId || channelId === "undefined") return res.status(400).json({ success: false, message: "Salon invalide." });
+            if (!channelId || channelId === "undefined") return res.status(400).json({ success: false, message: "ID manquant" });
 
             const channel = await client.channels.fetch(channelId);
             const role = await channel.guild.roles.fetch(roleId);
