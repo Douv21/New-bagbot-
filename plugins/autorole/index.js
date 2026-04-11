@@ -8,29 +8,40 @@ const upload = multer({ dest: 'public/uploads/' });
 module.exports = function(app, client) {
     if (!fs.existsSync('public/uploads')) fs.mkdirSync('public/uploads', { recursive: true });
 
+    // API pour les listes déroulantes
+    app.get('/api/channels', async (req, res) => {
+        const guild = client.guilds.cache.first();
+        if (!guild) return res.json([]);
+        res.json(guild.channels.cache.filter(c => c.type === 0).map(c => ({ id: c.id, name: c.name })));
+    });
+
+    app.get('/api/roles', async (req, res) => {
+        const guild = client.guilds.cache.first();
+        if (!guild) return res.json([]);
+        res.json(guild.roles.cache.filter(r => r.name !== "@everyone" && !r.managed).map(r => ({ id: r.id, name: r.name })));
+    });
+
     app.post('/update-bot', upload.single('imageFile'), async (req, res) => {
         try {
-            let { mode, channelId, roleId, content, title, description, imageUrl, displayType, messageId, roleMode } = req.body;
+            const { mode, channelId, roleId, content, title, description, imageUrl, displayType, messageId, roleMode } = req.body;
 
-            // --- SÉCURITÉ ANTI-UNDEFINED ---
-            if (!channelId || channelId === "undefined" || channelId.length < 10) {
-                return res.status(400).json({ success: false, message: "ID de salon invalide ou non sélectionné." });
-            }
-            if (!roleId || roleId === "undefined" || roleId.length < 10) {
-                return res.status(400).json({ success: false, message: "ID de rôle invalide ou non sélectionné." });
-            }
+            // Vérification Snowflake (ID valide)
+            const isSnowflake = (id) => id && /^\d{17,20}$/.test(id.trim());
 
-            const channel = await client.channels.fetch(channelId);
-            const role = await channel.guild.roles.fetch(roleId);
+            if (!isSnowflake(channelId)) return res.status(400).json({ success: false, message: "ID Salon invalide." });
+            if (!isSnowflake(roleId)) return res.status(400).json({ success: false, message: "ID Rôle invalide." });
+
+            const channel = await client.channels.fetch(channelId.trim());
+            const role = await channel.guild.roles.fetch(roleId.trim());
             
             let messageOptions = { embeds: [], components: [], files: [] };
 
             if (mode === 'simple') {
-                messageOptions.content = content || "Gestion des rôles :";
+                messageOptions.content = content || "Sélectionnez votre rôle :";
             } else {
                 const embed = new EmbedBuilder()
                     .setTitle(title || "Rôles")
-                    .setDescription(description || "Cliquez ci-dessous pour obtenir votre rôle.")
+                    .setDescription(description || "Cliquez ci-dessous")
                     .setColor("#ff4d4d");
 
                 if (req.file) {
@@ -44,31 +55,29 @@ module.exports = function(app, client) {
             }
 
             const row = new ActionRowBuilder();
-            const customId = `role_${roleMode || 'normal'}_${roleId}`;
+            const customId = `role_${roleMode || 'normal'}_${roleId.trim()}`;
             
             if (displayType === 'select') {
                 row.addComponents(new StringSelectMenuBuilder()
                     .setCustomId(customId)
                     .setPlaceholder('Choisir un rôle...')
-                    .addOptions([{ label: role ? role.name : "Rôle", value: roleId }]));
+                    .addOptions([{ label: role.name, value: roleId.trim() }]));
             } else {
                 row.addComponents(new ButtonBuilder()
                     .setCustomId(customId)
-                    .setLabel(role ? role.name : "Obtenir le rôle")
+                    .setLabel(role.name)
                     .setStyle(ButtonStyle.Danger));
             }
             messageOptions.components = [row];
 
-            if (messageId && messageId.trim().length > 5) {
+            if (isSnowflake(messageId)) {
                 const targetMsg = await channel.messages.fetch(messageId.trim());
                 await targetMsg.edit(messageOptions);
             } else {
                 await channel.send(messageOptions);
             }
-
             res.json({ success: true });
         } catch (err) {
-            console.error("Erreur Discord:", err);
             res.status(500).json({ success: false, message: err.message });
         }
     });
