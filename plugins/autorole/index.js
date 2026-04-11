@@ -21,10 +21,10 @@ module.exports = function(app, client) {
         try {
             const channelId = String(req.body.channelId || "").trim();
             const roleId = String(req.body.roleId || "").trim();
-            const messageId = String(req.body.messageId || "").trim();
-
+            
+            // Sécurité anti-crash Snowflake
             if (!/^\d{17,20}$/.test(channelId)) {
-                return res.status(400).json({ success: false, message: "ID Salon invalide (Snowflake Error)" });
+                return res.status(400).json({ success: false, message: "ID Salon invalide ou non reçu." });
             }
 
             const channel = await client.channels.fetch(channelId);
@@ -34,10 +34,9 @@ module.exports = function(app, client) {
 
             if (req.body.mode === 'embed') {
                 const embed = new EmbedBuilder()
-                    .setTitle(req.body.title || "Sélection de rôle")
+                    .setTitle(req.body.title || "Rôles")
                     .setDescription(req.body.description || " ")
                     .setColor("#ff4d4d");
-
                 if (req.file) {
                     const file = new AttachmentBuilder(req.file.path, { name: 'banner.png' });
                     embed.setImage('attachment://banner.png');
@@ -45,12 +44,11 @@ module.exports = function(app, client) {
                 }
                 options.embeds = [embed];
             } else {
-                options.content = req.body.content || "Veuillez choisir votre rôle :";
+                options.content = req.body.content || "Sélectionnez votre rôle :";
             }
 
             const row = new ActionRowBuilder();
             const cid = `role_normal_${roleId}`;
-            
             if (req.body.displayType === 'select') {
                 row.addComponents(new StringSelectMenuBuilder().setCustomId(cid).addOptions([{ label: role.name, value: roleId }]));
             } else {
@@ -58,13 +56,12 @@ module.exports = function(app, client) {
             }
             options.components = [row];
 
-            if (messageId && /^\d{17,20}$/.test(messageId)) {
-                const targetMsg = await channel.messages.fetch(messageId);
-                await targetMsg.edit(options);
+            if (req.body.messageId && /^\d{17,20}$/.test(req.body.messageId)) {
+                const msg = await channel.messages.fetch(req.body.messageId);
+                await msg.edit(options);
             } else {
                 await channel.send(options);
             }
-
             res.json({ success: true });
         } catch (err) {
             res.status(500).json({ success: false, message: err.message });
