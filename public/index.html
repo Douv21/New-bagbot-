@@ -3,180 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Dashboard</title>
+    <title>BagBot | Dashboard Final</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --accent: #ff4d4d; --bg: #111214; --card: #2b2d31; --text: #dbdee1; --draft-coral: #d37f6a; --sidebar-emoji: #0b0b0b; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 10px; padding-bottom: 30px; }
+        :root { --accent: #ff4d4d; --bg: #111214; --card: #2b2d31; --text: #dbdee1; --draft-coral: #d37f6a; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 10px; }
 
-        /* EMBED COMPLET */
-        .discord-msg { background: #313338; border-radius: 8px; padding: 15px; display: flex; gap: 12px; margin-bottom: 20px; position: relative; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #ff4d4d; flex-shrink: 0; }
+        /* EMBED DISCORD */
+        .discord-msg { background: #313338; border-radius: 8px; padding: 15px; display: flex; gap: 12px; margin-bottom: 20px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
         .embed { background: #1e1f22; border-left: 4px solid var(--accent); border-radius: 4px; padding: 12px; position: relative; width: 100%; max-width: 450px; }
         
-        /* Boutons de téléversement (les petits carrés +) */
-        .upload-slot { border: 1px dashed #4e5058; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(0,0,0,0.1); overflow: hidden; }
-        .upload-slot:hover { border-color: var(--text); }
+        /* Slots d'images */
+        .upload-slot { border: 1px dashed #4e5058; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; }
         .thumb-slot { position: absolute; top: 12px; right: 12px; width: 60px; height: 60px; }
         .banner-slot { width: 100%; min-height: 100px; margin: 10px 0; }
-        .upload-slot img { width: 100%; height: 100%; object-fit: cover; }
+        .upload-slot img { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; }
 
-        .embed-author { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: white; margin-bottom: 8px; cursor: pointer; }
-        .author-icon-slot { width: 20px; height: 20px; border-radius: 50%; border: 1px dashed #444; }
         .embed-title { font-size: 16px; font-weight: 700; color: white; margin-bottom: 4px; outline: none; }
-        .embed-desc { font-size: 14px; color: #dbdee1; margin-bottom: 10px; outline: none; white-space: pre-wrap; }
-        .embed-footer { font-size: 12px; color: #949ba4; display: flex; align-items: center; gap: 5px; margin-top: 8px; cursor: pointer; }
+        .embed-desc { font-size: 14px; color: #dbdee1; outline: none; min-height: 20px; }
 
         /* CONFIGURATION */
-        .card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #1a1a1a; margin-top: 10px; }
+        .card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #1a1a1a; margin-bottom: 15px; }
         .label-style { font-size: 11px; color: #b5bac1; text-transform: uppercase; font-weight: 800; margin-bottom: 8px; display: block; }
-        
-        select { width: 100%; background: #1e1f22; border: 1px solid #111; color: white; padding: 15px; border-radius: 8px; font-size: 14px; appearance: none; margin-bottom: 15px; }
+        select { width: 100%; background: #1e1f22; border: 1px solid #111; color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; outline: none; }
 
-        /* SÉLECTEUR EMOJI AVANCÉ */
-        #emojiPicker { position: fixed; bottom: 0; left: 0; width: 100%; height: 75vh; background: #111214; border-top-left-radius: 15px; border-top-right-radius: 15px; display: none; flex-direction: column; z-index: 10000; }
-        .picker-header { padding: 15px; background: #111214; }
-        .search-bar { width: 100%; background: #1e1f22; border: none; padding: 12px; border-radius: 6px; color: white; font-size: 14px; outline: none; }
+        /* SÉLECTEUR EMOJI DRAFTBOT */
+        #emojiPicker { position: fixed; bottom: 0; left: 0; width: 100%; height: 70vh; background: #111214; border-top: 2px solid #333; display: none; flex-direction: column; z-index: 10000; border-radius: 15px 15px 0 0; }
+        .picker-header { padding: 15px; border-bottom: 1px solid #222; }
+        .search-bar { width: 100%; background: #1e1f22; border: none; padding: 10px; border-radius: 5px; color: white; }
         
         .emoji-body { display: flex; flex: 1; overflow: hidden; }
-        .emoji-sidebar { width: 50px; background: var(--sidebar-emoji); display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 25px; }
-        .emoji-sidebar i { font-size: 18px; color: #888; cursor: pointer; }
-        .emoji-sidebar i.active { color: white; }
-        .emoji-sidebar .srv-icon { width: 30px; height: 30px; border-radius: 8px; background: url('https://draftbot.fr/assets/img/logo.png') center/cover; }
+        .emoji-sidebar { width: 50px; background: #0b0b0b; display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 20px; }
+        .emoji-sidebar i { font-size: 20px; color: #888; cursor: pointer; }
+        .emoji-sidebar i.active { color: var(--accent); }
 
-        .emoji-scroll { flex: 1; overflow-y: auto; padding: 15px; }
-        .emoji-section-title { font-size: 12px; font-weight: 800; color: #949ba4; text-transform: uppercase; margin: 15px 0 10px; }
-        .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
-        .emoji-item { font-size: 32px; text-align: center; cursor: pointer; transition: transform 0.1s; }
-        .emoji-item:active { transform: scale(1.3); }
+        .emoji-scroll { flex: 1; overflow-y: auto; padding: 15px; scroll-behavior: smooth; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 30px; }
+        .emoji-item { font-size: 30px; text-align: center; cursor: pointer; }
+        .emoji-item img { width: 32px; height: 32px; }
 
-        .btn-add { background: var(--draft-coral); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 20px; text-transform: uppercase; }
-        .btn-deploy { background: var(--accent); color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; text-transform: uppercase; }
-        
-        /* Hidden Input pour images */
-        #imgUploader { display: none; }
+        .btn-add { background: var(--draft-coral); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn-deploy { background: var(--accent); color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <h3 style="text-align:center; font-weight:500;">Configuration du message</h3>
+    <h3 style="text-align:center;">Éditeur de Message</h3>
 
     <div class="discord-msg">
         <div class="avatar"></div>
         <div class="embed">
-            <div class="upload-slot thumb-slot" onclick="triggerUpload('thumb')">
-                <i class="fas fa-image" id="icon-thumb"></i>
-                <img id="preview-thumb" style="display:none">
+            <div class="upload-slot thumb-slot" onclick="openUploader('thumb')">
+                <i class="fas fa-plus"></i>
+                <img id="view-thumb" style="display:none">
             </div>
-
-            <div class="embed-author" onclick="triggerUpload('author')">
-                <div class="author-icon-slot" id="icon-author-div">
-                    <img id="preview-author" style="display:none; border-radius: 50%;">
-                </div>
-                <span contenteditable="true">Nom de l'auteur</span>
-            </div>
-
-            <div class="embed-title" contenteditable="true">Role accès</div>
-            <div class="embed-desc" contenteditable="true">Débloque l'accès aux contenus réservés :</div>
-
-            <div class="upload-slot banner-slot" onclick="triggerUpload('banner')">
-                <i class="fas fa-image" id="icon-banner" style="font-size:24px;"></i>
-                <img id="preview-banner" style="display:none">
-            </div>
-
-            <div class="embed-footer" onclick="triggerUpload('footer')">
-                <div class="author-icon-slot" style="width:16px; height:16px;" id="icon-footer-div">
-                    <img id="preview-footer" style="display:none">
-                </div>
-                <span contenteditable="true">Footer • Aujourd'hui à 16:26</span>
+            <div class="embed-title" contenteditable="true">Titre du message</div>
+            <div class="embed-desc" contenteditable="true">Description...</div>
+            <div class="upload-slot banner-slot" onclick="openUploader('banner')">
+                <i class="fas fa-image"></i>
+                <img id="view-banner" style="display:none">
             </div>
         </div>
     </div>
 
     <div class="card">
         <span class="label-style">Salon de réception</span>
-        <select id="channelList"><option>Chargement des salons...</option></select>
+        <select id="select-channels"><option value="">Chargement des salons...</option></select>
+        
+        <div id="reactions-list"></div>
 
-        <div id="rolesContainer"></div>
-
-        <button class="btn-add" onclick="addRoleRow()">AJOUTER UN RÔLE RÉACTION</button>
-        <button class="btn-deploy" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
+        <button class="btn-add" onclick="createReactionRow()">AJOUTER UNE RÉACTION</button>
+        <button class="btn-deploy" onclick="finalDeploy()">DÉPLOYER SUR DISCORD</button>
     </div>
 
     <div id="emojiPicker">
-        <div class="picker-header">
-            <input type="text" class="search-bar" placeholder="Rechercher un émoji...">
-        </div>
+        <div class="picker-header"><input type="text" class="search-bar" placeholder="Rechercher..."></div>
         <div class="emoji-body">
             <div class="emoji-sidebar">
-                <div class="srv-icon" onclick="showSection('server')"></div> <i class="fas fa-clock active" onclick="showSection('recent')"></i>
-                <i class="fas fa-smile" onclick="showSection('smileys')"></i>
-                <i class="fas fa-leaf"></i>
-                <i class="fas fa-utensils"></i>
+                <i class="fas fa-hashtag active" onclick="scrollToSec('sec-server')"></i>
+                <i class="fas fa-smile" onclick="scrollToSec('sec-std')"></i>
+                <i class="fas fa-utensils" onclick="scrollToSec('sec-food')"></i>
             </div>
-            <div class="emoji-scroll">
-                <div id="section-server">
-                    <div class="emoji-section-title">Émojis du serveur</div>
-                    <div class="emoji-grid" id="grid-server">
-                        <span class="emoji-item" onclick="selectEmoji('🔥')">🔥</span>
-                        <span class="emoji-item" onclick="selectEmoji('🔞')">🔞</span>
-                    </div>
+            <div class="emoji-scroll" id="scroll-box">
+                <div id="sec-server">
+                    <p style="font-size:12px; color:#888;">ÉMOJIS DU SERVEUR</p>
+                    <div class="emoji-grid" id="grid-server"></div>
                 </div>
-                <div id="section-standard">
-                    <div class="emoji-section-title">Smileys & Personnes</div>
-                    <div class="emoji-grid" id="grid-standard">
-                        </div>
+                <div id="sec-std">
+                    <p style="font-size:12px; color:#888;">SMILEYS</p>
+                    <div class="emoji-grid" id="grid-std"></div>
                 </div>
             </div>
         </div>
-        <div style="padding:15px; text-align:center; color:#5865f2; font-weight:700;" onclick="closePicker()">Fermer</div>
+        <button onclick="closeEmoji()" style="padding:15px; background:none; border:none; color:var(--accent); font-weight:700;">FERMER</button>
     </div>
 
-    <input type="file" id="imgUploader" accept="image/*" onchange="handleImage(this)">
+    <input type="file" id="file-input" style="display:none" onchange="previewImage(this)">
 
 <script>
-    let activeBtn = null;
-    let currentUploadZone = null;
-    const API_URL = "http://192.168.1.133:49500";
+    const API_BASE = "http://192.168.1.133:49500";
+    let activeEmojiBtn = null;
+    let currentZone = null;
+    let rolesData = [];
 
-    // 1. Initialisation
-    async function init() {
-        loadStandardEmojis();
+    // 1. Chargement initial
+    async function loadData() {
         try {
             const [cRes, rRes, eRes] = await Promise.all([
-                fetch(`${API_URL}/api/channels`),
-                fetch(`${API_URL}/api/roles`),
-                fetch(`${API_URL}/api/emojis`) // Emojis du serveur
+                fetch(`${API_BASE}/api/channels`),
+                fetch(`${API_BASE}/api/roles`),
+                fetch(`${API_BASE}/api/emojis`)
             ]);
             
             const channels = await cRes.json();
-            window.allRoles = await rRes.json();
+            rolesData = await rRes.json();
             const serverEmojis = await eRes.json();
 
-            document.getElementById('channelList').innerHTML = channels.map(c => 
-                `<option value="${c.id}"># ${c.name}</option>`).join('');
-            
-            // Injection emojis serveur
-            if(serverEmojis.length) {
-                document.getElementById('grid-server').innerHTML = serverEmojis.map(e => 
-                    `<span class="emoji-item" onclick="selectEmoji('${e.id}')"><img src="${e.url}" width="32"></span>`).join('');
-            }
-        } catch(e) { console.error("Erreur de connexion API"); }
+            // Remplir salons
+            const cSelect = document.getElementById('select-channels');
+            cSelect.innerHTML = channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+
+            // Remplir émojis serveur
+            const sGrid = document.getElementById('grid-server');
+            sGrid.innerHTML = serverEmojis.map(e => 
+                `<span class="emoji-item" onclick="setEmoji('${e.id}', true, '${e.url}')"><img src="${e.url}"></span>`).join('');
+
+            // Remplir émojis standards
+            const stdGrid = document.getElementById('grid-std');
+            const stdList = ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕'];
+            stdGrid.innerHTML = stdList.map(e => `<span class="emoji-item" onclick="setEmoji('${e}', false)">${e}</span>`).join('');
+
+        } catch(e) { console.error("Erreur de chargement", e); }
     }
 
-    // 2. Gestion des Images (Téléversement)
-    function triggerUpload(zone) {
-        currentUploadZone = zone;
-        document.getElementById('imgUploader').click();
-    }
-
-    function handleImage(input) {
+    // 2. Fonctions Images
+    function openUploader(zone) { currentZone = zone; document.getElementById('file-input').click(); }
+    function previewImage(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.getElementById(`preview-${currentUploadZone}`);
-                const icon = document.getElementById(`icon-${currentUploadZone}`);
-                if(icon) icon.style.display = 'none';
+            reader.onload = e => {
+                const img = document.getElementById(`view-${currentZone}`);
                 img.src = e.target.result;
                 img.style.display = 'block';
             };
@@ -184,35 +151,39 @@
         }
     }
 
-    // 3. Emojis
-    function loadStandardEmojis() {
-        const list = ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕'];
-        document.getElementById('grid-standard').innerHTML = list.map(e => 
-            `<span class="emoji-item" onclick="selectEmoji('${e}')">${e}</span>`).join('');
-    }
-
-    function addRoleRow() {
+    // 3. Gestion Réactions
+    function createReactionRow() {
+        const container = document.getElementById('reactions-list');
         const div = document.createElement('div');
-        div.className = 'card';
-        div.style.padding = '10px';
+        div.className = 'reaction-row';
+        div.style = "display:flex; align-items:center; gap:10px; background:#1e1f22; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid #111;";
         div.innerHTML = `
-            <div style="display:flex; align-items:center; gap:10px;">
-                <div class="emoji-item" style="background:#1e1f22; border-radius:6px; padding:5px; width:40px;" onclick="openPicker(this)">😀</div>
-                <select style="margin:0; flex:1;">
-                    <option value="">Lier un rôle...</option>
-                    ${window.allRoles ? window.allRoles.map(r => `<option value="${r.id}">${r.name}</option>`).join('') : ''}
-                </select>
-                <i class="fas fa-trash" style="color:#444;" onclick="this.parentElement.parentElement.remove()"></i>
-            </div>
+            <div class="emoji-trigger" style="font-size:24px; cursor:pointer; width:40px;" onclick="openEmoji(this)">😀</div>
+            <select style="margin:0; flex:1;">
+                <option value="">Lier un rôle...</option>
+                ${rolesData.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
+            </select>
+            <i class="fas fa-trash" style="color:#444;" onclick="this.parentElement.remove()"></i>
         `;
-        document.getElementById('rolesContainer').appendChild(div);
+        container.appendChild(div);
     }
 
-    function openPicker(btn) { activeBtn = btn; document.getElementById('emojiPicker').style.display = 'flex'; }
-    function closePicker() { document.getElementById('emojiPicker').style.display = 'none'; }
-    function selectEmoji(emoji) { if(activeBtn) activeBtn.innerHTML = emoji; closePicker(); }
+    // 4. Sélecteur Émoji
+    function openEmoji(btn) { activeEmojiBtn = btn; document.getElementById('emojiPicker').style.display = 'flex'; }
+    function closeEmoji() { document.getElementById('emojiPicker').style.display = 'none'; }
+    function setEmoji(val, isCustom, url) {
+        if(isCustom) activeEmojiBtn.innerHTML = `<img src="${url}" width="24">`;
+        else activeEmojiBtn.innerText = val;
+        closeEmoji();
+    }
+    function scrollToSec(id) { document.getElementById(id).scrollIntoView({behavior: "smooth"}); }
 
-    window.onload = init;
+    async function finalDeploy() {
+        alert("Envoi vers Discord...");
+        // Logique de fetch POST vers /api/deploy ici
+    }
+
+    window.onload = loadData;
 </script>
 </body>
 </html>
