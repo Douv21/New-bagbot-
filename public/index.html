@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot | Dashboard Pro</title>
+    <title>BagBot | Éditeur de Message</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --accent: #ff4d4d; --bg: #0a0a0a; --panel: #161616; --side: #000000; --text: #ffffff; --subtext: #888; }
         
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; transition: 0.3s; min-height: 100vh; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow-x: hidden; }
 
         /* SIDEBAR RÉTRACTABLE */
         .sidebar { width: 260px; background: var(--side); height: 100vh; position: fixed; left: -260px; transition: 0.3s; z-index: 1000; border-right: 1px solid #222; }
         .sidebar.open { left: 0; }
-        .nav-item { padding: 15px 25px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: var(--subtext); transition: 0.2s; }
+        .nav-item { padding: 18px 25px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: var(--subtext); transition: 0.2s; font-weight: 500; }
         .nav-item.active { background: #111; color: var(--accent); border-left: 4px solid var(--accent); }
 
-        /* CONTENU PRINCIPAL ADAPTATIF */
-        .main { flex: 1; padding: 20px; transition: 0.3s; margin-left: 0; width: 100%; box-sizing: border-box; }
+        /* CONTENU PRINCIPAL */
+        .main { flex: 1; padding: 20px; transition: 0.3s; width: 100%; box-sizing: border-box; }
         .top-nav { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
 
-        /* LAYOUT PC VS MOBILE [Responsive] */
+        /* LAYOUT PC VS MOBILE */
         .dashboard-grid { display: flex; flex-direction: column; gap: 20px; }
         @media (min-width: 1024px) {
             .dashboard-grid { flex-direction: row; align-items: flex-start; }
@@ -31,48 +31,58 @@
         /* APERÇU DISCORD INTERACTIF */
         .discord-msg { background: #313338; border-radius: 8px; padding: 15px; display: flex; gap: 12px; border: 1px solid #222; position: relative; }
         .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
-        .embed { background: #1e1f22; border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-top: 8px; position: relative; min-height: 100px; }
+        .embed { background: #1e1f22; border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-top: 8px; position: relative; }
         
         /* Thumbnail Haut Droite */
         .embed-thumb { position: absolute; top: 15px; right: 15px; width: 65px; height: 65px; border: 1px dashed #444; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #111; cursor: pointer; }
         .embed-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-        .embed-author { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; margin-bottom: 8px; cursor: pointer; }
-        .author-img { width: 18px; height: 18px; border-radius: 50%; background: #333; overflow: hidden; }
+        .embed-author { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; margin-bottom: 8px; cursor: pointer; color: #fff; }
+        .author-img { width: 18px; height: 18px; border-radius: 50%; background: #333; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .embed-title { font-size: 16px; font-weight: 700; margin-bottom: 5px; color: white; outline: none; padding-right: 75px; }
         .embed-desc { font-size: 14px; color: #dbdee1; outline: none; margin-bottom: 10px; padding-right: 75px; min-height: 20px; }
 
         /* Bannière Bas */
-        .embed-banner { width: 100%; min-height: 80px; background: #111; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px dashed #333; overflow: hidden; }
+        .embed-banner { width: 100%; min-height: 80px; background: #111; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px dashed #333; overflow: hidden; margin-top: 5px; }
         .embed-banner img { width: 100%; height: auto; }
 
-        /* CONFIG PANEL */
-        .card { background: var(--panel); border-radius: 12px; padding: 20px; border: 1px solid #222; }
-        label { display: block; font-size: 10px; color: var(--subtext); text-transform: uppercase; font-weight: 800; margin: 15px 0 5px; }
-        select, input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 6px; box-sizing: border-box; outline: none; }
-        .btn-deploy { background: var(--accent); color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 20px; font-size: 14px; }
+        /* NOUVEAU : BOUTON RÉACTION FACULTATIF */
+        .reaction-area { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .btn-add-reaction { background: #444; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
+        .btn-add-reaction:hover { background: #555; }
+        .reaction-item { background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 4px; border: 1px solid #444; font-size: 14px; }
 
-        /* MODALE MODERNE */
+        /* PANNEAU DE CONFIGURATION AGRANDI */
+        .card { background: var(--panel); border-radius: 12px; padding: 25px; border: 1px solid #222; }
+        label { display: block; font-size: 11px; color: var(--subtext); text-transform: uppercase; font-weight: 800; margin: 20px 0 8px; letter-spacing: 0.5px; }
+        
+        /* Sélecteurs plus gros */
+        select { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; outline: none; -webkit-appearance: none; }
+        
+        .btn-deploy { background: var(--accent); color: white; border: none; padding: 18px; width: 100%; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 25px; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+        .btn-deploy:hover { filter: brightness(1.2); transform: translateY(-2px); }
+
+        /* MODALE */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box; }
         .modal-content { background: var(--panel); padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; border: 1px solid #333; }
-        .upload-area { border: 2px dashed #444; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 15px; cursor: pointer; }
+        .input-text { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; outline: none; }
     </style>
 </head>
 <body>
 
 <div class="sidebar" id="sidebar">
     <div style="padding: 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222;">
-        <span style="font-weight: 900; color: var(--accent); letter-spacing: 1px;">BAGBOT</span>
-        <i class="fas fa-times" onclick="toggleMenu()" style="cursor:pointer;"></i>
+        <span style="font-weight: 900; color: var(--accent); letter-spacing: 2px;">BAGBOT</span>
+        <i class="fas fa-times" onclick="toggleMenu()" style="cursor:pointer; font-size: 20px;"></i>
     </div>
-    <div class="nav-item active"><i class="fas fa-bolt"></i> Rôle Réaction</div>
-    <div class="nav-item"><i class="fas fa-cog"></i> Paramètres</div>
+    <div class="nav-item active"><i class="fas fa-bolt"></i> Rôles Réactions</div>
+    <div class="nav-item"><i class="fas fa-cog"></i> Configuration</div>
 </div>
 
 <div class="main">
     <div class="top-nav">
-        <button onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:22px; cursor:pointer;"><i class="fas fa-bars"></i></button>
-        <h3 style="margin:0; font-weight: 600;">Éditeur de Message</h3>
+        <button onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;"><i class="fas fa-bars"></i></button>
+        <h3 style="margin:0; font-weight: 700;">Éditeur de Message</h3>
     </div>
 
     <div class="dashboard-grid">
@@ -80,28 +90,30 @@
             <div class="discord-msg">
                 <div class="avatar"></div>
                 <div style="flex:1;">
-                    <div style="font-weight:600; font-size:15px; margin-bottom:5px;">BagBot <span style="background:#5865f2; font-size:10px; padding:2px 4px; border-radius:3px; margin-left:4px;">BOT</span></div>
+                    <div style="font-weight:600; font-size:15px; margin-bottom:5px;">BagBot <span style="background:#5865f2; font-size:10px; padding:2px 4px; border-radius:3px; margin-left:4px;">APP</span></div>
                     
                     <div class="embed">
                         <div class="embed-thumb" onclick="openMedia('thumb')">
-                            <div id="p-thumb-media"><i class="fas fa-plus" style="color:#333;"></i></div>
+                            <div id="p-thumb-media"><i class="fas fa-image" style="color:#333;"></i></div>
                         </div>
 
                         <div class="embed-author" onclick="openMedia('author')">
                             <div class="author-img" id="p-auth-img"><i class="fas fa-user" style="font-size:10px;"></i></div>
-                            <span id="p-auth-name" style="color:#fff;">Auteur</span>
+                            <span id="p-auth-name">Auteur</span>
                         </div>
 
                         <div class="embed-title" contenteditable="true">Titre du message</div>
-                        <div class="embed-desc" contenteditable="true">Cliquez ici pour modifier la description en direct...</div>
+                        <div class="embed-desc" contenteditable="true">Cliquez ici pour modifier la description...</div>
 
                         <div class="embed-banner" onclick="openMedia('banner')">
                             <div id="p-banner-media"><i class="fas fa-image" style="color:#222; font-size:20px;"></i></div>
                         </div>
                     </div>
                     
-                    <div style="background:#4e5058; color:white; padding:7px 14px; border-radius:3px; font-size:13px; margin-top:10px; display:inline-block; font-weight:500;">
-                        <i class="fas fa-plus-circle" style="margin-right:5px;"></i> Bouton de rôle
+                    <div class="reaction-area" id="reactionList">
+                        <button class="btn-add-reaction" onclick="addReactionPrompt()">
+                            <i class="fas fa-plus"></i> Ajouter une réaction
+                        </button>
                     </div>
                 </div>
             </div>
@@ -110,10 +122,16 @@
         <div class="config-container">
             <div class="card">
                 <label>Salon de réception</label>
-                <select id="cId"><option>Chargement...</option></select>
+                <select id="cId">
+                    <option value=""># bagbot-install</option>
+                    <option value=""># général</option>
+                </select>
                 
                 <label>Rôle à attribuer</label>
-                <select id="rId"><option>Chargement...</option></select>
+                <select id="rId">
+                    <option value="">Bot</option>
+                    <option value="">Membre</option>
+                </select>
 
                 <button class="btn-deploy" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
             </div>
@@ -123,25 +141,25 @@
 
 <div class="modal" id="mediaModal">
     <div class="modal-content">
-        <h3 id="mTitle" style="font-size:14px; margin-top:0; color:var(--accent);">MODIFIER MÉDIA</h3>
+        <h3 id="mTitle" style="font-size:14px; margin-top:0; color:var(--accent); text-transform: uppercase;">MODIFIER MÉDIA</h3>
         
-        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <div style="border: 2px dashed #444; padding: 25px; border-radius: 10px; text-align: center; margin-bottom: 15px; cursor: pointer;" onclick="document.getElementById('fileInput').click()">
             <i class="fas fa-upload" style="color:var(--accent); font-size:22px;"></i>
             <p style="font-size:12px; margin-top:10px; color:var(--subtext);"><b>Téléverser</b> une image</p>
             <input type="file" id="fileInput" hidden accept="image/*" onchange="handleFile(this)">
         </div>
 
-        <label>Ou lien direct (URL)</label>
-        <input type="text" id="linkInput" placeholder="https://image.png">
+        <label>Lien direct (URL)</label>
+        <input type="text" id="linkInput" class="input-text" placeholder="https://image.png">
         
         <div id="authorFields" style="display:none;">
             <label>Nom de l'auteur</label>
-            <input type="text" id="nameInput" placeholder="Staff BagBot">
+            <input type="text" id="nameInput" class="input-text" placeholder="Nom à afficher">
         </div>
 
-        <div style="display:flex; gap:10px; margin-top:15px;">
-            <button class="btn-deploy" style="margin:0;" onclick="saveMedia()">VALIDER</button>
-            <button class="btn-deploy" style="margin:0; background:#222;" onclick="closeMedia()">ANNULER</button>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-deploy" style="margin:0; flex:1;" onclick="saveMedia()">VALIDER</button>
+            <button class="btn-deploy" style="margin:0; background:#222; flex:1;" onclick="closeMedia()">ANNULER</button>
         </div>
     </div>
 </div>
@@ -168,7 +186,7 @@
     function handleFile(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = e => { uploadedImg = e.target.result; alert("Image chargée !"); };
+            reader.onload = e => { uploadedImg = e.target.result; alert("Image chargée avec succès !"); };
             reader.readAsDataURL(input.files[0]);
         }
     }
@@ -182,25 +200,24 @@
             if(img) document.getElementById('p-auth-img').innerHTML = `<img src="${img}" style="width:100%;">`;
             if(name) document.getElementById('p-auth-name').innerText = name;
         } else if (activeZone === 'thumb') {
-            if(img) document.getElementById('p-thumb-media').innerHTML = `<img src="${img}">`;
+            if(img) document.getElementById('p-thumb-media').innerHTML = `<img src="${img}" style="width:100%;">`;
         } else if (activeZone === 'banner') {
-            if(img) document.getElementById('p-banner-media').innerHTML = `<img src="${img}">`;
+            if(img) document.getElementById('p-banner-media').innerHTML = `<img src="${img}" style="width:100%;">`;
         }
         closeMedia();
     }
 
-    // Chargement API
-    async function load() {
-        try {
-            const [cR, rR] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
-            const c = await cR.json(); const r = await rR.json();
-            document.getElementById('cId').innerHTML = c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
-            document.getElementById('rId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
-        } catch(e) { console.log("Mode démo actif"); }
+    function addReactionPrompt() {
+        const emoji = prompt("Entrez un emoji pour la réaction :");
+        if (emoji) {
+            const div = document.createElement('div');
+            div.className = 'reaction-item';
+            div.innerHTML = emoji + ' <span style="font-size:10px; color:#888; cursor:pointer;" onclick="this.parentElement.remove()">✕</span>';
+            document.getElementById('reactionList').insertBefore(div, document.querySelector('.btn-add-reaction'));
+        }
     }
-    
-    function deploy() { alert("Message envoyé !"); }
-    load();
+
+    function deploy() { alert("Le message est en cours de déploiement sur Discord !"); }
 </script>
 </body>
 </html>
