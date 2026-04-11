@@ -1,186 +1,44 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Builder Pro</title>
-    <style>
-        :root { --bg: #0f1012; --card: #18191c; --accent: #ff4d4d; --text: #f2f3f5; --sidebar-w: 260px; }
-        body { margin: 0; font-family: 'Helvetica Neue', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; display: flex; }
-        
-        /* Sidebar */
-        .sidebar { width: var(--sidebar-w); background: #0b0c0d; height: 100vh; position: fixed; left: 0; top: 0; transition: 0.3s; z-index: 1000; border-right: 1px solid #222; }
-        .sidebar.closed { left: calc(-1 * var(--sidebar-w)); }
-        
-        .main { flex: 1; margin-left: var(--sidebar-w); padding: 20px; transition: 0.3s; min-height: 100vh; box-sizing: border-box; }
-        .main.full { margin-left: 0; }
+<label>Récupérer un message existant (ID)</label>
+<input type="text" id="messageId" placeholder="ID du message (laisser vide pour un nouveau)">
 
-        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .menu-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
-
-        /* Grille adaptative */
-        .builder-grid { display: grid; grid-template-columns: 1fr 350px; gap: 20px; max-width: 1200px; margin: 0 auto; }
-        
-        .panel { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #222; }
-        
-        .tabs { display: flex; background: #2f3136; padding: 5px; border-radius: 8px; margin-bottom: 20px; }
-        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; font-size: 0.9rem; }
-        .tab.active { background: var(--accent); color: white; }
-
-        label { display: block; margin: 15px 0 5px; font-size: 0.75rem; color: #b9bbbe; font-weight: bold; text-transform: uppercase; }
-        input, select, textarea { width: 100%; padding: 10px; background: #202225; border: 1px solid #111; color: white; border-radius: 6px; box-sizing: border-box; }
-        
-        /* Aperçu Discord */
-        .preview-box { background: #2f3136; border-radius: 4px; padding: 15px; border-left: 4px solid var(--accent); }
-        .pre-img { width: 100%; border-radius: 4px; margin-top: 10px; display: none; }
-        
-        .btn-send { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; }
-
-        @media (max-width: 900px) {
-            .builder-grid { grid-template-columns: 1fr; }
-            .main { margin-left: 0; }
-            .sidebar { left: -260px; }
-            .sidebar.open { left: 0; }
-        }
-    </style>
-</head>
-<body>
-
-<div class="sidebar" id="sidebar">
-    <div style="padding: 25px; font-size: 1.5rem; font-weight: 900; color: var(--accent);">BAG BOT V2</div>
-    <div style="padding: 15px 25px; color: white; background: #1a1a1a; border-left: 4px solid var(--accent);">🎭 Rôles-Réactions</div>
-    <div style="padding: 15px 25px; color: #888;">🛡️ Modération</div>
-</div>
-
-<div class="main" id="main">
-    <div class="header">
-        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-        <h2 style="margin:0;">Configuration Rôles</h2>
-    </div>
-
-    <div class="builder-grid">
-        <div class="panel">
-            <div class="tabs">
-                <div class="tab active" id="tab-simple" onclick="setMode('simple')">Simple</div>
-                <div class="tab" id="tab-embed" onclick="setMode('embed')">Embed</div>
-            </div>
-
-            <label>Salon Discord</label>
-            <select id="channelId"><option>Chargement...</option></select>
-
-            <label>Rôle à donner</label>
-            <select id="roleId"><option>Chargement...</option></select>
-
-            <div id="simple-fields">
-                <label>Texte du message</label>
-                <textarea id="simpleContent" rows="3" oninput="updatePreview()" placeholder="Salut !"></textarea>
-            </div>
-
-            <div id="embed-fields" style="display:none;">
-                <label>Titre</label>
-                <input type="text" id="title" oninput="updatePreview()" placeholder="Titre de l'embed">
-                <label>Description</label>
-                <textarea id="description" rows="3" oninput="updatePreview()" placeholder="Description..."></textarea>
-                
-                <label>Image (Upload ou URL)</label>
-                <div style="display:flex; gap:5px;">
-                    <button type="button" onclick="document.getElementById('imageFile').click()" style="background:#444; color:white; border:none; padding:10px; border-radius:5px; flex:1; cursor:pointer;">📁 Téléverser</button>
-                    <input type="file" id="imageFile" style="display:none" accept="image/*" onchange="previewLocalFile(this)">
-                </div>
-                <input type="text" id="imageUrl" style="margin-top:5px;" placeholder="Ou lien https://..." oninput="updatePreview()">
-            </div>
-
-            <label>Type d'interaction</label>
-            <select id="displayType">
-                <option value="button">Bouton</option>
-                <option value="select">Menu Déroulant</option>
-            </select>
-
-            <button class="btn-send" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
-        </div>
-
-        <div class="preview-panel">
-            <label>Aperçu Discord</label>
-            <div class="preview-box">
-                <div id="pre-text" style="display:none; margin-bottom:10px;"></div>
-                <div id="pre-embed">
-                    <div id="pre-title" style="font-weight:bold; font-size:1.1rem;">Titre</div>
-                    <div id="pre-desc">Description...</div>
-                    <img id="pre-img" class="pre-img">
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<label>Mode de fonctionnement</label>
+<select id="roleMode">
+    <option value="normal">Normal (Ajout/Retrait)</option>
+    <option value="inverse">Inversé (Retrait au clic)</option>
+    <option value="definitif">Ajout définitif</option>
+    <option value="retrait">Retrait définitif</option>
+</select>
 
 <script>
-    let mode = 'simple';
-
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('main').classList.toggle('full');
-    }
-
-    function setMode(m) {
-        mode = m;
-        document.getElementById('tab-simple').classList.toggle('active', m === 'simple');
-        document.getElementById('tab-embed').classList.toggle('active', m === 'embed');
-        document.getElementById('simple-fields').style.display = m === 'simple' ? 'block' : 'none';
-        document.getElementById('embed-fields').style.display = m === 'embed' ? 'block' : 'none';
-        updatePreview();
-    }
-
-    function previewLocalFile(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => {
-                const preImg = document.getElementById('pre-img');
-                preImg.src = e.target.result;
-                preImg.style.display = 'block';
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    function updatePreview() {
-        const isSimple = mode === 'simple';
-        document.getElementById('pre-text').style.display = isSimple ? 'block' : 'none';
-        document.getElementById('pre-embed').style.display = isSimple ? 'none' : 'block';
-        
-        if(isSimple) {
-            document.getElementById('pre-text').innerText = document.getElementById('simpleContent').value || "Texte simple...";
-        } else {
-            document.getElementById('pre-title').innerText = document.getElementById('title').value || "Titre";
-            document.getElementById('pre-desc').innerText = document.getElementById('description').value || "Description...";
-        }
-    }
-
-    async function load() {
-        const [c, r] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
-        const channels = await c.json();
-        const roles = await r.json();
-        document.getElementById('channelId').innerHTML = channels.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
-        document.getElementById('roleId').innerHTML = roles.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
-    }
-
-    async function deploy() {
+async function deploy() {
+    const btn = document.querySelector('.btn-send');
+    btn.innerText = "Envoi en cours...";
+    
+    try {
         const formData = new FormData();
+        // On récupère TOUS les champs sans exception
         formData.append('mode', mode);
         formData.append('channelId', document.getElementById('channelId').value);
         formData.append('roleId', document.getElementById('roleId').value);
+        formData.append('roleMode', document.getElementById('roleMode').value);
+        formData.append('messageId', document.getElementById('messageId').value);
+        formData.append('displayType', document.getElementById('displayType').value);
         formData.append('content', document.getElementById('simpleContent').value);
         formData.append('title', document.getElementById('title').value);
         formData.append('description', document.getElementById('description').value);
-        formData.append('imageUrl', document.getElementById('imageUrl').value);
-        formData.append('displayType', document.getElementById('displayType').value);
         
         const file = document.getElementById('imageFile').files[0];
         if (file) formData.append('imageFile', file);
 
         const res = await fetch('/update-bot', { method: 'POST', body: formData });
-        if(res.ok) alert("✅ Envoyé !");
+        const result = await res.json();
+        
+        if(result.success) alert("✅ Action effectuée sur Discord !");
+        else alert("❌ Erreur : " + result.error);
+    } catch (e) {
+        alert("❌ Crash du navigateur : " + e.message);
+    } finally {
+        btn.innerText = "DÉPLOYER SUR DISCORD";
     }
-    load();
+}
 </script>
-</body>
-</html>
