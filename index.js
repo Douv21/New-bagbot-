@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, REST, Routes } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const express = require('express');
 require('dotenv').config();
 
@@ -10,13 +10,8 @@ const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 
-// --- CONFIGURATION ---
-const PORT = 49500;
-const BOT_ID = "TON_ID_DE_BOT_ICI"; 
+// --- API POUR RÉCUPÉRER LES DONNÉES DU SERVEUR ---
 
-// --- API POUR LE DASHBOARD ---
-
-// Récupérer les salons
 app.get('/api/channels', async (req, res) => {
     const guild = client.guilds.cache.first();
     if (!guild) return res.json([]);
@@ -26,7 +21,6 @@ app.get('/api/channels', async (req, res) => {
     res.json(channels);
 });
 
-// Récupérer les rôles
 app.get('/api/roles', async (req, res) => {
     const guild = client.guilds.cache.first();
     if (!guild) return res.json([]);
@@ -36,14 +30,15 @@ app.get('/api/roles', async (req, res) => {
     res.json(roles);
 });
 
-// Recevoir la config du Dashboard et envoyer sur Discord
+// --- ENVOI DU PANNEAU DEPUIS LE DASHBOARD ---
+
 app.post('/update-bot', async (req, res) => {
     const { title, roleId, channelId } = req.body;
     try {
         const channel = await client.channels.fetch(channelId);
         const embed = new EmbedBuilder()
-            .setTitle(title || "Sélection de rôles")
-            .setDescription("Cliquez sur le bouton pour obtenir ou retirer votre rôle.")
+            .setTitle(title || "Rôles-Réactions")
+            .setDescription("Cliquez sur le bouton pour obtenir votre rôle.")
             .setColor("#ff4d4d");
 
         const row = new ActionRowBuilder().addComponents(
@@ -60,13 +55,12 @@ app.post('/update-bot', async (req, res) => {
     }
 });
 
-// --- LOGIQUE DISCORD ---
+// --- GESTION DES BOUTONS ---
 
 client.on('interactionCreate', async (interaction) => {
     if (interaction.isButton() && interaction.customId.startsWith('role_')) {
         const roleId = interaction.customId.replace('role_', '');
         const role = interaction.guild.roles.cache.get(roleId);
-
         if (!role) return interaction.reply({ content: "Rôle introuvable.", ephemeral: true });
 
         try {
@@ -78,14 +72,11 @@ client.on('interactionCreate', async (interaction) => {
                 await interaction.reply({ content: `➕ Rôle **${role.name}** ajouté.`, ephemeral: true });
             }
         } catch (e) {
-            interaction.reply({ content: "Erreur de permissions (Hiérarchie).", ephemeral: true });
+            interaction.reply({ content: "Erreur : Mon rôle est trop bas dans la hiérarchie.", ephemeral: true });
         }
     }
 });
 
-client.once('ready', () => {
-    console.log(`✅ Bot en ligne : ${client.user.tag}`);
-});
-
-app.listen(PORT, () => console.log(`🌐 Dashboard: http://192.168.1.133:${PORT}`));
+client.once('ready', () => { console.log(`✅ Bot en ligne : ${client.user.tag}`); });
+app.listen(49500, () => console.log("🌐 Dashboard: Port 49500"));
 client.login(process.env.TOKEN);
