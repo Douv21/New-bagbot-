@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BagBot Designer Pro - Version Intégrale</title>
+    <title>BagBot Designer Pro - Full Version</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* CONFIGURATION DES COULEURS ET VARIABLES */
+        /* --- VARIABLES DE THEME --- */
         :root {
             --accent-color: #d37f6a;
             --background-main: #2b2d31;
@@ -16,19 +16,19 @@
             --text-secondary: #949ba4;
             --border-standard: #3f4147;
             --input-background: #1e1f22;
+            --modal-bg: #313338;
         }
 
-        /* RESET ET BASE */
+        /* --- RESET & BASE --- */
         * {
             box-sizing: border-box;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--background-main);
             color: var(--text-primary);
             display: flex;
@@ -37,19 +37,18 @@
             overflow: hidden;
         }
 
-        /* STRUCTURE DE LA SIDEBAR (Fidèle à 10128.jpg) */
+        /* --- SIDEBAR (DESIGN 10128.jpg) --- */
         .sidebar {
             width: 260px;
             background-color: var(--sidebar-background);
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease-in-out;
+            transition: transform 0.3s ease;
             z-index: 2000;
             border-right: 1px solid var(--dark-background);
             flex-shrink: 0;
         }
 
-        /* Sur mobile, on cache la sidebar par défaut */
         @media (max-width: 768px) {
             .sidebar {
                 position: absolute;
@@ -73,13 +72,11 @@
             font-weight: 800;
             color: var(--accent-color);
             font-size: 18px;
-            letter-spacing: 1px;
             text-transform: uppercase;
         }
 
         .sidebar-nav {
             padding: 15px 10px;
-            flex-grow: 1;
         }
 
         .nav-link {
@@ -90,14 +87,8 @@
             border-radius: 5px;
             cursor: pointer;
             color: var(--text-secondary);
-            font-weight: 500;
             margin-bottom: 5px;
-            transition: background 0.2s, color 0.2s;
-        }
-
-        .nav-link:hover {
-            background-color: rgba(78, 80, 88, 0.3);
-            color: var(--text-primary);
+            transition: 0.2s;
         }
 
         .nav-link.active {
@@ -106,13 +97,12 @@
             border-left: 3px solid var(--accent-color);
         }
 
-        /* CONTENU PRINCIPAL */
+        /* --- MAIN CONTENT --- */
         .main-content {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             min-width: 0;
-            position: relative;
         }
 
         .top-navbar {
@@ -123,7 +113,6 @@
             padding: 0 20px;
             border-bottom: 1px solid var(--dark-background);
             gap: 20px;
-            z-index: 100;
         }
 
         .hamburger-menu {
@@ -132,15 +121,7 @@
             cursor: pointer;
         }
 
-        .navbar-title {
-            font-weight: 700;
-            font-size: 16px;
-            color: white;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* ZONE DE CONSTRUCTION */
+        /* --- BUILDER AREA --- */
         .builder-viewport {
             flex-grow: 1;
             overflow-y: auto;
@@ -148,10 +129,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            scroll-behavior: smooth;
         }
 
-        /* DESIGN DE L'EMBED DISCORD */
         .discord-embed {
             width: 100%;
             max-width: 520px;
@@ -160,25 +139,18 @@
             border-left: 4px solid var(--accent-color);
             padding: 16px;
             position: relative;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
         }
 
         .image-placeholder {
             border: 2px dashed #4e5058;
             border-radius: 4px;
-            background-color: rgba(0,0,0,0.15);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             position: relative;
             overflow: hidden;
-            transition: all 0.2s ease;
-        }
-
-        .image-placeholder:hover {
-            border-color: var(--accent-color);
-            background-color: rgba(211, 127, 106, 0.05);
+            background-color: rgba(0,0,0,0.1);
         }
 
         .image-placeholder img {
@@ -186,8 +158,6 @@
             height: 100%;
             object-fit: cover;
             position: absolute;
-            top: 0;
-            left: 0;
         }
 
         .embed-thumbnail {
@@ -196,56 +166,16 @@
             right: 16px;
             width: 80px;
             height: 80px;
-            z-index: 10;
         }
 
-        .embed-author {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
+        .author-icon { width: 24px; height: 24px; border-radius: 50%; }
 
-        .author-icon {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-        }
+        .embed-title-input { font-size: 18px; font-weight: 700; color: white; margin-bottom: 10px; outline: none; }
+        .embed-description-input { font-size: 14px; color: var(--text-primary); line-height: 1.5; outline: none; min-height: 40px; }
 
-        .author-name-input {
-            font-size: 14px;
-            font-weight: 600;
-            color: white;
-            outline: none;
-            border: none;
-            background: transparent;
-        }
+        .embed-banner { width: 100%; height: 200px; margin-top: 15px; }
 
-        .embed-title-input {
-            font-size: 18px;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 10px;
-            outline: none;
-            width: 80%;
-        }
-
-        .embed-description-input {
-            font-size: 14px;
-            color: var(--text-primary);
-            line-height: 1.5;
-            outline: none;
-            min-height: 20px;
-            margin-bottom: 15px;
-        }
-
-        .embed-banner {
-            width: 100%;
-            height: 200px;
-            margin-top: 10px;
-        }
-
-        /* FORMULAIRE DE CONFIGURATION */
+        /* --- SELECTORS & CONTROLS --- */
         .settings-panel {
             width: 100%;
             max-width: 520px;
@@ -255,12 +185,11 @@
 
         .label-text {
             display: block;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 800;
             color: var(--text-secondary);
             text-transform: uppercase;
-            margin-bottom: 10px;
-            letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
 
         .discord-select {
@@ -280,10 +209,7 @@
             background-size: 18px;
         }
 
-        .reaction-container {
-            margin-bottom: 25px;
-        }
-
+        /* --- REACTION SYSTEM --- */
         .reaction-row {
             display: flex;
             align-items: center;
@@ -295,58 +221,85 @@
             border: 1px solid var(--border-standard);
         }
 
-        .emoji-box {
+        .emoji-trigger {
             font-size: 22px;
-            min-width: 40px;
-            text-align: center;
-            cursor: pointer;
-            background: rgba(0,0,0,0.2);
-            padding: 5px;
+            min-width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.3);
             border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s;
         }
 
-        .role-select {
-            flex-grow: 1;
-            margin-bottom: 0 !important;
+        .emoji-trigger:hover { background: rgba(211, 127, 106, 0.2); }
+
+        /* --- EMOJI PICKER MODAL --- */
+        #emoji-picker-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
         }
 
+        .picker-content {
+            background: var(--modal-bg);
+            width: 90%;
+            max-width: 350px;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+        }
+
+        .picker-header {
+            padding: 15px;
+            background: var(--dark-background);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .emoji-item {
+            font-size: 24px;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.1s;
+        }
+
+        .emoji-item:hover { transform: scale(1.2); }
+
+        /* --- BUTTONS --- */
         .btn-action {
             width: 100%;
             padding: 16px;
             border: none;
             border-radius: 5px;
             font-weight: 700;
-            font-size: 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
-            transition: all 0.2s;
         }
 
-        .btn-add-role {
-            background-color: #4e5058;
-            color: white;
-            margin-bottom: 12px;
-        }
+        .btn-add { background: #4e5058; color: white; margin-bottom: 12px; }
+        .btn-deploy { background: var(--accent-color); color: white; margin-top: 10px; }
 
-        .btn-deploy-final {
-            background-color: var(--accent-color);
-            color: white;
-            box-shadow: 0 4px 15px rgba(211, 127, 106, 0.3);
-        }
-
-        .btn-action:active {
-            transform: scale(0.98);
-        }
-
-        .delete-btn {
-            color: #ed4245;
-            cursor: pointer;
-            padding: 10px;
-            font-size: 18px;
-        }
     </style>
 </head>
 <body>
@@ -354,116 +307,128 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <span class="sidebar-brand">BAGBOT PRO</span>
-            <i class="fas fa-chevron-left" onclick="toggleSidebar()" style="cursor:pointer; color: #555;"></i>
+            <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer;"></i>
         </div>
         <div class="sidebar-nav">
             <div class="nav-link active"><i class="fas fa-edit"></i> Builder d'Embed</div>
-            <div class="nav-link"><i class="fas fa-server"></i> Serveur Logs</div>
-            <div class="nav-link"><i class="fas fa-images"></i> Bibliothèque</div>
-            <div class="nav-link"><i class="fas fa-cog"></i> Configuration</div>
+            <div class="nav-link"><i class="fas fa-history"></i> Logs Messages</div>
+            <div class="nav-link"><i class="fas fa-cog"></i> Paramètres</div>
         </div>
     </div>
 
     <div class="main-content">
         <div class="top-navbar">
-            <div class="hamburger-menu" onclick="toggleSidebar()">
-                <i class="fas fa-bars"></i>
-            </div>
-            <div class="navbar-title">Création de message</div>
+            <div class="hamburger-menu" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+            <div style="font-weight: 700;">Nouveau Message</div>
         </div>
 
         <div class="builder-viewport">
             
             <div class="discord-embed">
-                <div class="embed-thumbnail image-placeholder" onclick="openFilePicker('thumb')">
+                <div class="embed-thumbnail image-placeholder" onclick="triggerFile('thumb')">
                     <i class="fas fa-plus" id="icon-thumb"></i>
                     <img id="img-thumb" style="display:none">
                 </div>
 
-                <div class="embed-author">
-                    <div class="author-icon image-placeholder" onclick="openFilePicker('author')" style="width:24px; height:24px;">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                    <div class="author-icon image-placeholder" onclick="triggerFile('author')">
                         <img id="img-author" style="display:none">
                     </div>
-                    <div class="author-name-input" contenteditable="true">Nom de l'auteur</div>
+                    <div contenteditable="true" style="font-size:14px; font-weight:600; color:white;">Nom de l'auteur</div>
                 </div>
 
-                <div class="embed-title-input" contenteditable="true">Titre de votre embed</div>
+                <div class="embed-title-input" contenteditable="true">Titre de l'embed</div>
+                <div class="embed-description-input" contenteditable="true">Contenu de votre message...</div>
 
-                <div class="embed-description-input" contenteditable="true">Écrivez ici le contenu principal de votre message Discord. Vous pouvez utiliser du Markdown.</div>
-
-                <div class="embed-banner image-placeholder" onclick="openFilePicker('banner')">
-                    <i class="fas fa-image" id="icon-banner" style="font-size: 35px; color: #4e5058;"></i>
+                <div class="embed-banner image-placeholder" onclick="triggerFile('banner')">
+                    <i class="fas fa-image" id="icon-banner" style="font-size:32px; color:#4e5058"></i>
                     <img id="img-banner" style="display:none">
                 </div>
             </div>
 
             <div class="settings-panel">
                 <span class="label-text">Salon de destination</span>
-                <select class="discord-select" id="channel-picker">
-                    <option value="">Sélectionner un salon...</option>
-                    <option value="1349448439402561637"># 📂-storage</option>
-                    <option value="1"># 💬-général</option>
-                    <option value="2"># 📢-annonces</option>
-                    <option value="3"># 🛠-staff</option>
-                    <option value="4"># 🤖-bot-commandes</option>
+                <select class="discord-select" id="channel-list">
+                    <option value="">Chargement des salons...</option>
                 </select>
                 
-                <span class="label-text">Configuration des rôles-réactions</span>
-                <div id="reaction-list-area" class="reaction-container">
-                    </div>
+                <span class="label-text">Configuration Rôles-Réactions</span>
+                <div id="reaction-area"></div>
                 
-                <div class="button-footer">
-                    <button class="btn-action btn-add-role" onclick="createNewReactionRow()">
-                        <i class="fas fa-plus-circle"></i> Ajouter une réaction
-                    </button>
-                    
-                    <button class="btn-action btn-deploy-final" onclick="startDeployment()">
-                        <i class="fas fa-rocket"></i> ENVOYER LE MESSAGE
-                    </button>
-                </div>
+                <button class="btn-action btn-add" onclick="addReactionRow()">
+                    <i class="fas fa-plus-circle"></i> Ajouter une réaction
+                </button>
+                
+                <button class="btn-action btn-deploy" onclick="alert('Déploiement initié !')">
+                    <i class="fas fa-rocket"></i> DÉPLOYER LE MESSAGE
+                </button>
             </div>
-
         </div>
     </div>
 
-    <input type="file" id="hidden-file-input" style="display:none" accept="image/*" onchange="handleImageSelection(this)">
+    <div id="emoji-picker-modal">
+        <div class="picker-content">
+            <div class="picker-header">
+                <span style="font-weight:700;">Choisir un émoji</span>
+                <i class="fas fa-times" onclick="closeEmojiPicker()" style="cursor:pointer;"></i>
+            </div>
+            <div class="emoji-grid" id="emoji-grid-container">
+                </div>
+        </div>
+    </div>
+
+    <input type="file" id="file-input" style="display:none" accept="image/*" onchange="previewImg(this)">
 
     <script>
-        let uploadType = null;
-        
-        // Données fictives pour les rôles (remplira le sélecteur)
-        const serverRoles = [
-            { id: "101", name: "Membre" },
-            { id: "102", name: "VIP" },
-            { id: "103", name: "Modérateur" },
-            { id: "104", name: "Annonceur" },
-            { id: "105", name: "Partenaire" }
-        ];
+        let currentZone = null;
+        let currentEmojiBtn = null;
 
-        // GESTION SIDEBAR
+        // --- DONNÉES SIMULÉES (Seront remplacées par l'API Python plus tard) ---
+        const fakeData = {
+            channels: [
+                { id: "1349448439402561637", name: "📂-storage" },
+                { id: "1", name: "💬-général" },
+                { id: "2", name: "📢-annonces" }
+            ],
+            roles: [
+                { id: "101", name: "Membre" },
+                { id: "102", name: "VIP" },
+                { id: "103", name: "Staff" }
+            ],
+            emojis: ["✅", "❌", "🔥", "🔞", "⭐", "🎁", "🎉", "🚀", "📢", "🛠️", "👋", "🤖"]
+        };
+
+        // --- INITIALISATION ---
+        window.onload = () => {
+            // Remplir les salons
+            const chanSelect = document.getElementById('channel-list');
+            chanSelect.innerHTML = '<option value="">Choisir un salon...</option>' + 
+                fakeData.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+
+            // Préparer la grille d'émojis
+            const grid = document.getElementById('emoji-grid-container');
+            grid.innerHTML = fakeData.emojis.map(e => `<div class="emoji-item" onclick="selectEmoji('${e}')">${e}</div>`).join('');
+            
+            if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('active');
+        };
+
+        // --- GESTION SIDEBAR ---
         function toggleSidebar() {
-            const sb = document.getElementById('sidebar');
-            if (window.innerWidth <= 768) {
-                sb.classList.toggle('active');
-            } else {
-                sb.style.width = (sb.style.width === '0px') ? '260px' : '0px';
-                sb.style.borderRight = (sb.style.width === '0px') ? 'none' : '1px solid var(--dark-background)';
-            }
+            document.getElementById('sidebar').classList.toggle('active');
         }
 
-        // GESTION IMAGES
-        function openFilePicker(type) {
-            uploadType = type;
-            document.getElementById('hidden-file-input').click();
+        // --- GESTION IMAGES ---
+        function triggerFile(zone) {
+            currentZone = zone;
+            document.getElementById('file-input').click();
         }
 
-        function handleImageSelection(input) {
+        function previewImg(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.getElementById(`img-${uploadType}`);
-                    const icon = document.getElementById(`icon-${uploadType}`);
-                    
+                reader.onload = (e) => {
+                    const img = document.getElementById(`img-${currentZone}`);
+                    const icon = document.getElementById(`icon-${currentZone}`);
                     img.src = e.target.result;
                     img.style.display = 'block';
                     if(icon) icon.style.display = 'none';
@@ -472,41 +437,36 @@
             }
         }
 
-        // CRÉATION DE LIGNE DE RÉACTION
-        function createNewReactionRow() {
-            const area = document.getElementById('reaction-list-area');
+        // --- GESTION RÉACTIONS ---
+        function addReactionRow() {
+            const area = document.getElementById('reaction-area');
             const row = document.createElement('div');
             row.className = 'reaction-row';
             
-            const emoji = prompt("Collez l'émoji ici (ex: ✅) :") || "⭐";
-            
-            let roleOptions = serverRoles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-            
             row.innerHTML = `
-                <div class="emoji-box">${emoji}</div>
-                <select class="discord-select role-select">
+                <div class="emoji-trigger" onclick="openEmojiPicker(this)">😀</div>
+                <select class="discord-select" style="margin-bottom:0; flex-grow:1;">
                     <option value="">Attribuer un rôle...</option>
-                    ${roleOptions}
+                    ${fakeData.roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
                 </select>
-                <i class="fas fa-trash-alt delete-btn" onclick="this.parentElement.remove()"></i>
+                <i class="fas fa-trash" onclick="this.parentElement.remove()" style="color:#ed4245; cursor:pointer; padding:10px;"></i>
             `;
-            
             area.appendChild(row);
         }
 
-        // BOUTON FINAL
-        function startDeployment() {
-            const channel = document.getElementById('channel-picker').value;
-            if(!channel) {
-                alert("Erreur : Vous devez sélectionner un salon de destination.");
-                return;
-            }
-            alert("🚀 Préparation de l'envoi vers Discord terminée !");
+        // --- GESTION EMOJI PICKER ---
+        function openEmojiPicker(btn) {
+            currentEmojiBtn = btn;
+            document.getElementById('emoji-picker-modal').style.display = 'flex';
         }
 
-        // Initialisation mobile
-        if(window.innerWidth <= 768) {
-            document.getElementById('sidebar').classList.remove('active');
+        function closeEmojiPicker() {
+            document.getElementById('emoji-picker-modal').style.display = 'none';
+        }
+
+        function selectEmoji(emoji) {
+            if(currentEmojiBtn) currentEmojiBtn.innerText = emoji;
+            closeEmojiPicker();
         }
     </script>
 </body>
