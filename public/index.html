@@ -1,189 +1,47 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Builder Pro</title>
-    <style>
-        :root { --bg: #0f1012; --card: #18191c; --accent: #ff4d4d; --text: #f2f3f5; --sidebar-w: 260px; }
-        body { margin: 0; font-family: 'Helvetica Neue', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
-        
-        /* Sidebar avec toggle */
-        .sidebar { width: var(--sidebar-w); background: #0b0c0d; height: 100vh; position: fixed; left: 0; top: 0; transition: 0.3s; z-index: 1000; border-right: 1px solid #222; }
-        .sidebar.closed { left: calc(-1 * var(--sidebar-w)); }
-        
-        /* Overlay pour fermer sur mobile */
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
-        .sidebar:not(.closed) + .overlay { display: block; }
-
-        .main { margin-left: var(--sidebar-w); padding: 20px; transition: 0.3s; width: 100%; box-sizing: border-box; }
-        .main.full { margin-left: 0; }
-
-        /* Bouton Menu (Hamburger) */
-        .menu-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 10px; display: flex; align-items: center; }
-        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
-
-        .builder-grid { display: flex; flex-wrap: wrap; gap: 20px; max-width: 1200px; }
-        .config-panel { flex: 1; min-width: 320px; background: var(--card); border-radius: 12px; padding: 25px; }
-        .preview-panel { width: 350px; min-width: 320px; }
-
-        /* Onglets style DraftBot */
-        .tabs { display: flex; background: #2f3136; padding: 5px; border-radius: 8px; margin-bottom: 25px; }
-        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; }
-        .tab.active { background: var(--accent); color: white; }
-
-        label { display: block; margin: 20px 0 8px; font-size: 0.75rem; color: #b9bbbe; font-weight: bold; text-transform: uppercase; }
-        input, select, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 6px; font-size: 1rem; }
-        
-        .preview-box { background: #2f3136; border-radius: 4px; padding: 15px; border-left: 4px solid var(--accent); }
-        .pre-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 8px; }
-        .pre-img { width: 100%; border-radius: 4px; margin-top: 10px; display: none; }
-        
-        .btn-send { background: var(--accent); color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 25px; cursor: pointer; }
-
-        @media (max-width: 768px) {
-            .main { margin-left: 0; padding: 15px; }
-            .builder-grid { flex-direction: column; }
-            .preview-panel { width: 100%; }
-        }
-    </style>
-</head>
-<body onclick="closeSidebarIfOpen(event)">
-
-<div class="sidebar closed" id="sidebar">
-    <div style="padding: 25px; font-size: 1.5rem; font-weight: 900; color: var(--accent);">BAG BOT V2</div>
-    <div style="padding: 10px 20px; color: #fff; background: #1a1a1a; border-left: 4px solid var(--accent);">🎭 Rôles-Réactions</div>
-    <div style="padding: 10px 20px; color: #888;">🛡️ Modération</div>
-    <div style="padding: 10px 20px; color: #888;">💰 Économie</div>
+<label>Image de l'Embed</label>
+<div style="display:flex; gap:10px; margin-bottom:10px;">
+    <button class="tab-btn" onclick="document.getElementById('imageFile').click()" style="background:#444; width:100%;">📁 Téléverser (Smartphone/PC)</button>
+    <input type="file" id="imageFile" style="display:none" accept="image/*" onchange="previewLocalFile(this)">
 </div>
-<div class="overlay" id="overlay"></div>
-
-<div class="main full" id="main">
-    <div class="header">
-        <button class="menu-btn" onclick="toggleSidebar(event)">☰</button>
-        <h1 style="margin:0; font-size: 1.5rem;">Configuration Rôles</h1>
-    </div>
-
-    <div class="builder-grid">
-        <div class="config-panel">
-            <div class="tabs">
-                <div class="tab active" onclick="setMode('simple', this)">Simple</div>
-                <div class="tab" onclick="setMode('embed', this)">Embed</div>
-                <div class="tab" onclick="setMode('image', this)">Image</div>
-            </div>
-
-            <label>Salon Discord</label>
-            <select id="channelId"><option>Chargement des salons...</option></select>
-
-            <label>Rôle à attribuer</label>
-            <select id="roleId"><option>Chargement des rôles...</option></select>
-
-            <div id="simple-fields">
-                <label>Texte du message</label>
-                <textarea id="simpleContent" rows="3" oninput="updatePreview()" placeholder="Salut ! Cliquez pour le rôle."></textarea>
-            </div>
-
-            <div id="embed-fields" style="display:none;">
-                <label>Titre de l'Embed</label>
-                <input type="text" id="title" placeholder="Titre..." oninput="updatePreview()">
-                <label>Description</label>
-                <textarea id="description" rows="4" oninput="updatePreview()"></textarea>
-                <label>URL de l'image</label>
-                <input type="text" id="imageUrl" placeholder="https://..." oninput="updatePreview()">
-            </div>
-
-            <label>Type de bouton</label>
-            <select id="displayType">
-                <option value="button">Bouton Classique</option>
-                <option value="select">Menu Déroulant</option>
-            </select>
-
-            <button class="btn-send" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
-        </div>
-
-        <div class="preview-panel">
-            <label>Aperçu Discord</label>
-            <div class="preview-box" id="preview-box">
-                <div id="pre-text" style="display:none; margin-bottom: 10px;"></div>
-                <div id="pre-embed">
-                    <div class="pre-title" id="pre-title">Titre du message</div>
-                    <div id="pre-desc">Description du message...</div>
-                    <img id="pre-img" class="pre-img">
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<input type="text" id="imageUrl" placeholder="Ou collez une URL https://..." oninput="updatePreview()">
+<p id="fileNameDisplay" style="font-size: 11px; color: var(--accent); margin-top: -5px;"></p>
 
 <script>
-    let mode = 'simple';
-
-    function toggleSidebar(e) {
-        e.stopPropagation();
-        document.getElementById('sidebar').classList.toggle('closed');
-        document.getElementById('main').classList.toggle('full');
-    }
-
-    function closeSidebarIfOpen(e) {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar.classList.contains('closed') && !sidebar.contains(e.target)) {
-            sidebar.classList.add('closed');
-            document.getElementById('main').classList.add('full');
+    function previewLocalFile(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preImg = document.getElementById('pre-img');
+                preImg.src = e.target.result;
+                preImg.style.display = 'block';
+                document.getElementById('fileNameDisplay').innerText = "Fichier prêt : " + input.files[0].name;
+            }
+            reader.readAsDataURL(input.files[0]);
         }
-    }
-
-    function setMode(newMode, el) {
-        mode = newMode;
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        el.classList.add('active');
-        
-        document.getElementById('simple-fields').style.display = mode === 'simple' ? 'block' : 'none';
-        document.getElementById('embed-fields').style.display = (mode === 'embed' || mode === 'image') ? 'block' : 'none';
-        
-        // Ajustement visuel preview
-        document.getElementById('pre-text').style.display = mode === 'simple' ? 'block' : 'none';
-        document.getElementById('pre-embed').style.display = mode === 'simple' ? 'none' : 'block';
-        updatePreview();
-    }
-
-    function updatePreview() {
-        if(mode === 'simple') {
-            document.getElementById('pre-text').innerText = document.getElementById('simpleContent').value || "Texte simple...";
-            document.getElementById('preview-box').style.borderLeft = "none";
-        } else {
-            document.getElementById('pre-title').innerText = document.getElementById('title').value || "Titre de l'Embed";
-            document.getElementById('pre-desc').innerText = document.getElementById('description').value || "Description...";
-            const img = document.getElementById('imageUrl').value;
-            const preImg = document.getElementById('pre-img');
-            preImg.src = img; preImg.style.display = img ? 'block' : 'none';
-            document.getElementById('preview-box').style.borderLeft = "4px solid var(--accent)";
-        }
-    }
-
-    async function loadData() {
-        const [c, r] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
-        const channels = await c.json();
-        const roles = await r.json();
-        document.getElementById('channelId').innerHTML = channels.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
-        document.getElementById('roleId').innerHTML = roles.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
     }
 
     async function deploy() {
-        const data = {
-            mode,
-            channelId: document.getElementById('channelId').value,
-            roleId: document.getElementById('roleId').value,
-            content: document.getElementById('simpleContent').value,
-            title: document.getElementById('title').value,
-            description: document.getElementById('description').value,
-            imageUrl: document.getElementById('imageUrl').value,
-            displayType: document.getElementById('displayType').value
-        };
-        const res = await fetch('/update-bot', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-        if(res.ok) alert("✅ Déployé !");
-    }
-    loadData();
-</script>
-</body>
-</html>
+        // On utilise FormData au lieu de JSON pour envoyer des fichiers
+        const formData = new FormData();
+        formData.append('mode', mode);
+        formData.append('channelId', document.getElementById('channelId').value);
+        formData.append('roleId', document.getElementById('roleId').value);
+        formData.append('content', document.getElementById('simpleContent').value);
+        formData.append('title', document.getElementById('title').value);
+        formData.append('description', document.getElementById('description').value);
+        formData.append('imageUrl', document.getElementById('imageUrl').value);
+        formData.append('displayType', document.getElementById('displayType').value);
+        
+        const fileInput = document.getElementById('imageFile');
+        if (fileInput.files[0]) {
+            formData.append('imageFile', fileInput.files[0]);
+        }
 
+        const res = await fetch('/update-bot', { 
+            method: 'POST', 
+            body: formData // Pas de Header Content-Type, le navigateur le gère seul ici
+        });
+        
+        if(res.ok) alert("✅ Déployé avec succès !");
+    }
+</script>
