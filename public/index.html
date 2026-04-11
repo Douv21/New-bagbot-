@@ -3,45 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Admin</title>
+    <title>BagBot Admin Panel</title>
     <style>
         :root { --bg: #0f1012; --card: #18191c; --accent: #ff4d4d; --sidebar: #0b0c0e; --text: #f2f3f5; }
-        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; overflow-x: hidden; }
         
-        .sidebar { width: 260px; background: var(--sidebar); height: 100vh; position: fixed; left: -260px; transition: 0.3s; z-index: 1001; }
+        /* Sidebar & Navigation */
+        .sidebar { width: 260px; background: var(--sidebar); height: 100vh; position: fixed; left: -260px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1001; box-shadow: 4px 0 15px rgba(0,0,0,0.5); }
         .sidebar.open { left: 0; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; backdrop-filter: blur(2px); }
         .overlay.active { display: block; }
 
-        .main { flex: 1; padding: 15px; width: 100%; box-sizing: border-box; }
-        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .menu-btn { background: #2f3136; border: none; color: white; padding: 10px; border-radius: 6px; cursor: pointer; }
+        .main { flex: 1; padding: 20px; width: 100%; box-sizing: border-box; transition: margin-left 0.3s; }
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; background: var(--card); padding: 15px; border-radius: 10px; }
+        .menu-btn { background: #2f3136; border: none; color: white; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 18px; }
 
-        .panel { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #282a2e; max-width: 550px; margin: auto; }
-        .tabs { display: flex; background: #2f3136; border-radius: 8px; margin-bottom: 20px; overflow: hidden; }
-        .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; color: #aaa; }
-        .tab.active { background: var(--accent); color: white; font-weight: bold; }
+        /* Formulaire */
+        .panel { background: var(--card); border-radius: 12px; padding: 25px; border: 1px solid #282a2e; max-width: 650px; margin: auto; }
+        .tabs { display: flex; background: #2f3136; border-radius: 8px; margin-bottom: 25px; overflow: hidden; padding: 4px; }
+        .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; transition: 0.2s; color: #b9bbbe; font-weight: 600; }
+        .tab.active { background: var(--accent); color: white; border-radius: 6px; }
 
-        label { display: block; margin: 12px 0 5px; font-size: 11px; color: #8e9297; text-transform: uppercase; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 6px; box-sizing: border-box; }
+        label { display: block; margin: 15px 0 6px; font-size: 12px; color: #8e9297; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
+        input, select, textarea { width: 100%; padding: 14px; background: #202225; border: 1px solid #111; color: white; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        input:focus { border-color: var(--accent); outline: none; }
         
-        .preview { margin-top: 20px; padding: 15px; background: #2f3136; border-radius: 8px; border-left: 4px solid var(--accent); }
-        #pre-img { width: 100%; border-radius: 4px; margin-top: 10px; display: none; }
-        .btn-send { background: var(--accent); color: white; border: none; padding: 18px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+        /* Aperçu et Bouton */
+        .preview { margin-top: 25px; padding: 15px; background: #2f3136; border-radius: 8px; border-left: 5px solid var(--accent); }
+        #pre-img { width: 100%; border-radius: 6px; margin-top: 12px; display: none; object-fit: cover; max-height: 200px; }
+        .btn-send { background: var(--accent); color: white; border: none; padding: 20px; width: 100%; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 25px; transition: 0.2s; box-shadow: 0 4px 15px rgba(255, 77, 77, 0.3); }
+        .btn-send:active { transform: scale(0.98); }
+        .btn-send:disabled { background: #4f545c; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
 <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 <div class="sidebar" id="sidebar">
-    <div style="padding: 25px; font-weight: bold; color: var(--accent); font-size: 22px;">BAG BOT</div>
-    <div style="padding: 15px 25px; background: #1a1a1a; border-left: 4px solid var(--accent);">🎭 Auto-Rôles</div>
+    <div style="padding: 30px 25px; font-weight: 900; color: var(--accent); font-size: 24px; letter-spacing: -1px;">BAG BOT V2</div>
+    <div style="padding: 15px 25px; background: #1a1a1a; border-left: 4px solid var(--accent); font-weight: 600;">🎭 Rôles-Réactions</div>
 </div>
 
 <div class="main">
     <div class="header">
-        <button class="menu-btn" onclick="toggleMenu()">☰ Menu</button>
-        <h3 style="margin:0;">Configuration</h3>
+        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+        <h2 style="margin:0; font-size: 20px;">Configuration du Message</h2>
     </div>
 
     <div class="panel">
@@ -50,46 +56,46 @@
             <div class="tab" id="t-embed" onclick="setMode('embed')">Embed</div>
         </div>
 
-        <label>ID Message (Optionnel)</label>
-        <input type="text" id="messageId" placeholder="ID pour modifier">
+        <label>Modifier un message (ID)</label>
+        <input type="text" id="messageId" placeholder="Laissez vide pour un nouveau message">
 
-        <label>Salon Discord</label>
-        <select id="channelId"><option value="">Chargement...</option></select>
+        <label>Salon de destination</label>
+        <select id="channelId"><option value="">Chargement des salons...</option></select>
 
-        <label>Rôle</label>
-        <select id="roleId"><option value="">Chargement...</option></select>
+        <label>Rôle à attribuer</label>
+        <select id="roleId"><option value="">Chargement des rôles...</option></select>
 
-        <label>Mode</label>
+        <label>Mode de fonctionnement</label>
         <select id="roleMode">
             <option value="normal">Normal (Ajout/Retrait)</option>
-            <option value="inverse">Inversé</option>
-            <option value="definitif">Définitif</option>
+            <option value="inverse">Inversé (Retrait/Ajout)</option>
+            <option value="definitif">Définitif (Ajout uniquement)</option>
         </select>
 
-        <label>Style d'affichage</label>
+        <label>Type d'affichage</label>
         <select id="displayType">
             <option value="button">Bouton</option>
             <option value="select">Menu Déroulant</option>
         </select>
 
         <div id="f-simple">
-            <label>Texte</label>
-            <textarea id="simpleContent" rows="3" oninput="updatePreview()"></textarea>
+            <label>Contenu du message</label>
+            <textarea id="simpleContent" rows="4" placeholder="Votre texte ici..." oninput="updatePreview()"></textarea>
         </div>
 
         <div id="f-embed" style="display:none;">
-            <label>Titre</label>
-            <input type="text" id="title" oninput="updatePreview()">
+            <label>Titre de l'Embed</label>
+            <input type="text" id="title" placeholder="Ex: Rôles de notifications" oninput="updatePreview()">
             <label>Description</label>
-            <textarea id="description" rows="3" oninput="updatePreview()"></textarea>
-            <label>Image</label>
-            <input type="file" id="imageFile" accept="image/*" onchange="previewFile(this)">
-            <input type="text" id="imageUrl" placeholder="Lien image..." oninput="updatePreview()">
+            <textarea id="description" rows="4" placeholder="Décrivez les rôles..." oninput="updatePreview()"></textarea>
+            <label>Image (Fichier ou URL)</label>
+            <input type="file" id="imageFile" accept="image/*" onchange="previewFile(this)" style="margin-bottom:10px;">
+            <input type="text" id="imageUrl" placeholder="https://lien-image.png" oninput="updatePreview()">
         </div>
 
         <div class="preview">
-            <div id="pre-title" style="font-weight:bold;">Aperçu</div>
-            <div id="pre-desc">...</div>
+            <div id="pre-title" style="font-size: 14px; margin-bottom: 5px;">Aperçu du message</div>
+            <div id="pre-desc" style="color: #dcddde; font-size: 15px; white-space: pre-wrap;">...</div>
             <img id="pre-img">
         </div>
 
@@ -130,7 +136,7 @@
         const title = document.getElementById('title').value || "Titre";
         const desc = currentMode === 'simple' ? document.getElementById('simpleContent').value : document.getElementById('description').value;
         document.getElementById('pre-title').innerText = currentMode === 'simple' ? "Message Simple" : title;
-        document.getElementById('pre-desc').innerText = desc || "...";
+        document.getElementById('pre-desc').innerText = desc || "En attente de texte...";
     }
 
     async function load() {
@@ -139,34 +145,31 @@
             const channels = await cRes.json();
             const roles = await rRes.json();
             
-            const cSelect = document.getElementById('channelId');
-            const rSelect = document.getElementById('roleId');
-            
-            if(channels.length > 0) {
-                cSelect.innerHTML = channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            }
-            if(roles.length > 0) {
-                rSelect.innerHTML = roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-            }
-        } catch(e) { console.error("Erreur de chargement API"); }
+            // Injection forcée des IDs dans les options
+            document.getElementById('channelId').innerHTML = channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            document.getElementById('roleId').innerHTML = roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+        } catch(e) { console.error("Erreur API"); }
     }
 
     async function deploy() {
-        // RÉCUPÉRATION FORCÉE DES VALEURS
-        const chan = document.getElementById('channelId').value;
-        const role = document.getElementById('roleId').value;
+        // RÉCUPÉRATION MANUELLE ET VÉRIFICATION
+        const channelSelect = document.getElementById('channelId');
+        const roleSelect = document.getElementById('roleId');
+        
+        const chanId = channelSelect.options[channelSelect.selectedIndex]?.value;
+        const roleId = roleSelect.options[roleSelect.selectedIndex]?.value;
 
-        if (!chan || chan.length < 15) return alert("❌ Veuillez sélectionner un salon !");
-        if (!role || role.length < 15) return alert("❌ Veuillez sélectionner un rôle !");
+        if (!chanId || chanId === "undefined") return alert("❌ Erreur : Le salon n'est pas sélectionné correctement.");
+        if (!roleId || roleId === "undefined") return alert("❌ Erreur : Le rôle n'est pas sélectionné correctement.");
 
         const btn = document.getElementById('btn-deploy');
-        btn.innerText = "ENVOI...";
+        btn.innerText = "ENVOI EN COURS...";
         btn.disabled = true;
 
         const fd = new FormData();
         fd.append('mode', currentMode);
-        fd.append('channelId', chan);
-        fd.append('roleId', role);
+        fd.append('channelId', chanId);
+        fd.append('roleId', roleId);
         fd.append('roleMode', document.getElementById('roleMode').value);
         fd.append('displayType', document.getElementById('displayType').value);
         fd.append('messageId', document.getElementById('messageId').value.trim());
@@ -181,10 +184,10 @@
         try {
             const res = await fetch('/update-bot', { method: 'POST', body: fd });
             const data = await res.json();
-            if (data.success) alert("✅ Succès sur Discord !");
+            if (data.success) alert("✅ Message envoyé avec succès !");
             else alert("❌ Erreur : " + data.message);
         } catch(e) {
-            alert("❌ Le serveur ne répond pas.");
+            alert("❌ Impossible de contacter le bot.");
         } finally {
             btn.innerText = "DÉPLOYER SUR DISCORD";
             btn.disabled = false;
