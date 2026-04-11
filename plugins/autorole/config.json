@@ -1,0 +1,16 @@
+{
+  "name": "Auto-Role Dynamique",
+  "enabled": true,
+  "settings": {
+    "embed": {
+      "title": "Titre par défaut",
+      "description": "Description à configurer via le panel",
+      "color": "#2F3136",
+      "banner_url": "",
+      "thumbnail_url": "",
+      "footer_text": "Mon Super Bot",
+      "footer_icon": ""
+    },
+    "buttons": [] 
+  }
+}
