@@ -3,33 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BagBot Designer Pro - Version Source Complète</title>
+    <title>BagBot Designer Pro - Connexion Serveur</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
         /* =========================================
-           1. VARIABLES DE COULEURS DISCORD
+           STYLE GLOBAL (NON COMPRESSÉ)
            ========================================= */
         :root {
             --accent-color: #d37f6a;
             --bg-main: #2b2d31;
             --bg-sidebar: #1e1f22;
-            --bg-darkest: #111214;
+            --bg-darker: #111214;
             --text-primary: #dbdee1;
             --text-muted: #949ba4;
-            --embed-inner: #313338;
-            --border-ui: #3f4147;
+            --embed-bg: #313338;
+            --border-discord: #3f4147;
             --red-discord: #ed4245;
         }
 
-        /* =========================================
-           2. STRUCTURE GLOBALE
-           ========================================= */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
         }
 
         body {
@@ -41,97 +37,81 @@
             overflow: hidden;
         }
 
-        /* =========================================
-           3. SIDEBAR (RÉRACTABLE)
-           ========================================= */
+        /* --- SIDEBAR --- */
         #sidebar {
             width: 260px;
             background-color: var(--bg-sidebar);
             display: flex;
             flex-direction: column;
-            border-right: 1px solid var(--bg-darkest);
-            transition: width 0.3s ease, transform 0.3s ease;
+            border-right: 1px solid var(--bg-darker);
+            transition: all 0.3s ease-in-out;
             flex-shrink: 0;
-            z-index: 999;
+            z-index: 1000;
         }
 
-        /* Classe pour rétracter la sidebar */
-        #sidebar.collapsed {
-            width: 0px;
-            overflow: hidden;
-            border-right: none;
+        #sidebar.retract {
+            width: 0;
+            opacity: 0;
+            pointer-events: none;
         }
 
         .sidebar-header {
             padding: 20px;
-            background-color: var(--bg-darkest);
+            background-color: var(--bg-darker);
             display: flex;
             align-items: center;
             justify-content: space-between;
             height: 60px;
         }
 
-        .sidebar-logo {
+        .logo-text {
             color: var(--accent-color);
             font-weight: 800;
             font-size: 18px;
-            white-space: nowrap;
+            text-transform: uppercase;
         }
 
-        .sidebar-content {
-            padding: 15px 10px;
-        }
-
-        .nav-item {
+        .nav-link {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
+            gap: 15px;
+            padding: 12px 20px;
             color: var(--text-muted);
             cursor: pointer;
-            border-radius: 4px;
-            margin-bottom: 5px;
             transition: 0.2s;
-            white-space: nowrap;
         }
 
-        .nav-item:hover, .nav-item.active {
-            background-color: rgba(211, 127, 106, 0.1);
+        .nav-link.active, .nav-link:hover {
+            background: rgba(211, 127, 106, 0.1);
             color: white;
+            border-left: 4px solid var(--accent-color);
         }
 
-        /* =========================================
-           4. ZONE DE TRAVAIL PRINCIPALE
-           ========================================= */
-        .main-container {
+        /* --- CONTENU --- */
+        .main-view {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             min-width: 0;
         }
 
-        .top-nav {
+        .top-bar {
             height: 60px;
-            padding: 0 20px;
+            background: var(--bg-main);
+            border-bottom: 1px solid var(--bg-darker);
             display: flex;
             align-items: center;
+            padding: 0 20px;
             gap: 20px;
-            border-bottom: 1px solid var(--bg-darkest);
         }
 
-        .toggle-btn {
-            font-size: 20px;
+        .hamburger {
+            font-size: 22px;
             color: var(--accent-color);
             cursor: pointer;
         }
 
-        .page-title {
-            font-weight: 700;
-            font-size: 14px;
-            text-transform: uppercase;
-        }
-
-        .scroll-view {
+        .workspace {
             flex-grow: 1;
             overflow-y: auto;
             padding: 40px 20px;
@@ -140,22 +120,18 @@
             align-items: center;
         }
 
-        /* =========================================
-           5. APERÇU DE L'EMBED (Fidèle à 10128.jpg)
-           ========================================= */
-        .discord-embed-preview {
+        /* --- APERCU EMBED --- */
+        .embed-preview {
             width: 100%;
             max-width: 500px;
-            background-color: var(--embed-inner);
+            background: var(--embed-bg);
             border-left: 4px solid var(--accent-color);
             border-radius: 4px;
             padding: 16px;
             position: relative;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
         }
 
-        /* Thumbnail (En haut à droite) */
-        .embed-thumb-zone {
+        .thumbnail-zone {
             position: absolute;
             top: 16px;
             right: 16px;
@@ -167,19 +143,22 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            overflow: hidden;
         }
 
-        .embed-thumb-zone img { width: 100%; height: 100%; object-fit: cover; }
+        .thumbnail-zone img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-        .embed-author-row {
+        .author-box {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
-        .author-icon-circle {
+        .author-img {
             width: 24px;
             height: 24px;
             border-radius: 50%;
@@ -188,24 +167,25 @@
             overflow: hidden;
         }
 
-        .input-field {
+        .author-img img { width: 100%; height: 100%; object-fit: cover; }
+
+        .transparent-input {
             background: transparent;
             border: none;
             color: white;
             outline: none;
             width: 100%;
-            font-family: inherit;
         }
 
-        .embed-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-        .embed-desc { font-size: 14px; color: var(--text-primary); line-height: 1.4; min-height: 30px; }
+        .title-input { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .desc-input { font-size: 14px; min-height: 40px; line-height: 1.4; color: var(--text-primary); }
 
-        .embed-banner-zone {
+        .banner-zone {
             width: 100%;
             height: 180px;
             border: 2px dashed #4e5058;
-            margin-top: 12px;
             border-radius: 4px;
+            margin-top: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -213,17 +193,17 @@
             overflow: hidden;
         }
 
-        /* =========================================
-           6. SÉLECTEURS ET BOUTONS
-           ========================================= */
-        .form-section {
+        .banner-zone img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* --- CONTROLES --- */
+        .controls {
             width: 100%;
             max-width: 500px;
             margin-top: 30px;
             padding-bottom: 80px;
         }
 
-        .label-text {
+        .label {
             display: block;
             font-size: 11px;
             font-weight: 800;
@@ -232,14 +212,13 @@
             margin-bottom: 8px;
         }
 
-        .custom-select {
+        .discord-select {
             width: 100%;
-            background-color: var(--bg-darkest);
+            background: var(--bg-darker);
             border: 1px solid #000;
             color: white;
             padding: 14px;
             border-radius: 4px;
-            font-size: 15px;
             margin-bottom: 20px;
             outline: none;
             appearance: none;
@@ -257,10 +236,10 @@
             padding: 10px;
             border-radius: 6px;
             margin-bottom: 10px;
-            border: 1px solid var(--border-ui);
+            border: 1px solid var(--border-discord);
         }
 
-        .emoji-trigger {
+        .emoji-btn {
             font-size: 24px;
             width: 48px;
             height: 48px;
@@ -283,26 +262,23 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            font-size: 14px;
         }
 
-        .btn-grey { background-color: #4e5058; color: white; margin-bottom: 10px; }
-        .btn-accent { background-color: var(--accent-color); color: white; }
+        .btn-add { background: #4e5058; color: white; margin-bottom: 12px; }
+        .btn-send { background: var(--accent-color); color: white; }
 
-        /* =========================================
-           7. EMOJI MODAL
-           ========================================= */
-        #modal-emoji {
+        /* --- MODAL EMOJI --- */
+        #emoji-modal {
             position: fixed;
             inset: 0;
             background: rgba(0,0,0,0.85);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 10000;
+            z-index: 2000;
         }
 
-        .modal-box {
+        .modal-content {
             background: #2f3136;
             width: 90%;
             max-width: 400px;
@@ -314,10 +290,9 @@
 
         .modal-header {
             padding: 15px;
-            background: var(--bg-darkest);
+            background: var(--bg-darker);
             display: flex;
             justify-content: space-between;
-            align-items: center;
         }
 
         .emoji-grid {
@@ -328,7 +303,7 @@
             overflow-y: auto;
         }
 
-        .emoji-cell {
+        .emoji-item {
             font-size: 26px;
             text-align: center;
             cursor: pointer;
@@ -336,160 +311,179 @@
             border-radius: 4px;
         }
 
-        .emoji-cell:hover { background: rgba(255,255,255,0.1); }
+        .emoji-item:hover { background: rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
 
     <div id="sidebar">
         <div class="sidebar-header">
-            <span class="sidebar-logo">BAGBOT PRO</span>
-            <i class="fas fa-times" onclick="toggleSidebarMenu()" style="cursor:pointer; color: #555;"></i>
+            <span class="logo-text">BAGBOT PRO</span>
+            <i class="fas fa-chevron-left" onclick="toggleSidebar()" style="cursor:pointer; color: #555;"></i>
         </div>
-        <div class="sidebar-content">
-            <div class="nav-item active"><i class="fas fa-plus-circle"></i> Builder d'Embed</div>
-            <div class="nav-item"><i class="fas fa-server"></i> Serveur Info</div>
-            <div class="nav-item"><i class="fas fa-cog"></i> Paramètres</div>
+        <div class="nav-links">
+            <div class="nav-link active"><i class="fas fa-edit"></i> Designer</div>
+            <div class="nav-link"><i class="fas fa-cog"></i> Paramètres</div>
         </div>
     </div>
 
-    <div class="main-container">
-        <div class="top-nav">
-            <i class="fas fa-bars toggle-btn" onclick="toggleSidebarMenu()"></i>
-            <span class="page-title">Éditeur de message</span>
+    <div class="main-view">
+        <div class="top-bar">
+            <i class="fas fa-bars hamburger" onclick="toggleSidebar()"></i>
+            <span style="font-weight: 700; font-size: 13px; text-transform: uppercase;">Constructeur d'Embed</span>
         </div>
 
-        <div class="scroll-view">
+        <div class="workspace">
             
-            <div class="discord-embed-preview">
-                <div class="embed-thumb-zone" onclick="openFile('thumb')">
+            <div class="embed-preview">
+                <div class="thumbnail-zone" onclick="triggerFile('thumb')">
                     <i class="fas fa-plus" id="icon-thumb"></i>
                     <img id="img-thumb" style="display:none">
                 </div>
 
-                <div class="embed-author-row">
-                    <div class="author-icon-circle" onclick="openFile('author')">
+                <div class="author-box">
+                    <div class="author-img" onclick="triggerFile('author')">
                         <img id="img-author" style="display:none">
                     </div>
-                    <input type="text" class="input-field" value="Nom de l'auteur" style="font-size:13px; font-weight:600;">
+                    <input type="text" class="transparent-input" value="Auteur du message" style="font-size:13px; font-weight:600;">
                 </div>
 
-                <input type="text" class="input-field embed-title" value="Titre de l'embed">
-                <textarea class="input-field embed-desc" placeholder="Votre message ici..."></textarea>
+                <input type="text" class="transparent-input title-input" value="Titre de l'embed">
+                <textarea class="transparent-input desc-input" placeholder="Votre message ici..."></textarea>
 
-                <div class="embed-banner-zone" onclick="openFile('banner')">
+                <div class="banner-zone" onclick="triggerFile('banner')">
                     <i class="fas fa-image" id="icon-banner" style="font-size:32px; color:#4e5058"></i>
                     <img id="img-banner" style="display:none">
                 </div>
             </div>
 
-            <div class="form-section">
-                <label class="label-text">Salon de destination</label>
-                <select class="custom-select" id="channel-list">
-                    <option value="1349448439402561637"># 📂-storage</option>
-                    <option value="123456789"># 💬-général</option>
-                    <option value="987654321"># 📢-annonces</option>
-                    <option value="555666777"># 🛠-staff</option>
+            <div class="controls">
+                <label class="label">Salon Discord</label>
+                <select class="discord-select" id="channel-dropdown">
+                    <option value="">Chargement des salons...</option>
                 </select>
 
-                <label class="label-text">Configuration Rôles-Réactions</label>
-                <div id="reactions-container">
-                    </div>
+                <label class="label">Rôles-Réactions</label>
+                <div id="reactions-list"></div>
 
-                <button class="btn btn-grey" id="add-reaction-btn" onclick="addReactionRow()">
+                <button class="btn btn-add" onclick="createNewReactionRow()">
                     <i class="fas fa-plus"></i> Ajouter une réaction
                 </button>
 
-                <button class="btn btn-accent" onclick="deployEmbed()">
-                    <i class="fas fa-rocket"></i> ENVOYER LE MESSAGE
+                <button class="btn btn-send" onclick="sendEmbed()">
+                    <i class="fas fa-paper-plane"></i> DÉPLOYER LE MESSAGE
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="modal-emoji">
-        <div class="modal-box">
+    <div id="emoji-modal">
+        <div class="modal-content">
             <div class="modal-header">
-                <span style="font-weight:800; color:white">Emojis Standards</span>
-                <i class="fas fa-times" onclick="closeEmojiModal()" style="cursor:pointer; color:var(--text-muted)"></i>
+                <span style="font-weight:800; color:white;">Emojis Standards</span>
+                <i class="fas fa-times" onclick="closeEmojiModal()" style="cursor:pointer;"></i>
             </div>
-            <div class="emoji-grid" id="emoji-grid-content"></div>
+            <div class="emoji-grid" id="emoji-grid-box"></div>
         </div>
     </div>
 
-    <input type="file" id="hidden-file" style="display:none" accept="image/*" onchange="previewImg(this)">
+    <input type="file" id="file-input" style="display:none" accept="image/*" onchange="previewImage(this)">
 
 <script>
-    // --- VARIABLES ---
-    let uploadTarget = "";
-    let lastEmojiBtn = null;
+    // =========================================
+    // JAVASCRIPT LOGIQUE SERVEUR
+    // =========================================
+    
+    let activeFileTarget = "";
+    let activeEmojiBtn = null;
+    let cachedRoles = []; // Pour stocker les rôles reçus du serveur
 
-    // Liste des rôles (Simulée pour le test)
-    const serverRoles = [
-        {id: "101", name: "Membre"},
-        {id: "102", name: "VIP"},
-        {id: "103", name: "Staff"},
-        {id: "104", name: "Modérateur"}
-    ];
+    // Liste d'emojis pour le sélecteur
+    const emojis = ["✅","❌","🔥","⭐","🚀","📢","🛠️","🎁","🎉","🤖","🔞","👋","💡","🛡️","💎","👑","🌈","🎯","🎧","🎮"];
 
-    // Liste massive d'émojis
-    const emojiList = ["✅","❌","🔥","⭐","🚀","📢","🛠️","🎁","🎉","🤖","🔞","👋","💡","🛡️","💎","👑","🌈","🎯","🎧","🎮"];
+    // --- 1. FONCTION CRUCIALE : RÉCUPÉRER LES VRAIS CHANNELS ET RÔLES ---
+    async function fetchDiscordData() {
+        try {
+            // On appelle l'API Python
+            const response = await fetch('/api/get_server_info');
+            const data = await response.json();
 
-    // --- 1. GESTION SIDEBAR (RÉPARÉ) ---
-    function toggleSidebarMenu() {
-        const sb = document.getElementById('sidebar');
-        sb.classList.toggle('collapsed');
+            // Remplissage du sélecteur de salons
+            const chanSelect = document.getElementById('channel-dropdown');
+            if (data.channels && data.channels.length > 0) {
+                chanSelect.innerHTML = data.channels.map(c => 
+                    `<option value="${c.id}"># ${c.name}</option>`
+                ).join('');
+            } else {
+                chanSelect.innerHTML = '<option value="">Aucun salon trouvé</option>';
+            }
+
+            // Mise en cache des rôles pour les lignes de réaction
+            cachedRoles = data.roles || [];
+            console.log("Données serveur chargées !");
+
+        } catch (error) {
+            console.error("Erreur lors de l'appel au bot :", error);
+            document.getElementById('channel-dropdown').innerHTML = '<option value="">Erreur de connexion au bot</option>';
+        }
     }
 
-    // --- 2. GESTION DES RÉACTIONS (RÉPARÉ) ---
-    function addReactionRow() {
-        const container = document.getElementById('reactions-container');
+    // --- 2. GESTION DE LA SIDEBAR ---
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('retract');
+    }
+
+    // --- 3. GESTION DES RÉACTIONS ---
+    function createNewReactionRow() {
+        const list = document.getElementById('reactions-list');
         const row = document.createElement('div');
         row.className = 'reaction-row';
         
-        // On génère les options des rôles
-        const options = serverRoles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-        
+        // Création dynamique des options de rôles à partir du cache serveur
+        const roleOptions = cachedRoles.map(r => 
+            `<option value="${r.id}">${r.name}</option>`
+        ).join('');
+
         row.innerHTML = `
-            <div class="emoji-trigger" onclick="openEmojiModal(this)">😀</div>
-            <select class="custom-select" style="margin-bottom:0; flex-grow:1;">
+            <div class="emoji-btn" onclick="openEmojiModal(this)">😀</div>
+            <select class="discord-select" style="margin-bottom:0; flex-grow:1;">
                 <option value="">Attribuer un rôle...</option>
-                ${options}
+                ${roleOptions}
             </select>
             <i class="fas fa-trash-alt" onclick="this.parentElement.remove()" style="color:var(--red-discord); cursor:pointer; padding:10px;"></i>
         `;
-        container.appendChild(row);
+        list.appendChild(row);
     }
 
-    // --- 3. GESTION EMOJI PICKER ---
+    // --- 4. EMOJI PICKER ---
     function openEmojiModal(btn) {
-        lastEmojiBtn = btn;
-        const grid = document.getElementById('emoji-grid-content');
-        grid.innerHTML = emojiList.map(e => `<div class="emoji-cell" onclick="selectEmoji('${e}')">${e}</div>`).join('');
-        document.getElementById('modal-emoji').style.display = 'flex';
+        activeEmojiBtn = btn;
+        const grid = document.getElementById('emoji-grid-box');
+        grid.innerHTML = emojis.map(e => `<div class="emoji-item" onclick="pickEmoji('${e}')">${e}</div>`).join('');
+        document.getElementById('emoji-modal').style.display = 'flex';
     }
 
     function closeEmojiModal() {
-        document.getElementById('modal-emoji').style.display = 'none';
+        document.getElementById('emoji-modal').style.display = 'none';
     }
 
-    function selectEmoji(e) {
-        if(lastEmojiBtn) lastEmojiBtn.innerText = e;
+    function pickEmoji(e) {
+        if(activeEmojiBtn) activeEmojiBtn.innerText = e;
         closeEmojiModal();
     }
 
-    // --- 4. GESTION IMAGES ---
-    function openFile(target) {
-        uploadTarget = target;
-        document.getElementById('hidden-file').click();
+    // --- 5. IMAGES ---
+    function triggerFile(t) {
+        activeFileTarget = t;
+        document.getElementById('file-input').click();
     }
 
-    function previewImg(input) {
+    function previewImage(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                const img = document.getElementById('img-' + uploadTarget);
-                const icon = document.getElementById('icon-' + uploadTarget);
+                const img = document.getElementById('img-' + activeFileTarget);
+                const icon = document.getElementById('icon-' + activeFileTarget);
                 img.src = e.target.result;
                 img.style.display = 'block';
                 if(icon) icon.style.display = 'none';
@@ -498,15 +492,15 @@
         }
     }
 
-    // --- INITIALISATION MOBILE ---
-    if(window.innerWidth < 768) {
-        document.getElementById('sidebar').classList.add('collapsed');
+    function sendEmbed() {
+        alert("Envoi des données vers Discord...");
     }
 
-    function deployEmbed() {
-        const chan = document.getElementById('channel-list').value;
-        alert("Envoi en cours vers le salon ID: " + chan);
-    }
+    // --- LANCEMENT ---
+    window.onload = function() {
+        fetchDiscordData(); // Appelle le bot dès l'ouverture
+        if(window.innerWidth < 768) toggleSidebar();
+    };
 </script>
 </body>
 </html>
