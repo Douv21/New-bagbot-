@@ -3,93 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Dashboard</title>
+    <title>BagBot Builder</title>
     <style>
         :root { --bg: #0f1012; --card: #18191c; --accent: #ff4d4d; --sidebar: #0b0c0e; --text: #f2f3f5; }
-        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; overflow-x: hidden; }
+        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; }
         
-        /* Sidebar avec Overlay pour fermeture */
-        .sidebar { width: 260px; background: var(--sidebar); height: 100vh; position: fixed; left: -260px; transition: 0.3s; z-index: 1001; border-right: 1px solid #282a2e; }
+        .sidebar { width: 260px; background: var(--sidebar); height: 100vh; position: fixed; left: -260px; transition: 0.3s; z-index: 1001; }
         .sidebar.open { left: 0; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; }
         .overlay.active { display: block; }
 
-        .main { flex: 1; padding: 15px; width: 100%; box-sizing: border-box; }
+        .main { flex: 1; padding: 20px; box-sizing: border-box; }
         .header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .menu-btn { background: #2f3136; border: none; color: white; padding: 10px; border-radius: 6px; cursor: pointer; }
 
         .panel { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #282a2e; max-width: 600px; margin: auto; }
-        .tabs { display: flex; background: #2f3136; border-radius: 8px; margin-bottom: 20px; }
-        .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; color: #b9bbbe; }
-        .tab.active { background: var(--accent); border-radius: 8px; color: white; font-weight: bold; }
+        .tabs { display: flex; background: #2f3136; border-radius: 8px; margin-bottom: 20px; cursor: pointer; }
+        .tab { flex: 1; text-align: center; padding: 12px; }
+        .tab.active { background: var(--accent); border-radius: 8px; font-weight: bold; }
 
         label { display: block; margin: 15px 0 5px; font-size: 11px; color: #8e9297; text-transform: uppercase; font-weight: bold; }
         input, select, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 6px; box-sizing: border-box; }
         
-        .preview-area { margin-top: 25px; padding: 15px; background: #2f3136; border-radius: 8px; border-left: 4px solid var(--accent); min-height: 50px; }
+        .preview { margin-top: 20px; padding: 15px; background: #2f3136; border-radius: 8px; border-left: 4px solid var(--accent); }
         #pre-img { width: 100%; border-radius: 4px; margin-top: 10px; display: none; }
-        
-        .btn-send { background: var(--accent); color: white; border: none; padding: 18px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+        .btn-send { background: var(--accent); color: white; border: none; padding: 18px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
     </style>
 </head>
 <body>
 
 <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 <div class="sidebar" id="sidebar">
-    <div style="padding: 25px; font-weight: bold; color: var(--accent); font-size: 20px; border-bottom: 1px solid #282a2e;">BAG BOT V2</div>
-    <div style="padding: 15px 25px; background: #1a1a1a; border-left: 4px solid var(--accent); margin-top: 10px;">🎭 Rôles-Réactions</div>
+    <div style="padding: 25px; font-weight: bold; color: var(--accent); font-size: 20px;">BAG BOT V2</div>
+    <div style="padding: 15px 25px; background: #1a1a1a; border-left: 4px solid var(--accent);">🎭 Rôles-Réactions</div>
 </div>
 
 <div class="main">
     <div class="header">
         <button class="menu-btn" onclick="toggleMenu()">☰ Menu</button>
-        <h3 style="margin:0;">Configuration</h3>
+        <h3 style="margin:0;">Configuration Rôles</h3>
     </div>
 
     <div class="panel">
         <div class="tabs">
-            <div class="tab active" id="t-simple" onclick="setMode('simple')">Simple</div>
-            <div class="tab" id="t-embed" onclick="setMode('embed')">Embed</div>
+            <div class="tab active" id="tab-simple" onclick="setMode('simple')">Simple</div>
+            <div class="tab" id="tab-embed" onclick="setMode('embed')">Embed</div>
         </div>
 
-        <label>Modifier un message existant (ID)</label>
-        <input type="text" id="messageId" placeholder="Collez l'ID ici ou laissez vide">
+        <label>ID Message (Optionnel)</label>
+        <input type="text" id="messageId" placeholder="Collez l'ID pour modifier">
 
         <label>Salon Discord</label>
-        <select id="channelId"><option value="">Chargement des salons...</option></select>
+        <select id="channelId"><option value="">Chargement...</option></select>
 
-        <label>Rôle à attribuer</label>
-        <select id="roleId"><option value="">Chargement des rôles...</option></select>
+        <label>Rôle</label>
+        <select id="roleId"><option value="">Chargement...</option></select>
 
-        <label>Mode de fonctionnement</label>
+        <label>Mode (Style DraftBot)</label>
         <select id="roleMode">
             <option value="normal">Normal (Ajout/Retrait)</option>
             <option value="inverse">Inversé</option>
-            <option value="definitif">Définitif (Ajout uniquement)</option>
+            <option value="definitif">Définitif</option>
         </select>
 
-        <label>Type de composant</label>
+        <label>Affichage</label>
         <select id="displayType">
             <option value="button">Bouton</option>
             <option value="select">Menu Déroulant</option>
         </select>
 
-        <div id="simple-fields">
-            <label>Contenu du message</label>
+        <div id="f-simple">
+            <label>Texte</label>
             <textarea id="simpleContent" rows="3" oninput="updatePreview()"></textarea>
         </div>
 
-        <div id="embed-fields" style="display:none;">
-            <label>Titre de l'Embed</label>
+        <div id="f-embed" style="display:none;">
+            <label>Titre</label>
             <input type="text" id="title" oninput="updatePreview()">
             <label>Description</label>
             <textarea id="description" rows="3" oninput="updatePreview()"></textarea>
             <label>Image</label>
-            <input type="file" id="imageFile" accept="image/*" onchange="previewFile(this)" style="margin-bottom:10px;">
-            <input type="text" id="imageUrl" placeholder="Ou lien URL direct..." oninput="updatePreview()">
+            <input type="file" id="imageFile" accept="image/*" onchange="previewFile(this)">
+            <input type="text" id="imageUrl" placeholder="Ou URL image..." oninput="updatePreview()">
         </div>
 
-        <div class="preview-area">
+        <div class="preview">
             <div id="pre-title" style="font-weight:bold;">Aperçu</div>
             <div id="pre-desc">...</div>
             <img id="pre-img">
@@ -100,7 +98,7 @@
 </div>
 
 <script>
-    let mode = 'simple';
+    let currentMode = 'simple';
 
     function toggleMenu() {
         document.getElementById('sidebar').classList.toggle('open');
@@ -108,11 +106,11 @@
     }
 
     function setMode(m) {
-        mode = m;
-        document.getElementById('t-simple').classList.toggle('active', m === 'simple');
-        document.getElementById('t-embed').classList.toggle('active', m === 'embed');
-        document.getElementById('simple-fields').style.display = m === 'simple' ? 'block' : 'none';
-        document.getElementById('embed-fields').style.display = m === 'embed' ? 'block' : 'none';
+        currentMode = m;
+        document.getElementById('tab-simple').classList.toggle('active', m === 'simple');
+        document.getElementById('tab-embed').classList.toggle('active', m === 'embed');
+        document.getElementById('f-simple').style.display = m === 'simple' ? 'block' : 'none';
+        document.getElementById('f-embed').style.display = m === 'embed' ? 'block' : 'none';
         updatePreview();
     }
 
@@ -129,47 +127,32 @@
     }
 
     function updatePreview() {
-        if(mode === 'simple') {
-            document.getElementById('pre-title').innerText = "Message Simple";
-            document.getElementById('pre-desc').innerText = document.getElementById('simpleContent').value || "Texte du message...";
-            document.getElementById('pre-img').style.display = 'none';
-        } else {
-            document.getElementById('pre-title').innerText = document.getElementById('title').value || "Titre de l'Embed";
-            document.getElementById('pre-desc').innerText = document.getElementById('description').value || "Description...";
-        }
+        const title = document.getElementById('title').value || "Titre";
+        const desc = currentMode === 'simple' ? document.getElementById('simpleContent').value : document.getElementById('description').value;
+        document.getElementById('pre-title').innerText = currentMode === 'simple' ? "Message Simple" : title;
+        document.getElementById('pre-desc').innerText = desc || "...";
     }
 
     async function load() {
-        try {
-            const [c, r] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
-            const channels = await c.json();
-            const roles = await r.json();
-            
-            if(channels.length > 0) {
-                document.getElementById('channelId').innerHTML = channels.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
-            }
-            if(roles.length > 0) {
-                document.getElementById('roleId').innerHTML = roles.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
-            }
-        } catch(e) { console.error("Erreur de chargement"); }
+        const [c, r] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
+        const channels = await c.json();
+        const roles = await r.json();
+        document.getElementById('channelId').innerHTML = channels.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
+        document.getElementById('roleId').innerHTML = roles.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
     }
 
     async function deploy() {
         const cId = document.getElementById('channelId').value;
-        const rId = document.getElementById('roleId').value;
-
-        if (!cId || cId === "" || cId.includes("Chargement")) {
-            return alert("❌ Erreur : Veuillez sélectionner un salon valide.");
-        }
+        if (!cId || cId === "undefined") return alert("Sélectionnez un salon !");
 
         const btn = document.getElementById('btn-deploy');
-        btn.innerText = "ENVOI EN COURS...";
+        btn.innerText = "ENVOI...";
         btn.disabled = true;
 
         const fd = new FormData();
-        fd.append('mode', mode);
+        fd.append('mode', currentMode);
         fd.append('channelId', cId);
-        fd.append('roleId', rId);
+        fd.append('roleId', document.getElementById('roleId').value);
         fd.append('roleMode', document.getElementById('roleMode').value);
         fd.append('displayType', document.getElementById('displayType').value);
         fd.append('messageId', document.getElementById('messageId').value);
@@ -184,14 +167,10 @@
         try {
             const res = await fetch('/update-bot', { method: 'POST', body: fd });
             const data = await res.json();
-            if(data.success) alert("✅ Déployé avec succès !");
-            else alert("❌ Erreur : " + data.message);
-        } catch(e) {
-            alert("❌ Erreur de connexion au serveur.");
-        } finally {
-            btn.innerText = "DÉPLOYER SUR DISCORD";
-            btn.disabled = false;
-        }
+            alert(data.success ? "✅ Succès !" : "❌ " + data.message);
+        } catch(e) { alert("Erreur serveur."); }
+        btn.innerText = "DÉPLOYER SUR DISCORD";
+        btn.disabled = false;
     }
     load();
 </script>
