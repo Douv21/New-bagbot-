@@ -14,17 +14,14 @@
         .tabs { display: flex; background: #2f3136; border-radius: 8px; margin-bottom: 20px; padding: 4px; }
         .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; color: #888; }
         .tab.active { background: var(--accent); color: white; font-weight: bold; }
-        label { display: block; margin: 12px 0 4px; font-size: 11px; color: #8e9297; text-transform: uppercase; font-weight: bold; }
+        label { display: block; margin: 12px 0 4px; font-size: 11px; color: #8e9297; text-transform: uppercase; }
         select, input, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 6px; box-sizing: border-box; }
         .btn-send { background: var(--accent); color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
 <div class="sidebar" id="sidebar">
-    <div style="padding: 20px; display: flex; justify-content: space-between;">
-        <b style="color: var(--accent)">BAG BOT V2</b>
-        <button onclick="toggleMenu()" style="background:none; border:none; color:red; font-size:24px;">×</button>
-    </div>
+    <div style="padding:20px; display:flex; justify-content:space-between;"><b>BAG BOT V2</b><button onclick="toggleMenu()" style="background:none; border:none; color:red; font-size:24px;">×</button></div>
 </div>
 <div class="main">
     <button onclick="toggleMenu()" style="background:#2f3136; color:white; border:none; padding:10px; border-radius:6px; margin-bottom:15px;">☰ Menu</button>
@@ -33,22 +30,16 @@
             <div class="tab active" id="ts" onclick="setMode('simple')">Simple</div>
             <div class="tab" id="te" onclick="setMode('embed')">Embed</div>
         </div>
-        <label>Salon</label><select id="channelId"><option value="">Chargement...</option></select>
-        <label>Rôle</label><select id="roleId"><option value="">Chargement...</option></select>
-        
-        <div id="fs">
-            <label>Message</label><textarea id="txt">Cliquez ici</textarea>
-        </div>
+        <label>Salon</label><select id="channelId"><option>Chargement...</option></select>
+        <label>Rôle</label><select id="roleId"><option>Chargement...</option></select>
+        <div id="fs"><label>Message</label><textarea id="txt">Cliquez ici</textarea></div>
         <div id="fe" style="display:none;">
             <label>Titre</label><input type="text" id="tit">
             <label>Description</label><textarea id="des"></textarea>
             <label>Image</label><input type="file" id="img">
         </div>
-
         <label>ID Message (Optionnel)</label><input type="text" id="mid">
-        <label>Affichage</label>
-        <select id="disp"><option value="button">Bouton</option><option value="select">Menu</option></select>
-
+        <label>Affichage</label><select id="disp"><option value="button">Bouton</option><option value="select">Menu</option></select>
         <button class="btn-send" id="btn" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
     </div>
 </div>
@@ -62,22 +53,15 @@
         document.getElementById('fs').style.display = m === 'simple' ? 'block' : 'none';
         document.getElementById('fe').style.display = m === 'embed' ? 'block' : 'none';
     }
-
     async function load() {
         try {
-            // Utilisation de chemins relatifs pour éviter les erreurs d'IP
-            const cR = await fetch('./get-channels');
-            const rR = await fetch('./get-roles');
-            const c = await cR.json();
-            const r = await rR.json();
-            
+            const cR = await fetch('/api/chans');
+            const rR = await fetch('/api/rols');
+            const c = await cR.json(); const r = await rR.json();
             document.getElementById('channelId').innerHTML = c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
             document.getElementById('roleId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
-        } catch(e) {
-            document.getElementById('channelId').innerHTML = '<option>Erreur serveur</option>';
-        }
+        } catch(e) { document.getElementById('channelId').innerHTML = '<option>Erreur Connexion</option>'; }
     }
-
     async function deploy() {
         const fd = new FormData();
         fd.append('channelId', document.getElementById('channelId').value);
@@ -90,13 +74,11 @@
         fd.append('description', document.getElementById('des').value);
         if (document.getElementById('img').files[0]) fd.append('imageFile', document.getElementById('img').files[0]);
 
-        const b = document.getElementById('btn'); b.disabled = true;
         try {
-            const res = await fetch('./deploy-bot', { method: 'POST', body: fd });
+            const res = await fetch('/api/send', { method: 'POST', body: fd });
             const d = await res.json();
-            alert(d.success ? "✅ Succès !" : "❌ " + d.message);
+            alert(d.success ? "✅ Envoyé !" : "❌ " + d.message);
         } catch(e) { alert("❌ Erreur de connexion"); }
-        b.disabled = false;
     }
     load();
 </script>
