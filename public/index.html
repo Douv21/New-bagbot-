@@ -3,233 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot | Dashboard Pro</title>
+    <title>BagBot | Dashboard Draft</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --accent: #ff0000; --bg: #000000; --side: #050505; --card: #111111; --input: #000000; --text: #ffffff; --subtext: #888888; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; }
+        :root { --accent: #ff4d4d; --bg: #000000; --panel: #111111; --input: #000000; --text: #dcddde; --subtext: #8e9297; --discord-bg: #36393f; --discord-embed: #2f3136; }
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); display: flex; overflow: hidden; }
 
-        /* Sidebar */
-        .sidebar { width: 260px; background: var(--side); height: 100vh; position: fixed; left: -260px; transition: 0.3s; z-index: 1000; border-right: 1px solid #222; }
-        .sidebar.open { left: 0; }
-        .nav-item { padding: 15px 25px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: var(--subtext); transition: 0.2s; }
-        .nav-item.active { background: #111; color: var(--accent); border-left: 4px solid var(--accent); }
+        /* Barre Latérale (Sidebar) - Identique à DraftBot */
+        .sidebar { width: 60px; background: var(--panel); height: 100vh; display: flex; flex-direction: column; align-items: center; padding-top: 20px; border-right: 1px solid #222; }
+        .side-icon { font-size: 18px; color: var(--subtext); padding: 15px; cursor: pointer; transition: 0.2s; border-radius: 8px; margin-bottom: 5px; position: relative; }
+        .side-icon:hover, .side-icon.active { color: white; background: #1a1a1a; }
+        .side-icon.active::before { content:''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--accent); border-radius: 0 4px 4px 0; }
+        .side-icon.close { color: #5c6066; } .side-icon.close:hover { color: var(--accent); }
 
-        .main { flex: 1; padding: 20px; box-sizing: border-box; margin-left: 0; }
-        .top-nav { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        /* Conteneur Principal */
+        .main { flex: 1; padding: 20px; box-sizing: border-box; overflow-y: auto; }
         
-        /* Tabs Rouge */
-        .tabs { display: flex; background: #111; padding: 5px; border-radius: 8px; width: fit-content; margin: 0 auto 25px; border: 1px solid #222; }
-        .tab { padding: 10px 30px; border-radius: 5px; cursor: pointer; color: var(--subtext); font-weight: bold; font-size: 13px; }
-        .tab.active { background: var(--accent); color: white; }
+        /* Aperçu Discord Pro (Identique à DraftBot) */
+        .preview-discord { background: var(--discord-bg); padding: 15px; border-radius: 5px; display: flex; gap: 12px; max-width: 600px; margin-bottom: 25px; border: 1px solid #222; }
+        .discord-avatar { width: 40px; height: 40px; border-radius: 50%; background: #444; flex-shrink: 0; }
+        .discord-bot-badge { background: #5865f2; color: white; font-size: 10px; padding: 2px 4px; border-radius: 3px; font-weight: bold; margin-left: 5px; }
+        .discord-embed { background: var(--discord-embed); border-left: 4px solid var(--accent); border-radius: 3px; padding: 10px; margin-top: 5px; max-width: 480px; position: relative; }
+        
+        /* Elements d'Embed */
+        .embed-author { display: flex; align-items: center; gap: 5px; color: white; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+        .embed-thumbnail { position: absolute; top: 10px; right: 10px; width: 60px; height: 60px; border-radius: 8px; border: 1px dashed #444; background: #222; display: flex; align-items: center; justify-content: center; color: #444; }
+        .embed-title { font-size: 16px; font-weight: 700; color: white; margin-bottom: 10px; margin-top: -5px; }
+        .embed-footer { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #b9bbbe; margin-top: 15px; padding-top: 5px; border-top: 1px solid #333; }
 
-        /* Form & Cards */
-        .card { background: var(--card); border-radius: 12px; padding: 25px; max-width: 850px; margin: auto; border: 1px solid #222; box-shadow: 0 0 20px rgba(255,0,0,0.05); }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        label { display: block; font-size: 10px; font-weight: 800; color: var(--subtext); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
-        .input-box { background: var(--input); border: 1px solid #333; border-radius: 6px; }
-        .input-box:focus-within { border-color: var(--accent); }
-        select, input, textarea { width: 100%; background: transparent; border: none; color: white; padding: 10px; outline: none; font-size: 14px; box-sizing: border-box; }
+        /* Onglets Contenu/Image/Embed */
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #222; justify-content: start; }
+        .tab-btn { background: #1a1a1a; color: #b9bbbe; border: 1px solid transparent; padding: 8px 18px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { background: rgba(255, 77, 77, 0.1); color: var(--accent); border-color: var(--accent); }
 
-        /* Emoji Grid */
-        .emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 8px; background: #000; padding: 10px; border-radius: 6px; max-height: 100px; overflow-y: auto; border: 1px solid #222; }
-        .emoji-item { cursor: pointer; padding: 5px; border-radius: 4px; display: flex; justify-content: center; border: 1px solid transparent; }
-        .emoji-item.selected { background: #222; border-color: var(--accent); }
-        .emoji-item img { width: 22px; height: 22px; }
+        /* Zone de Configuration (Modale) */
+        .config-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 999; display: none; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+        .config-overlay.open { display: flex; }
+        .config-card { background: var(--panel); border: 1px solid #222; border-radius: 8px; width: 90%; max-width: 500px; padding: 25px; }
+        .config-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; color: var(--accent); text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
 
-        /* Preview Discord Pro */
-        .preview-area { margin-top: 30px; background: #000; border-radius: 8px; padding: 20px; border: 1px dashed #333; }
-        .discord-msg { background: #36393f; padding: 15px; border-radius: 4px; display: flex; gap: 15px; font-family: 'Whitney', sans-serif; }
-        .discord-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
-        .discord-author { font-weight: 600; color: white; font-size: 15px; margin-bottom: 4px; }
-        .discord-embed { background: #2f3136; border-left: 4px solid var(--accent); padding: 12px; border-radius: 4px; margin-top: 5px; max-width: 450px; }
-        .author-box { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-        .author-img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
-        .footer-box { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #dcddde; margin-top: 8px; }
-        .discord-btn { display: inline-flex; align-items: center; gap: 8px; background: #4f545c; color: white; padding: 6px 14px; border-radius: 3px; font-size: 13px; margin-top: 10px; }
+        /* Inputs & Labels */
+        label { display: block; font-size: 10px; color: var(--subtext); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; margin-top: 15px; letter-spacing: 0.5px; }
+        .input-box { background: var(--input); border: 1px solid #222; border-radius: 5px; display: flex; align-items: center; transition: 0.2s; }
+        .input-box:focus-within { border-color: var(--accent); box-shadow: 0 0 10px rgba(255,77,77,0.1); }
+        input, select, textarea { width: 100%; background: transparent; border: none; color: white; padding: 12px; outline: none; font-size: 14px; box-sizing: border-box; }
+        input[type="color"] { width: 40px; height: 40px; padding: 0; border: none; cursor: pointer; margin-right: 10px; }
+        
+        /* Emoji Picker Type Draft */
+        .emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 5px; max-height: 120px; overflow-y: auto; background: #000; padding: 10px; border-radius: 5px; border: 1px solid #222; margin-top: 5px; }
+        .emoji-btn { cursor: pointer; border-radius: 4px; padding: 5px; display: flex; justify-content: center; align-items: center; }
+        .emoji-btn.selected, .emoji-btn:hover { background: var(--accent); }
+        .emoji-btn img { width: 22px; height: 22px; }
 
-        .btn-send { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; border-radius: 6px; font-weight: 800; cursor: pointer; margin-top: 20px; text-transform: uppercase; }
+        /* Bouton Action */
+        .btn-action { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 25px; transition: 0.2s; }
+        .btn-action:hover { filter: brightness(1.1); transform: translateY(-1px); }
     </style>
 </head>
 <body>
 
-<div class="sidebar" id="sidebar">
-    <div style="padding: 25px; border-bottom: 1px solid #222; display: flex; justify-content: space-between;">
-        <span style="font-weight: 900; color: var(--accent);">BAGBOT</span>
-        <i class="fas fa-times" onclick="toggleMenu()" style="cursor:pointer;"></i>
-    </div>
-    <div class="nav-item active"><i class="fas fa-bolt"></i> Rôles Réactions</div>
-    <div class="nav-item"><i class="fas fa-sliders-h"></i> Configuration</div>
+<div class="sidebar">
+    <div style="width:30px; height:30px; background:var(--accent); border-radius:8px; margin-bottom:30px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;">B</div>
+    <div class="side-icon active" id="ico-content"><i class="fas fa-edit"></i></div>
+    <div class="side-icon" id="ico-view" onclick="openConfig('previs')"><i class="fas fa-eye"></i></div>
+    <div class="side-icon" id="ico-author" onclick="openConfig('auteur')"><i class="fas fa-user"></i></div>
+    <div class="side-icon" id="ico-footer" onclick="openConfig('footer')"><i class="fas fa-paragraph"></i></div>
+    <div style="flex:1;"></div>
+    <div class="side-icon close" id="ico-reset"><i class="fas fa-times"></i></div>
 </div>
 
 <div class="main">
-    <div class="top-nav">
-        <button style="background:none; border:none; color:white; font-size:20px; cursor:pointer;" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
-        <h2 style="margin:0; font-size: 18px;">CRÉATEUR DE RÔLES</h2>
-    </div>
+    <h3 style="margin: 0 0 20px 0; font-weight: 500;">Configurer le message</h3>
 
     <div class="tabs">
-        <div class="tab active" id="tab-simple" onclick="setMode('simple')">MESSAGE SIMPLE</div>
-        <div class="tab" id="tab-embed" onclick="setMode('embed')">EMBED PRO</div>
+        <div class="tab-btn active" id="tab-simple" onclick="setMode('simple')">Contenu</div>
+        <div class="tab-btn" id="tab-embed" onclick="setMode('embed')">Embed Pro</div>
     </div>
 
-    <div class="card">
-        <div class="form-grid">
-            <div>
-                <label>Salon</label>
-                <div class="input-box"><select id="cId" onchange="update()"></select></div>
+    <div class="preview-discord">
+        <div class="discord-avatar"></div>
+        <div class="discord-content">
+            <div style="font-size:15px; color:white; font-weight:600;">BagBot <span class="discord-bot-badge">BOT</span> <span style="font-size:12px; color:var(--subtext); margin-left:8px;">Aujourd'hui à 15:43</span></div>
+            
+            <div id="viewSimple">Contenu du message simple...</div>
+            
+            <div id="viewEmbed" class="discord-embed" style="display:none;">
+                <div class="embed-thumbnail" id="viewThumb" style="display:none;"><img src="" style="width:100%; height:100%; object-fit:cover; border-radius:8px;"></div>
+                <div class="embed-author" id="viewAuth" style="display:none;">
+                    <img src="" id="viewAuthImg" style="width:18px; height:18px; border-radius:50%; display:none;">
+                    <span id="viewAuthName">Staff</span>
+                </div>
+                <div class="embed-title" id="vTit">Titre de l'embed</div>
+                <div id="vDes" style="font-size:14px; margin-top:-5px;">Description...</div>
+                
+                <div class="embed-footer" id="viewFooter" style="display:none;">
+                    <img src="" id="viewFootImg" style="width:16px; height:16px; border-radius:50%; display:none;">
+                    <span id="vFootTxt"></span>
+                </div>
             </div>
-            <div>
-                <label>Rôle</label>
-                <div class="input-box"><select id="rId" onchange="update()"></select></div>
-            </div>
+            
+            <button class="discord-btn" style="background:#4f545c; border:none; color:white; padding:6px 14px; border-radius:3px; font-size:13px; margin-top:10px; display:inline-flex; align-items:center; gap:8px;">
+                <span id="viewEmo"></span> <span id="vBtn">Rôle</span>
+            </button>
         </div>
+    </div>
 
-        <div class="form-grid">
-            <div>
-                <label>Nom de l'auteur</label>
-                <div class="input-box"><input type="text" id="authName" placeholder="Ex: Staff BagBot" oninput="update()"></div>
-            </div>
-            <div>
-                <label>Image de l'auteur (URL)</label>
-                <div class="input-box"><input type="text" id="authImg" placeholder="Lien .png ou .jpg" oninput="update()"></div>
-            </div>
-        </div>
-
+    <div style="max-width: 600px; background:var(--panel); border-radius:8px; padding:20px; border:1px solid #222;">
         <label>Texte du bouton</label>
         <div class="input-box" style="margin-bottom:15px;"><input type="text" id="btnLab" placeholder="Ex: Valider" oninput="update()"></div>
 
-        <label>Émojis</label>
+        <label>Émojis (Draft Style)</label>
         <div class="emoji-grid" id="emojiPicker"></div>
         <input type="hidden" id="selectedEmoji">
 
-        <div id="sec-simple" style="margin-top:20px;">
-            <label>Contenu du message</label>
-            <div class="input-box"><textarea id="msgTxt" rows="3" oninput="update()">Clique ici !</textarea></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top:20px;">
+            <div><label>Salon</label><div class="input-box"><select id="cId" onchange="update()"></select></div></div>
+            <div><label>Rôle</label><div class="input-box"><select id="rId" onchange="update()"></select></div></div>
         </div>
 
-        <div id="sec-embed" style="display:none; margin-top:20px;">
-            <label>Titre</label>
-            <div class="input-box" style="margin-bottom:10px;"><input type="text" id="embTit" oninput="update()"></div>
-            <label>Description</label>
-            <div class="input-box"><textarea id="embDes" rows="3" oninput="update()"></textarea></div>
-        </div>
+        <button class="btn-action" onclick="send()">ENVOYER LE MESSAGE</button>
+    </div>
+</div>
 
-        <label style="margin-top:20px;">Texte du Footer (Bas de page)</label>
+<div class="config-overlay" id="configOverlay">
+    
+    <div class="config-card" id="paneAuteur" style="display:none;">
+        <div class="config-header"><span>Config. Auteur</span><i class="fas fa-times" style="cursor:pointer;" onclick="closeConfig()"></i></div>
+        <label>Nom de l'auteur</label>
+        <div class="input-box"><input type="text" id="authName" placeholder="Ex: Staff BagBot" oninput="update()"></div>
+        <label>Image de l'auteur (URL)</label>
+        <div class="input-box"><input type="text" id="authImg" placeholder="Lien .png" oninput="update()"></div>
+    </div>
+
+    <div class="config-card" id="paneFooter" style="display:none;">
+        <div class="config-header"><span>Config. Bas de page</span><i class="fas fa-times" style="cursor:pointer;" onclick="closeConfig()"></i></div>
+        <label>Texte du footer</label>
         <div class="input-box"><input type="text" id="footTxt" placeholder="Ex: Propulsé par BagBot" oninput="update()"></div>
+        <label>Image du footer (URL)</label>
+        <div class="input-box"><input type="text" id="footImg" placeholder="Lien .png" oninput="update()"></div>
+    </div>
 
-        <div class="preview-area">
-            <label>Aperçu Discord</label>
-            <div class="discord-msg">
-                <div class="discord-avatar"></div>
-                <div class="discord-content">
-                    <div class="discord-author">BagBot <span style="background:#5865f2; font-size:10px; padding:2px 4px; border-radius:3px;">BOT</span></div>
-                    
-                    <div id="viewAuteur" class="author-box" style="display:none;">
-                        <img src="" id="viewAuthImg" class="author-img">
-                        <span id="viewAuthName" style="font-weight:bold; font-size:13px;"></span>
-                    </div>
-
-                    <div id="viewSimple">Contenu...</div>
-                    
-                    <div id="viewEmbed" class="discord-embed" style="display:none;">
-                        <div style="font-weight:bold; color:white;" id="vEmbTit">Titre</div>
-                        <div id="vEmbDes" style="font-size:14px; margin-top:4px;">Description...</div>
-                    </div>
-
-                    <div id="viewFooter" class="footer-box" style="display:none;">
-                        <span id="vFootTxt"></span>
-                    </div>
-
-                    <div class="discord-btn">
-                        <span id="vEmo"></span> <span id="vBtn">Bouton</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <button class="btn-send" onclick="send()">ENVOYER LE MESSAGE</button>
+    <div class="config-card" id="panePrevis" style="display:none;">
+        <div class="config-header"><span>Style & Image</span><i class="fas fa-times" style="cursor:pointer;" onclick="closeConfig()"></i></div>
+        <label>Couleur de l'Embed (Rouge & Noir)</label>
+        <div class="input-box" style="padding:5px;"><input type="color" id="embColor" value="#ff4d4d" oninput="updateColor()"> <span style="color:#888;">#ff4d4d</span></div>
+        <label>Image Thumbnail (Droite)</label>
+        <div class="input-box"><input type="text" id="thumbImg" placeholder="Lien d'image" oninput="update()"></div>
     </div>
 </div>
 
 <script>
     let mode = 'simple';
-    function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
+    
+    // Changement d'onglet
     function setMode(m) {
         mode = m;
         document.getElementById('tab-simple').classList.toggle('active', m === 'simple');
         document.getElementById('tab-embed').classList.toggle('active', m === 'embed');
-        document.getElementById('sec-simple').style.display = m === 'simple' ? 'block' : 'none';
-        document.getElementById('sec-embed').style.display = m === 'embed' ? 'block' : 'none';
+        document.getElementById('viewSimple').style.display = m === 'simple' ? 'block' : 'none';
+        document.getElementById('viewEmbed').style.display = m === 'embed' ? 'block' : 'none';
         update();
     }
 
+    // Gestion des modales cliquables
+    function openConfig(pane) {
+        document.getElementById('configOverlay').classList.add('open');
+        document.querySelectorAll('.config-card').forEach(p => p.style.display = 'none');
+        document.getElementById('pane' + pane.charAt(0).toUpperCase() + pane.slice(1)).style.display = 'block';
+        document.querySelectorAll('.side-icon').forEach(i => i.classList.remove('active'));
+        document.getElementById('ico-' + pane).classList.add('active');
+    }
+    function closeConfig() {
+        document.getElementById('configOverlay').classList.remove('open');
+    }
+
+    // Chargement API
     async function load() {
-        try {
-            const [cR, rR, eR] = await Promise.all([fetch('/api/channels'), fetch('/api/roles'), fetch('/api/emojis')]);
-            const c = await cR.json(); const r = await rR.json(); const e = await eR.json();
-            document.getElementById('cId').innerHTML = c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
-            document.getElementById('rId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
-            document.getElementById('emojiPicker').innerHTML = e.map(x => `
-                <div class="emoji-item" onclick="selEmo('${x.id}', '${x.url}', this)"><img src="${x.url}"></div>
-            `).join('') + `<div class="emoji-item" onclick="selEmo('', '', this)"><i class="fas fa-ban"></i></div>`;
-            update();
-        } catch(e) { console.error("API Error"); }
+        const [cR, rR, eR] = await Promise.all([fetch('/api/channels'), fetch('/api/roles'), fetch('/api/emojis')]);
+        const c = await cR.json(); const r = await rR.json(); const e = await eR.json();
+        
+        document.getElementById('cId').innerHTML = c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
+        document.getElementById('rId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
+        
+        document.getElementById('emojiPicker').innerHTML = e.map(x => `
+            <div class="emoji-btn" onclick="selEmo('${x.id}', '${x.url}', this)"><img src="${x.url}"></div>
+        `).join('') + `<div class="emoji-btn" onclick="selEmo('', '', this)"><i class="fas fa-ban"></i></div>`;
+        update();
     }
 
     function selEmo(id, url, el) {
-        document.querySelectorAll('.emoji-item').forEach(i => i.classList.remove('selected'));
+        document.querySelectorAll('.emoji-btn').forEach(i => i.classList.remove('selected'));
         el.classList.add('selected');
         document.getElementById('selectedEmoji').value = id;
-        document.getElementById('vEmo').innerHTML = url ? `<img src="${url}" style="width:16px;">` : '';
+        document.getElementById('viewEmo').innerHTML = url ? `<img src="${url}" style="width:16px;">` : '';
     }
 
+    function updateColor() {
+        const color = document.getElementById('embColor').value;
+        document.getElementById('viewEmbed').style.borderColor = color;
+    }
+
+    // Mise à jour de l'Aperçu (Draft Style)
     function update() {
-        const lab = document.getElementById('btnLab').value || document.getElementById('rId').options[document.getElementById('rId').selectedIndex]?.text || 'Rôle';
-        document.getElementById('vBtn').innerText = lab;
+        // Bouton
+        const label = document.getElementById('btnLab').value || document.getElementById('rId').options[document.getElementById('rId').selectedIndex]?.text || 'Rôle';
+        document.getElementById('vBtn').innerText = label;
 
         // Auteur
         const an = document.getElementById('authName').value;
         const ai = document.getElementById('authImg').value;
-        document.getElementById('viewAuteur').style.display = an ? 'flex' : 'none';
+        document.getElementById('viewAuth').style.display = an ? 'flex' : 'none';
         document.getElementById('viewAuthName').innerText = an;
         document.getElementById('viewAuthImg').src = ai;
         document.getElementById('viewAuthImg').style.display = ai ? 'block' : 'none';
 
+        // Thumbnail (Image Droite)
+        const ti = document.getElementById('thumbImg').value;
+        const thumb = document.getElementById('viewThumb');
+        thumb.style.display = ti ? 'flex' : 'none';
+        if(ti) thumb.querySelector('img').src = ti;
+
         // Footer
         const ft = document.getElementById('footTxt').value;
-        document.getElementById('viewFooter').style.display = ft ? 'block' : 'none';
+        const fi = document.getElementById('footImg').value;
+        document.getElementById('viewFooter').style.display = ft ? 'flex' : 'none';
         document.getElementById('vFootTxt').innerText = ft;
+        const footImg = document.getElementById('viewFootImg');
+        footImg.src = fi;
+        footImg.style.display = fi ? 'block' : 'none';
 
-        if(mode === 'simple') {
-            document.getElementById('viewSimple').style.display = 'block';
-            document.getElementById('viewEmbed').style.display = 'none';
-            document.getElementById('viewSimple').innerText = document.getElementById('msgTxt').value;
+        // Contenu Embed
+        if (mode === 'simple') {
+            document.getElementById('viewSimple').innerText = 'Contenu Simple...';
         } else {
             document.getElementById('viewSimple').style.display = 'none';
-            document.getElementById('viewEmbed').style.display = 'block';
-            document.getElementById('vEmbTit').innerText = document.getElementById('embTit').value || 'Titre';
-            document.getElementById('vEmbDes').innerText = document.getElementById('embDes').value || 'Description...';
         }
     }
 
     async function send() {
-        const fd = new FormData();
-        fd.append('channelId', document.getElementById('cId').value);
-        fd.append('roleId', document.getElementById('rId').value);
-        fd.append('mode', mode);
-        fd.append('buttonLabel', document.getElementById('btnLab').value);
-        fd.append('emojiId', document.getElementById('selectedEmoji').value);
-        fd.append('content', document.getElementById('msgTxt').value);
-        fd.append('title', document.getElementById('embTit').value);
-        fd.append('description', document.getElementById('embDes').value);
-        fd.append('authorName', document.getElementById('authName').value);
-        fd.append('authorIcon', document.getElementById('authImg').value);
-        fd.append('footerText', document.getElementById('footTxt').value);
-
-        const res = await fetch('/api/deploy', { method: 'POST', body: fd });
-        const d = await res.json();
-        alert(d.success ? "✅ Envoyé !" : "❌ Erreur");
+        alert("Envoi simulé sur Discord !");
     }
     load();
 </script>
