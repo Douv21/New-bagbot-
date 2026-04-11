@@ -3,101 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Ultimate Dashboard</title>
+    <title>BagBot Designer</title>
     <style>
-        :root { --accent: #ff4d4d; --bg: #111214; --card: #2b2d31; --text: #dbdee1; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: var(--card); padding: 20px; border-radius: 12px; width: 100%; max-width: 500px; margin-top: 20px; }
-        .embed-preview { background: #1e1f22; border-left: 4px solid var(--accent); padding: 15px; border-radius: 4px; width: 100%; max-width: 470px; margin-bottom: 20px; }
-        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: none; }
-        input, select { background: #111; color: white; }
-        button { background: var(--accent); color: white; font-weight: bold; cursor: pointer; }
-        .reaction-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-        .emoji-btn { width: 45px; height: 45px; background: #333; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px; }
+        :root { --bg: #313338; --card: #2b2d31; --accent: #5865f2; --text: #dbdee1; }
+        body { background: var(--bg); color: var(--text); font-family: 'gg sans', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .preview-container { width: 100%; max-width: 500px; background: #1e1f22; border-radius: 8px; padding: 15px; margin-bottom: 20px; border-left: 4px solid var(--accent); }
+        .preview-img { width: 100%; border-radius: 4px; margin-top: 10px; display: none; }
+        .editor-card { background: var(--card); width: 100%; max-width: 500px; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; background: #1e1f22; border: 1px solid #111; color: white; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .reac-line { display: flex; gap: 5px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
-    <h2>BagBot Dashboard</h2>
-
-    <div class="embed-preview">
-        <div id="p-title" contenteditable="true" style="font-weight:bold; font-size:18px;">Titre de l'embed</div>
-        <div id="p-desc" contenteditable="true" style="margin-top:10px;">Description ici...</div>
+    <div class="preview-container">
+        <h3 id="view-title" style="margin:0;">Titre de l'embed</h3>
+        <p id="view-desc" style="font-size: 14px; color: #b5bac1;">Ceci est la description du message...</p>
+        <img id="view-banner" class="preview-img" src="">
     </div>
 
-    <div class="card">
-        <label>Salon Discord</label>
+    <div class="editor-card">
+        <input type="text" id="in-title" placeholder="Titre..." oninput="updatePreview()">
+        <textarea id="in-desc" placeholder="Description..." rows="3" oninput="updatePreview()"></textarea>
+        
+        <label>Bannière (Image)</label>
+        <input type="file" id="file-banner" onchange="uploadToBot(this, 'banner')">
+        
+        <label>Salon</label>
         <select id="sel-chans"></select>
 
-        <label>Mode d'attribution des rôles</label>
+        <label>Mode</label>
         <select id="sel-mode">
             <option value="multiple">Multiple (Ajout/Retrait)</option>
-            <option value="unique">Unique (Un seul à la fois)</option>
-            <option value="definitif">Définitif (Retrait impossible)</option>
+            <option value="unique">Unique (Un seul rôle)</option>
+            <option value="definitif">Définitif (Permanent)</option>
         </select>
 
-        <label>URL Image de fond (Bannière)</label>
-        <input type="text" id="in-banner" placeholder="http://Lien-vers-image.png">
-
-        <div id="reacs-container"></div>
-        <button type="button" onclick="addReactionLine()" style="background:#444;">+ Ajouter un rôle</button>
-
-        <button onclick="deploy()">🚀 DÉPLOYER SUR DISCORD</button>
+        <div id="reacs"></div>
+        <button onclick="addReac()" style="background:#4e5058;">+ Ajouter un rôle</button>
+        <button onclick="deploy()" style="background:#248046;">🚀 DÉPLOYER</button>
     </div>
 
     <script>
-        const API = "http://192.168.1.133:49501"; //
-        let roles = [];
+        const API = "http://192.168.1.133:49501";
+        let bannerUrl = "";
 
-        async function init() {
-            try {
-                const rChans = await fetch(`${API}/api/channels`);
-                const dChans = await rChans.json();
-                document.getElementById('sel-chans').innerHTML = dChans.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-
-                const rRoles = await fetch(`${API}/api/roles`);
-                roles = await rRoles.json();
-            } catch (e) { alert("Erreur de connexion au Bot !"); }
+        function updatePreview() {
+            document.getElementById('view-title').innerText = document.getElementById('in-title').value || "Titre...";
+            document.getElementById('view-desc').innerText = document.getElementById('in-desc').value || "Description...";
         }
 
-        function addReactionLine() {
+        async function uploadToBot(input, type) {
+            const formData = new FormData();
+            formData.append('file', input.files[0]);
+            const res = await fetch(`${API}/api/upload`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if(data.url) {
+                bannerUrl = data.url;
+                const img = document.getElementById('view-banner');
+                img.src = data.url; img.style.display = 'block';
+            }
+        }
+
+        async function init() {
+            const r = await fetch(`${API}/api/channels`);
+            const d = await r.json();
+            document.getElementById('sel-chans').innerHTML = d.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+        }
+
+        function addReac() {
             const div = document.createElement('div');
-            div.className = 'reaction-row';
-            div.innerHTML = `
-                <input type="text" placeholder="Emoji (ou ID)" style="width:80px;" class="reac-emoji">
-                <select class="reac-role">${roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}</select>
-            `;
-            document.getElementById('reacs-container').appendChild(div);
+            div.className = 'reac-line';
+            div.innerHTML = `<input type="text" placeholder="Emoji" class="r-e" style="width:60px;"> <input type="text" placeholder="ID Rôle" class="r-id">`;
+            document.getElementById('reacs').appendChild(div);
         }
 
         async function deploy() {
-            const reactions = [];
-            document.querySelectorAll('.reaction-row').forEach(row => {
-                reactions.push({
-                    emoji: row.querySelector('.reac-emoji').value,
-                    roleId: row.querySelector('.reac-role').value
-                });
-            });
+            const reactions = Array.from(document.querySelectorAll('.reac-line')).map(l => ({
+                emoji: l.querySelector('.r-e').value,
+                roleId: l.querySelector('.r-id').value
+            }));
 
-            const payload = {
-                channelId: document.getElementById('sel-chans').value,
-                mode: document.getElementById('sel-mode').value,
-                title: document.getElementById('p-title').innerText,
-                description: document.getElementById('p-desc').innerText,
-                banner: document.getElementById('in-banner').value,
-                reactions: reactions
-            };
-
-            const res = await fetch(`${API}/api/deploy`, {
+            await fetch(`${API}/api/deploy`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    channelId: document.getElementById('sel-chans').value,
+                    title: document.getElementById('in-title').value,
+                    description: document.getElementById('in-desc').value,
+                    banner: bannerUrl,
+                    mode: document.getElementById('sel-mode').value,
+                    reactions: reactions
+                })
             });
-
-            if (res.ok) alert("✅ Message envoyé !");
-            else alert("❌ Erreur lors de l'envoi.");
+            alert("Déployé !");
         }
-
         window.onload = init;
     </script>
 </body>
