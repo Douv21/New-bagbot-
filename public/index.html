@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot V2</title>
+    <title>BagBot Admin</title>
     <style>
         :root { --accent: #ff4d4d; --bg: #0f1012; --card: #18191c; }
         body { margin: 0; font-family: sans-serif; background: var(--bg); color: white; display: flex; }
@@ -24,7 +24,7 @@
 <body>
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header"><b>BAG BOT V2</b><button class="close-btn" onclick="toggleMenu()">×</button></div>
-    <div style="padding:20px; border-left:4px solid var(--accent); background:#1a1a1a;">🎭 Rôles</div>
+    <div style="padding:20px; border-left:4px solid var(--accent); background:#1a1a1a;">🎭 Configuration</div>
 </div>
 <div class="main">
     <button onclick="toggleMenu()" style="background:#2f3136; color:white; border:none; padding:10px 15px; border-radius:6px; margin-bottom:15px;">☰ Menu</button>
@@ -43,7 +43,7 @@
         </div>
         <label>ID Message (Modif)</label><input type="text" id="msgId">
         <label>Affichage</label><select id="disp"><option value="button">Bouton</option><option value="select">Menu</option></select>
-        <button class="btn-send" id="btn" onclick="deploy()">DÉPLOYER</button>
+        <button class="btn-send" id="btn" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
     </div>
 </div>
 <script>
@@ -58,11 +58,11 @@
     }
     async function load() {
         try {
-            const [cR, rR] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
+            const [cR, rR] = await Promise.all([fetch('/get-channels'), fetch('/get-roles')]);
             const c = await cR.json(); const r = await rR.json();
             document.getElementById('channelId').innerHTML = c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
             document.getElementById('roleId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
-        } catch(e) { alert("Erreur de chargement des listes."); }
+        } catch(e) { console.error("Erreur de chargement"); }
     }
     async function deploy() {
         const fd = new FormData();
@@ -76,13 +76,11 @@
         fd.append('description', document.getElementById('desc').value);
         if (document.getElementById('img').files[0]) fd.append('imageFile', document.getElementById('img').files[0]);
 
-        const b = document.getElementById('btn'); b.disabled = true;
         try {
-            const res = await fetch('/api/deploy', { method: 'POST', body: fd });
+            const res = await fetch('/deploy-bot', { method: 'POST', body: fd });
             const d = await res.json();
-            alert(d.success ? "✅ Envoyé !" : "❌ " + d.message);
-        } catch(e) { alert("❌ Erreur de connexion au serveur."); }
-        b.disabled = false;
+            alert(d.success ? "✅ Succès !" : "❌ " + d.message);
+        } catch(e) { alert("❌ Problème de connexion."); }
     }
     load();
 </script>
