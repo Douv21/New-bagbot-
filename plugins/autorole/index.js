@@ -1,6 +1,5 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, AttachmentBuilder } = require('discord.js');
 const multer = require('multer');
-const path = require('path');
 const fs = require('fs');
 
 const upload = multer({ dest: 'public/uploads/' });
@@ -11,72 +10,69 @@ module.exports = function(app, client) {
     app.get('/api/channels', async (req, res) => {
         const guild = client.guilds.cache.first();
         if (!guild) return res.json([]);
-        res.json(guild.channels.cache.filter(c => c.type === 0).map(c => ({ id: c.id, name: c.name })));
+        // On s'assure que l'ID est bien envoyé comme une String
+        res.json(guild.channels.cache.filter(c => c.type === 0).map(c => ({ id: String(c.id), name: c.name })));
     });
 
     app.get('/api/roles', async (req, res) => {
         const guild = client.guilds.cache.first();
         if (!guild) return res.json([]);
-        res.json(guild.roles.cache.filter(r => r.name !== "@everyone" && !r.managed).map(r => ({ id: r.id, name: r.name })));
+        res.json(guild.roles.cache.filter(r => r.name !== "@everyone" && !r.managed).map(r => ({ id: String(r.id), name: r.name })));
     });
 
     app.post('/update-bot', upload.single('imageFile'), async (req, res) => {
         try {
-            const { mode, channelId, roleId, roleMode, displayType, messageId, content, title, description, imageUrl } = req.body;
+            // Extraction et nettoyage strict des IDs
+            const channelId = req.body.channelId ? String(req.body.channelId).trim() : null;
+            const roleId = req.body.roleId ? String(req.body.roleId).trim() : null;
+            const messageId = req.body.messageId ? String(req.body.messageId).trim() : null;
 
-            // Sécurité Snowflake : On vérifie que ce sont bien des chiffres
-            const isValidId = (id) => id && /^\d{17,20}$/.test(String(id).trim());
+            if (!channelId || channelId === "undefined" || !/^\d+$/.test(channelId)) {
+                return res.status(400).json({ success: false, message: "ID Salon invalide (Snowflake manquant)" });
+            }
 
-            if (!isValidId(channelId)) return res.status(400).json({ success: false, message: "ID Salon invalide (reçu: " + channelId + ")" });
-            if (!isValidId(roleId)) return res.status(400).json({ success: false, message: "ID Rôle invalide." });
-
-            const channel = await client.channels.fetch(channelId.trim());
-            const role = await channel.guild.roles.fetch(roleId.trim());
+            const channel = await client.channels.fetch(channelId);
+            const role = await channel.guild.roles.fetch(roleId);
             
             let messageOptions = { embeds: [], components: [], files: [] };
 
-            if (mode === 'simple') {
-                messageOptions.content = content || "Sélectionnez votre rôle :";
+            if (req.body.mode === 'simple') {
+                messageOptions.content = req.body.content || "Sélectionnez votre rôle :";
             } else {
                 const embed = new EmbedBuilder()
-                    .setTitle(title || "Rôles")
-                    .setDescription(description || "Cliquez ci-dessous")
+                    .setTitle(req.body.title || "Rôles")
+                    .setDescription(req.body.description || "Cliquez ci-dessous")
                     .setColor("#ff4d4d");
 
                 if (req.file) {
                     const file = new AttachmentBuilder(req.file.path, { name: 'banner.png' });
                     embed.setImage('attachment://banner.png');
                     messageOptions.files = [file];
-                } else if (imageUrl && imageUrl.startsWith('http')) {
-                    embed.setImage(imageUrl);
+                } else if (req.body.imageUrl) {
+                    embed.setImage(req.body.imageUrl);
                 }
                 messageOptions.embeds = [embed];
             }
 
             const row = new ActionRowBuilder();
-            const customId = `role_${roleMode || 'normal'}_${roleId.trim()}`;
+            const customId = `role_${req.body.roleMode || 'normal'}_${roleId}`;
             
-            if (displayType === 'select') {
-                row.addComponents(new StringSelectMenuBuilder()
-                    .setCustomId(customId)
-                    .setPlaceholder('Choisir...')
-                    .addOptions([{ label: role.name, value: roleId.trim() }]));
+            if (req.body.displayType === 'select') {
+                row.addComponents(new StringSelectMenuBuilder().setCustomId(customId).addOptions([{ label: role.name, value: roleId }]));
             } else {
-                row.addComponents(new ButtonBuilder()
-                    .setCustomId(customId)
-                    .setLabel(role.name)
-                    .setStyle(ButtonStyle.Danger));
+                row.addComponents(new ButtonBuilder().setCustomId(customId).setLabel(role.name).setStyle(ButtonStyle.Danger));
             }
             messageOptions.components = [row];
 
-            if (isValidId(messageId)) {
-                const targetMsg = await channel.messages.fetch(messageId.trim());
+            if (messageId && messageId.length > 15) {
+                const targetMsg = await channel.messages.fetch(messageId);
                 await targetMsg.edit(messageOptions);
             } else {
                 await channel.send(messageOptions);
             }
             res.json({ success: true });
         } catch (err) {
+            console.error(err);
             res.status(500).json({ success: false, message: err.message });
         }
     });
