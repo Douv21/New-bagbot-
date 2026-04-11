@@ -3,125 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Premium Dashboard</title>
+    <title>BagBot Ultimate Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --accent: #ff4d4d; --bg: #111214; --card: #1e1f22; --text: #dbdee1; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        
-        /* PREVIEW STYLE DISCORD */
-        .preview-box { background: #1e1f22; border-left: 4px solid var(--accent); padding: 15px; border-radius: 4px; width: 100%; max-width: 450px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .p-author { font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #fff; }
-        .p-title { font-size: 16px; font-weight: bold; color: #fff; margin-bottom: 8px; }
-        .p-desc { font-size: 14px; color: #dbdee1; line-height: 1.4; white-space: pre-wrap; }
-        .p-img { width: 100%; border-radius: 4px; margin-top: 10px; display: none; }
+        :root { --accent: #ff4d4d; --bg: #111214; --card: #2b2d31; --text: #dbdee1; --sidebar: #0b0b0b; --draft-coral: #d37f6a; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 10px; display: flex; flex-direction: column; align-items: center; }
 
-        /* INPUTS */
-        .editor { background: #2b2d31; padding: 20px; border-radius: 12px; width: 100%; max-width: 450px; }
-        label { font-size: 12px; font-weight: bold; color: #949ba4; text-transform: uppercase; display: block; margin-top: 15px; }
-        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; background: #111; border: 1px solid #000; color: white; border-radius: 6px; box-sizing: border-box; }
-        
-        .btn-add { background: #333; color: white; border: 1px dashed var(--accent); padding: 10px; margin-top: 10px; cursor: pointer; width: 100%; border-radius: 6px; }
-        .btn-deploy { background: var(--accent); color: white; border: none; padding: 15px; font-weight: bold; font-size: 16px; margin-top: 25px; cursor: pointer; width: 100%; border-radius: 6px; box-shadow: 0 4px 10px rgba(255, 77, 77, 0.3); }
-        
-        .reac-row { display: flex; gap: 8px; margin-top: 8px; }
-        input[type="file"] { background: transparent; border: none; color: var(--accent); }
+        /* EMBED DISCORD */
+        .discord-msg { background: #313338; border-radius: 8px; padding: 15px; width: 100%; max-width: 500px; margin-bottom: 20px; box-sizing: border-box; }
+        .embed { background: #1e1f22; border-left: 4px solid var(--accent); border-radius: 4px; padding: 12px; position: relative; }
+        .up-slot { border: 1px dashed #4e5058; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(0,0,0,0.2); overflow: hidden; position: relative; }
+        .up-slot img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
+        .thumb-slot { position: absolute; top: 12px; right: 12px; width: 60px; height: 60px; }
+        .banner-slot { width: 100%; min-height: 100px; margin: 10px 0; }
+        .embed-title { font-size: 16px; font-weight: 700; color: white; outline: none; margin: 10px 0 5px; }
+        .embed-desc { font-size: 14px; color: #dbdee1; outline: none; min-height: 40px; white-space: pre-wrap; }
+
+        /* INTERFACE CONTROLE */
+        .card { background: var(--card); border-radius: 12px; padding: 15px; border: 1px solid #1a1a1a; width: 100%; max-width: 500px; box-sizing: border-box; margin-bottom: 15px; }
+        .label-style { font-size: 10px; color: #b5bac1; text-transform: uppercase; font-weight: 800; margin-bottom: 8px; display: block; }
+        select { width: 100%; background: #1e1f22; border: 1px solid #111; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; outline: none; }
+        .reaction-row { background: #1e1f22; border-radius: 8px; padding: 10px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border: 1px solid #111; }
+        .emoji-trigger { width: 40px; height: 40px; background: #2b2d31; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; overflow: hidden; }
+        .emoji-trigger img { width: 28px; height: 28px; }
+
+        .btn-deploy { background: var(--accent); color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: 800; cursor: pointer; margin-top: 10px; }
+
+        /* MODAL IMAGE */
+        #imgModal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .modal-box { background: var(--card); padding: 20px; border-radius: 12px; width: 90%; max-width: 350px; text-align: center; }
+        .btn-opt { background: #444; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; margin: 5px 0; cursor: pointer; font-weight: bold; }
+
+        /* PICKER EMOJI */
+        #emojiPicker { position: fixed; bottom: 0; left: 0; width: 100%; height: 75vh; background: #111214; border-top: 1px solid #333; display: none; flex-direction: column; z-index: 1000; border-radius: 20px 20px 0 0; }
+        .emoji-body { display: flex; flex: 1; overflow: hidden; }
+        .emoji-sidebar { width: 55px; background: var(--sidebar); display: flex; flex-direction: column; align-items: center; padding: 20px 0; gap: 20px; border-right: 1px solid #222; }
+        .emoji-sidebar img { width: 24px; cursor: pointer; }
+        .emoji-scroll { flex: 1; overflow-y: auto; padding: 15px; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+        .emoji-item { font-size: 28px; text-align: center; cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: 40px; }
+        .emoji-item img { width: 32px; height: 32px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <h2 style="color: var(--accent); letter-spacing: 2px;">BAGBOT DASHBOARD</h2>
+    <h3 style="margin: 15px 0;">BagBot Dashboard</h3>
 
-    <div class="preview-box">
-        <div id="v-author" class="p-author">Auteur</div>
-        <div id="v-title" class="p-title">Titre du message</div>
-        <div id="v-desc" class="p-desc">Description de l'embed...</div>
-        <img id="v-banner" class="p-img">
+    <div class="discord-msg">
+        <div class="embed">
+            <div class="up-slot thumb-slot" onclick="openImgChoice('thumb')">
+                <i class="fas fa-plus" id="ic-thumb"></i>
+                <img id="v-thumb" style="display:none">
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:white;">
+                <div class="up-slot" onclick="openImgChoice('auth')" style="width:20px; height:20px; border-radius:50%">
+                    <img id="v-auth" style="display:none">
+                </div>
+                <span contenteditable="true" id="txt-auth">Nom de l'auteur</span>
+            </div>
+            <div class="embed-title" contenteditable="true" id="txt-title">Titre du message</div>
+            <div class="embed-desc" contenteditable="true" id="txt-desc">Cliquez ici pour modifier la description...</div>
+            <div class="up-slot banner-slot" onclick="openImgChoice('banner')">
+                <i class="fas fa-image" id="ic-banner" style="font-size: 24px;"></i>
+                <img id="v-banner" style="display:none">
+            </div>
+        </div>
     </div>
 
-    <div class="editor">
-        <label>Auteur</label>
-        <input type="text" id="in-author" placeholder="Nom de l'auteur..." oninput="sync()">
+    <div class="card">
+        <span class="label-style">Salon de réception</span>
+        <select id="sel-chans"><option>Chargement des salons...</option></select>
         
-        <label>Titre</label>
-        <input type="text" id="in-title" placeholder="Titre..." oninput="sync()">
+        <div id="reacs-box"></div>
+        <button onclick="addReacRow()" style="width:100%; padding:10px; background:#3a3c41; border:none; color:white; border-radius:5px; cursor:pointer; font-weight:bold;">+ AJOUTER UN RÔLE RÉACTION</button>
         
-        <label>Description</label>
-        <textarea id="in-desc" placeholder="Texte du message..." rows="4" oninput="sync()"></textarea>
-
-        <label>Image (Bannière)</label>
-        <input type="file" onchange="uploadFile(this)">
-
-        <label>Salon Discord</label>
-        <select id="sel-chans"></select>
-
-        <label>Mode de Rôle</label>
-        <select id="sel-mode">
-            <option value="multiple">Multiple (Ajout/Retrait)</option>
-            <option value="unique">Unique (Un seul)</option>
-            <option value="definitif">Définitif (Permanent)</option>
-        </select>
-
-        <div id="reac-list"></div>
-        <button class="btn-add" onclick="addReacRow()">+ AJOUTER UN RÔLE RÉACTION</button>
-
-        <button class="btn-deploy" onclick="send()">🚀 DÉPLOYER SUR DISCORD</button>
+        <button class="btn-deploy" onclick="deploy()">🚀 DÉPLOYER SUR DISCORD</button>
     </div>
 
-    <script>
-        const API = "http://192.168.1.133:49501";
-        let banner = "";
+    <div id="imgModal">
+        <div class="modal-box">
+            <h4 style="margin:0 0 15px">Source de l'image</h4>
+            <button class="btn-opt" style="background:var(--draft-coral)" onclick="document.getElementById('f-in').click()">Téléverser un fichier</button>
+            <button class="btn-opt" onclick="promptUrl()">Coller un lien URL</button>
+            <button onclick="closeImgChoice()" style="background:none; border:none; color:#888; margin-top:10px; cursor:pointer;">Annuler</button>
+        </div>
+    </div>
 
-        function sync() {
-            document.getElementById('v-author').innerText = document.getElementById('in-author').value || "Auteur";
-            document.getElementById('v-title').innerText = document.getElementById('in-title').value || "Titre";
-            document.getElementById('v-desc').innerText = document.getElementById('in-desc').value || "Description...";
+    <div id="emojiPicker">
+        <div class="emoji-body">
+            <div class="emoji-sidebar">
+                <img src="https://draftbot.fr/assets/img/logo.png" onclick="document.getElementById('sec-srv').scrollIntoView({behavior:'smooth'})">
+                <i class="fas fa-smile" style="color:#666; font-size:20px;" onclick="document.getElementById('sec-std').scrollIntoView({behavior:'smooth'})"></i>
+            </div>
+            <div class="emoji-scroll">
+                <div id="sec-srv">
+                    <p class="label-style">Émojis du serveur</p>
+                    <div class="emoji-grid" id="grid-srv"></div>
+                </div>
+                <div id="sec-std" style="margin-top:20px">
+                    <p class="label-style">Smileys standards</p>
+                    <div class="emoji-grid" id="grid-std"></div>
+                </div>
+            </div>
+        </div>
+        <button onclick="document.getElementById('emojiPicker').style.display='none'" style="padding:15px; border:none; background:var(--sidebar); color:var(--accent); font-weight:800; cursor:pointer;">FERMER</button>
+    </div>
+
+    <input type="file" id="f-in" style="display:none" onchange="handleFile(this)">
+
+<script>
+    const API = "http://192.168.1.133:49500"; // Vérifie bien que c'est l'IP de ton PC
+    let roles = [], activeBtn = null, curZone = null;
+
+    async function init() {
+        // Charger Salons
+        fetch(`${API}/api/channels`).then(r => r.json()).then(data => {
+            document.getElementById('sel-chans').innerHTML = data.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+        }).catch(e => console.error("Erreur salons"));
+
+        // Charger Rôles
+        fetch(`${API}/api/roles`).then(r => r.json()).then(data => roles = data);
+
+        // Charger Emojis du serveur (avec reconstruction d'URL forcée)
+        fetch(`${API}/api/emojis`).then(r => r.json()).then(data => {
+            const grid = document.getElementById('grid-srv');
+            if(data && data.length > 0) {
+                grid.innerHTML = data.map(e => {
+                    const url = e.url || `https://cdn.discordapp.com/emojis/${e.id}.png?size=96`;
+                    return `<div class="emoji-item" onclick="pickEmoji('${e.id}', true, '${url}')"><img src="${url}" onerror="this.src='https://abs.twimg.com/emoji/v2/72x72/2753.png'"></div>`;
+                }).join('');
+            } else { grid.innerHTML = "<p style='font-size:11px; color:#555'>Aucun émoji trouvé</p>"; }
+        });
+
+        // Smileys standards (liste étendue)
+        const stds = ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😋','😛','😜','🤪','🤨','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🔥','✅','❌','🔞','⭐','✨','⚡'];
+        document.getElementById('grid-std').innerHTML = stds.map(s => `<div class="emoji-item" onclick="pickEmoji('${s}', false)">${s}</div>`).join('');
+    }
+
+    // GESTION IMAGES
+    function openImgChoice(z) { curZone = z; document.getElementById('imgModal').style.display = 'flex'; }
+    function closeImgChoice() { document.getElementById('imgModal').style.display = 'none'; }
+    function promptUrl() {
+        const url = prompt("Collez le lien direct (http...) :");
+        if(url) updateImg(url);
+        closeImgChoice();
+    }
+    function handleFile(input) {
+        if(input.files && input.files[0]) {
+            const r = new FileReader();
+            r.onload = e => updateImg(e.target.result);
+            r.readAsDataURL(input.files[0]);
         }
+        closeImgChoice();
+    }
+    function updateImg(src) {
+        const v = document.getElementById(`v-${curZone}`);
+        const ic = document.getElementById(`ic-${curZone}`);
+        if(ic) ic.style.display = 'none';
+        v.src = src; v.style.display = 'block';
+    }
 
-        async function uploadFile(input) {
-            let fd = new FormData(); fd.append('file', input.files[0]);
-            let res = await fetch(`${API}/api/upload`, {method:'POST', body:fd});
-            let data = await res.json();
-            banner = data.url;
-            let img = document.getElementById('v-banner');
-            img.src = data.url; img.style.display = 'block';
+    // RÉACTIONS
+    function addReacRow() {
+        const div = document.createElement('div');
+        div.className = 'reaction-row';
+        div.innerHTML = `
+            <div class="emoji-trigger" onclick="openPicker(this)">😀</div>
+            <select style="margin:0; flex:1;"><option value="">Lier un rôle...</option>${roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}</select>
+            <i class="fas fa-trash" style="color:#444; cursor:pointer;" onclick="this.parentElement.remove()"></i>
+        `;
+        document.getElementById('reacs-box').appendChild(div);
+    }
+    function openPicker(b) { activeBtn = b; document.getElementById('emojiPicker').style.display = 'flex'; }
+    function pickEmoji(val, isCust, url) {
+        if(isCust) {
+            activeBtn.innerHTML = `<img src="${url}" data-id="${val}">`;
+        } else {
+            activeBtn.innerText = val;
+            activeBtn.removeAttribute('data-id');
         }
+        document.getElementById('emojiPicker').style.display = 'none';
+    }
 
-        async function load() {
-            const r = await fetch(`${API}/api/channels`);
-            const d = await r.json();
-            document.getElementById('sel-chans').innerHTML = d.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            const rr = await fetch(`${API}/api/roles`);
-            window.rolesData = await rr.json();
-        }
+    // DÉPLOIEMENT
+    async function deploy() {
+        const reactions = [];
+        document.querySelectorAll('.reaction-row').forEach(row => {
+            const emojiEl = row.querySelector('.emoji-trigger');
+            const roleId = row.querySelector('select').value;
+            if(roleId) {
+                const img = emojiEl.querySelector('img');
+                reactions.push({
+                    emoji: img ? img.getAttribute('data-id') : emojiEl.innerText,
+                    roleId: roleId
+                });
+            }
+        });
 
-        function addReacRow() {
-            const div = document.createElement('div'); div.className = 'reac-row';
-            div.innerHTML = `<input type="text" placeholder="Emoji" class="r-e" style="width:70px"> 
-                             <select class="r-r">${window.rolesData.map(r=>`<option value="${r.id}">${r.name}</option>`)}</select>`;
-            document.getElementById('reac-list').appendChild(div);
-        }
+        const payload = {
+            channelId: document.getElementById('sel-chans').value,
+            title: document.getElementById('txt-title').innerText,
+            description: document.getElementById('txt-desc').innerText,
+            author: document.getElementById('txt-auth').innerText,
+            author_img: document.getElementById('v-auth').style.display !== 'none' ? document.getElementById('v-auth').src : null,
+            thumbnail: document.getElementById('v-thumb').style.display !== 'none' ? document.getElementById('v-thumb').src : null,
+            banner: document.getElementById('v-banner').style.display !== 'none' ? document.getElementById('v-banner').src : null,
+            reactions: reactions
+        };
 
-        async function send() {
-            const reactions = Array.from(document.querySelectorAll('.reac-row')).map(r => ({
-                emoji: r.querySelector('.r-e').value,
-                roleId: r.querySelector('.r-r').value
-            }));
+        try {
             const res = await fetch(`${API}/api/deploy`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    channelId: document.getElementById('sel-chans').value,
-                    title: document.getElementById('in-title').value,
-                    description: document.getElementById('in-desc').value,
-                    author: document.getElementById('in-author').value,
-                    banner: banner,
-                    mode: document.getElementById('sel-mode').value,
-                    reactions: reactions
-                })
+                body: JSON.stringify(payload)
             });
-            if(res.ok) alert("✅ Envoyé avec succès !");
-        }
-        window.onload = load;
-    </script>
+            const result = await res.json();
+            if(res.ok) alert("✅ Déployé avec succès !");
+            else alert("❌ Erreur : " + (result.message || "Le bot n'a pas pu envoyer le message."));
+        } catch(e) { alert("❌ Impossible de contacter le bot. Vérifie l'IP et le serveur Python."); }
+    }
+
+    window.onload = init;
+</script>
 </body>
 </html>
