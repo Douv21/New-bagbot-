@@ -6,55 +6,85 @@ const upload = multer({ dest: 'public/uploads/' });
 module.exports = function(app, client) {
     if (!fs.existsSync('public/uploads')) fs.mkdirSync('public/uploads', { recursive: true });
 
-    // Route directe pour les salons
-    app.get('/api/chans', (req, res) => {
+    // Route pour récupérer les salons textuels
+    app.get('/api/get-channels', (req, res) => {
         const guild = client.guilds.cache.first();
-        if (!guild) return res.status(500).send([]);
-        res.json(guild.channels.cache.filter(c => c.type === 0).map(c => ({ id: c.id, name: c.name })));
+        if (!guild) return res.json([]);
+        const channels = guild.channels.cache
+            .filter(c => c.type === 0)
+            .map(c => ({ id: c.id, name: c.name }));
+        res.json(channels);
     });
 
-    // Route directe pour les rôles
-    app.get('/api/rols', (req, res) => {
+    // Route pour récupérer les rôles (hors rôles gérés par intégrations)
+    app.get('/api/get-roles', (req, res) => {
         const guild = client.guilds.cache.first();
-        if (!guild) return res.status(500).send([]);
-        res.json(guild.roles.cache.filter(r => !r.managed && r.name !== "@everyone").map(r => ({ id: r.id, name: r.name })));
+        if (!guild) return res.json([]);
+        const roles = guild.roles.cache
+            .filter(r => !r.managed && r.name !== "@everyone")
+            .map(r => ({ id: r.id, name: r.name }));
+        res.json(roles);
     });
 
-    app.post('/api/send', upload.single('imageFile'), async (req, res) => {
+    // Route principale pour envoyer ou modifier le message
+    app.post('/api/deploy-action', upload.single('imageFile'), async (req, res) => {
         try {
             const { channelId, roleId, mode, displayType, messageId, content, title, description } = req.body;
+
             const channel = await client.channels.fetch(channelId);
             const role = await channel.guild.roles.fetch(roleId);
-            let opt = { embeds: [], components: [], files: [] };
+            let messageOptions = { embeds: [], components: [], files: [] };
 
+            // Construction de l'Embed ou du Message Simple
             if (mode === 'embed') {
-                const em = new EmbedBuilder().setTitle(title || "Rôles").setDescription(description || " ").setColor("#ff4d4d");
+                const embed = new EmbedBuilder()
+                    .setTitle(title || "Sélection de Rôle")
+                    .setDescription(description || "Cliquez sur le bouton ci-dessous")
+                    .setColor("#ff4d4d");
+                
                 if (req.file) {
-                    const f = new AttachmentBuilder(req.file.path, { name: 'banner.png' });
-                    em.setImage('attachment://banner.png');
-                    opt.files = [f];
+                    const attachment = new AttachmentBuilder(req.file.path, { name: 'banner.png' });
+                    embed.setImage('attachment://banner.png');
+                    messageOptions.files = [attachment];
                 }
-                opt.embeds = [em];
+                messageOptions.embeds = [embed];
             } else {
-                opt.content = content || "Sélectionnez :";
+                messageOptions.content = content || `Obtenez le rôle **${role.name}** :`;
             }
 
+            // Création du composant (Bouton ou Menu)
             const row = new ActionRowBuilder();
-            const cid = `role_normal_${roleId}`;
+            const customId = `role_normal_${roleId}`;
+            
             if (displayType === 'select') {
-                row.addComponents(new StringSelectMenuBuilder().setCustomId(cid).addOptions([{ label: role.name, value: roleId }]));
+                row.addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId(customId)
+                        .setPlaceholder('Choisissez votre rôle...')
+                        .addOptions([{ label: role.name, value: roleId }])
+                );
             } else {
-                row.addComponents(new ButtonBuilder().setCustomId(cid).setLabel(role.name).setStyle(ButtonStyle.Danger));
+                row.addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(customId)
+                        .setLabel(role.name)
+                        .setStyle(ButtonStyle.Danger)
+                );
             }
-            opt.components = [row];
+            messageOptions.components = [row];
 
+            // Envoi (Nouveau) ou Edition (Si ID fourni)
             if (messageId && /^\d{17,20}$/.test(messageId)) {
-                const m = await channel.messages.fetch(messageId);
-                await m.edit(opt);
+                const targetMsg = await channel.messages.fetch(messageId);
+                await targetMsg.edit(messageOptions);
             } else {
-                await channel.send(opt);
+                await channel.send(messageOptions);
             }
+
             res.json({ success: true });
-        } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, message: err.message });
+        }
     });
 };
