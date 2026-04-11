@@ -3,14 +3,21 @@
   "enabled": true,
   "settings": {
     "embed": {
-      "title": "Titre par défaut",
-      "description": "Description à configurer via le panel",
-      "color": "#2F3136",
+      "title": "🎒 Choisis tes rôles",
+      "description": "Clique sur les boutons ci-dessous pour obtenir tes accès.",
+      "color": "#7289da",
       "banner_url": "",
       "thumbnail_url": "",
-      "footer_text": "Mon Super Bot",
+      "footer_text": "BagBot System",
       "footer_icon": ""
     },
-    "buttons": [] 
+    "buttons": [
+      {
+        "roleName": "Membre", 
+        "label": "Devenir Membre",
+        "emoji": "✅",
+        "style": "Success"
+      }
+    ] 
   }
 }
