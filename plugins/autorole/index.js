@@ -1,7 +1,6 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, AttachmentBuilder } = require('discord.js');
 const multer = require('multer');
 const fs = require('fs');
-
 const upload = multer({ dest: 'public/uploads/' });
 
 module.exports = function(app, client) {
@@ -17,26 +16,20 @@ module.exports = function(app, client) {
         res.json(guild ? guild.roles.cache.filter(r => !r.managed && r.name !== "@everyone").map(r => ({ id: String(r.id), name: r.name })) : []);
     });
 
-    app.post('/update-bot', upload.single('imageFile'), async (req, res) => {
+    // Nouvelle route hybride : les IDs passent par l'URL pour être insensibles aux bugs de formulaire
+    app.post('/update-bot/:channelId/:roleId', upload.single('imageFile'), async (req, res) => {
         try {
-            const channelId = String(req.body.channelId || "").trim();
-            const roleId = String(req.body.roleId || "").trim();
-            
-            // Sécurité anti-crash Snowflake
-            if (!/^\d{17,20}$/.test(channelId)) {
-                return res.status(400).json({ success: false, message: "ID Salon invalide ou non reçu." });
-            }
+            const { channelId, roleId } = req.params;
+            const { mode, displayType, messageId, content, title, description } = req.body;
+
+            if (!/^\d{17,20}$/.test(channelId)) return res.status(400).json({ success: false, message: "ID Salon invalide." });
 
             const channel = await client.channels.fetch(channelId);
             const role = await channel.guild.roles.fetch(roleId);
-            
             let options = { embeds: [], components: [], files: [] };
 
-            if (req.body.mode === 'embed') {
-                const embed = new EmbedBuilder()
-                    .setTitle(req.body.title || "Rôles")
-                    .setDescription(req.body.description || " ")
-                    .setColor("#ff4d4d");
+            if (mode === 'embed') {
+                const embed = new EmbedBuilder().setTitle(title || "Rôles").setDescription(description || " ").setColor("#ff4d4d");
                 if (req.file) {
                     const file = new AttachmentBuilder(req.file.path, { name: 'banner.png' });
                     embed.setImage('attachment://banner.png');
@@ -44,20 +37,20 @@ module.exports = function(app, client) {
                 }
                 options.embeds = [embed];
             } else {
-                options.content = req.body.content || "Sélectionnez votre rôle :";
+                options.content = content || "Sélectionnez votre rôle :";
             }
 
             const row = new ActionRowBuilder();
             const cid = `role_normal_${roleId}`;
-            if (req.body.displayType === 'select') {
+            if (displayType === 'select') {
                 row.addComponents(new StringSelectMenuBuilder().setCustomId(cid).addOptions([{ label: role.name, value: roleId }]));
             } else {
                 row.addComponents(new ButtonBuilder().setCustomId(cid).setLabel(role.name).setStyle(ButtonStyle.Danger));
             }
             options.components = [row];
 
-            if (req.body.messageId && /^\d{17,20}$/.test(req.body.messageId)) {
-                const msg = await channel.messages.fetch(req.body.messageId);
+            if (messageId && /^\d{17,20}$/.test(messageId)) {
+                const msg = await channel.messages.fetch(messageId);
                 await msg.edit(options);
             } else {
                 await channel.send(options);
