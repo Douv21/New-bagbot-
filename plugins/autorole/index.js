@@ -3,53 +3,61 @@ const multer = require('multer');
 const fs = require('fs');
 const upload = multer({ dest: 'public/uploads/' });
 
+// On charge les variables d'environnement
+require('dotenv').config();
+
 module.exports = function(app, client) {
+    const guildId = process.env.GUILD_ID;
+
     if (!fs.existsSync('public/uploads')) fs.mkdirSync('public/uploads', { recursive: true });
 
-    // API Salons
-    app.get('/api/channels', (req, res) => {
-        const guild = client.guilds.cache.first();
-        if (!guild) return res.json([]);
-        const channels = guild.channels.cache.filter(c => c.type === 0).map(c => ({ id: c.id, name: c.name }));
-        res.json(channels);
+    // Route API : Salons (Utilise le GUILD_ID configuré)
+    app.get('/api/channels', async (req, res) => {
+        try {
+            const guild = await client.guilds.fetch(guildId);
+            const channels = guild.channels.cache
+                .filter(c => c.type === 0)
+                .map(c => ({ id: c.id, name: c.name }));
+            res.json(channels);
+        } catch (err) { res.status(500).json([]); }
     });
 
-    // API Rôles
-    app.get('/api/roles', (req, res) => {
-        const guild = client.guilds.cache.first();
-        if (!guild) return res.json([]);
-        const roles = guild.roles.cache.filter(r => !r.managed && r.name !== "@everyone").map(r => ({ id: r.id, name: r.name }));
-        res.json(roles);
+    // Route API : Rôles
+    app.get('/api/roles', async (req, res) => {
+        try {
+            const guild = await client.guilds.fetch(guildId);
+            const roles = guild.roles.cache
+                .filter(r => !r.managed && r.name !== "@everyone")
+                .map(r => ({ id: r.id, name: r.name }));
+            res.json(roles);
+        } catch (err) { res.status(500).json([]); }
     });
 
-    // API Déploiement
+    // Route API : Déploiement (C'est ici que ça bloquait)
     app.post('/api/deploy', upload.single('imageFile'), async (req, res) => {
-        console.log("--- Tentative de déploiement ---");
         try {
             const { channelId, roleId, mode, displayType, content, title, description } = req.body;
             
-            const channel = await client.channels.fetch(channelId);
-            if (!channel) return res.status(400).json({ success: false, message: "Salon introuvable" });
+            const guild = await client.guilds.fetch(guildId);
+            const channel = await guild.channels.fetch(channelId);
+            const role = await guild.roles.fetch(roleId);
 
-            const role = await channel.guild.roles.fetch(roleId);
-            if (!role) return res.status(400).json({ success: false, message: "Rôle introuvable" });
-
-            let options = { embeds: [], components: [], files: [] };
+            let msgOptions = { embeds: [], components: [], files: [] };
 
             if (mode === 'embed') {
                 const embed = new EmbedBuilder()
-                    .setTitle(title || "Choix du rôle")
-                    .setDescription(description || `Cliquez pour obtenir ${role.name}`)
+                    .setTitle(title || "Rôles")
+                    .setDescription(description || `Cliquez pour le rôle ${role.name}`)
                     .setColor("#ff4d4d");
                 
                 if (req.file) {
                     const file = new AttachmentBuilder(req.file.path, { name: 'banner.png' });
                     embed.setImage('attachment://banner.png');
-                    options.files = [file];
+                    msgOptions.files = [file];
                 }
-                options.embeds = [embed];
+                msgOptions.embeds = [embed];
             } else {
-                options.content = content || `Rôle disponible : **${role.name}**`;
+                msgOptions.content = content || `Obtenez le rôle **${role.name}**`;
             }
 
             const row = new ActionRowBuilder();
@@ -60,13 +68,12 @@ module.exports = function(app, client) {
             } else {
                 row.addComponents(new ButtonBuilder().setCustomId(cid).setLabel(role.name).setStyle(ButtonStyle.Danger));
             }
-            options.components = [row];
+            msgOptions.components = [row];
 
-            await channel.send(options);
-            console.log("✅ Succès : Message envoyé dans #" + channel.name);
+            await channel.send(msgOptions);
             res.json({ success: true });
         } catch (err) {
-            console.error("❌ Erreur :", err.message);
+            console.error("Erreur de déploiement:", err);
             res.status(500).json({ success: false, message: err.message });
         }
     });
