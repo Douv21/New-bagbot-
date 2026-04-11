@@ -10,25 +10,36 @@ module.exports = function(app, client) {
 
     app.post('/update-bot', upload.single('imageFile'), async (req, res) => {
         try {
-            const { mode, channelId, roleId, content, title, description, imageUrl, displayType, messageId, roleMode } = req.body;
+            let { mode, channelId, roleId, content, title, description, imageUrl, displayType, messageId, roleMode } = req.body;
 
-            if (!channelId || channelId === "undefined") {
-                return res.status(400).json({ success: false, message: "ID du salon manquant." });
+            // --- SÉCURITÉ ANTI-UNDEFINED ---
+            if (!channelId || channelId === "undefined" || channelId.length < 10) {
+                return res.status(400).json({ success: false, message: "ID de salon invalide ou non sélectionné." });
+            }
+            if (!roleId || roleId === "undefined" || roleId.length < 10) {
+                return res.status(400).json({ success: false, message: "ID de rôle invalide ou non sélectionné." });
             }
 
             const channel = await client.channels.fetch(channelId);
             const role = await channel.guild.roles.fetch(roleId);
+            
             let messageOptions = { embeds: [], components: [], files: [] };
 
             if (mode === 'simple') {
                 messageOptions.content = content || "Gestion des rôles :";
             } else {
-                const embed = new EmbedBuilder().setTitle(title || "Rôles").setDescription(description || "Cliquez ci-dessous").setColor("#ff4d4d");
+                const embed = new EmbedBuilder()
+                    .setTitle(title || "Rôles")
+                    .setDescription(description || "Cliquez ci-dessous pour obtenir votre rôle.")
+                    .setColor("#ff4d4d");
+
                 if (req.file) {
-                    const file = new AttachmentBuilder(req.file.path, { name: 'image.png' });
-                    embed.setImage('attachment://image.png');
+                    const file = new AttachmentBuilder(req.file.path, { name: 'banner.png' });
+                    embed.setImage('attachment://banner.png');
                     messageOptions.files = [file];
-                } else if (imageUrl) embed.setImage(imageUrl);
+                } else if (imageUrl && imageUrl.startsWith('http')) {
+                    embed.setImage(imageUrl);
+                }
                 messageOptions.embeds = [embed];
             }
 
@@ -48,14 +59,16 @@ module.exports = function(app, client) {
             }
             messageOptions.components = [row];
 
-            if (messageId && messageId.length > 5) {
-                const targetMsg = await channel.messages.fetch(messageId);
+            if (messageId && messageId.trim().length > 5) {
+                const targetMsg = await channel.messages.fetch(messageId.trim());
                 await targetMsg.edit(messageOptions);
             } else {
                 await channel.send(messageOptions);
             }
+
             res.json({ success: true });
         } catch (err) {
+            console.error("Erreur Discord:", err);
             res.status(500).json({ success: false, message: err.message });
         }
     });
