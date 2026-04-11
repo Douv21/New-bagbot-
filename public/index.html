@@ -2,146 +2,86 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BagBot Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Simple</title>
     <style>
-        :root { --accent: #ff4d4d; --bg: #0f1012; --card: #18191c; }
-        body { margin: 0; font-family: sans-serif; background: var(--bg); color: white; display: flex; flex-direction: column; }
+        body { margin: 0; font-family: sans-serif; background: #121212; color: white; }
         
-        .sidebar { width: 260px; background: #0b0c0e; height: 100vh; position: fixed; left: -260px; transition: 0.3s; z-index: 1000; border-right: 1px solid #222; }
+        /* Sidebar et bouton Fermer */
+        .sidebar { width: 250px; background: #000; height: 100vh; position: fixed; left: -250px; transition: 0.3s; z-index: 10; border-right: 1px solid #333; }
         .sidebar.open { left: 0; }
-        .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
-        .close-btn { background: none; border: none; color: var(--accent); font-size: 30px; cursor: pointer; }
+        .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: #000; }
+        .close-btn { background: none; border: none; color: #ff4d4d; font-size: 30px; cursor: pointer; }
         
-        .main { padding: 15px; width: 100%; box-sizing: border-box; }
-        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .menu-btn { background: #2f3136; border: none; color: white; padding: 10px; border-radius: 6px; }
-
-        .panel { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #282a2e; }
-        .tabs { display: flex; background: #2f3136; border-radius: 8px; margin-bottom: 15px; padding: 4px; }
-        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; color: #888; }
-        .tab.active { background: var(--accent); color: white; font-weight: bold; }
-
-        label { display: block; margin: 12px 0 4px; font-size: 11px; color: #8e9297; text-transform: uppercase; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 6px; box-sizing: border-box; }
+        .main { padding: 20px; }
+        .panel { background: #1e1e1e; padding: 20px; border-radius: 8px; max-width: 400px; margin: auto; }
         
-        .btn-send { background: var(--accent); color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 20px; }
+        label { display: block; margin: 15px 0 5px; color: #888; font-size: 12px; font-weight: bold; }
+        select, textarea, input { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: white; border-radius: 4px; box-sizing: border-box; }
+        
+        .btn { width: 100%; padding: 15px; background: #ff4d4d; border: none; color: white; font-weight: bold; margin-top: 20px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-        <b style="color: var(--accent)">BAG BOT V2</b>
+        <b style="color: #ff4d4d">BAG BOT V2</b>
         <button class="close-btn" onclick="toggleMenu()">×</button>
     </div>
-    <div style="padding: 20px; border-left: 4px solid var(--accent); background: #1a1a1a;">🎭 Rôles-Réactions</div>
+    <div style="padding: 20px; border-left: 4px solid #ff4d4d;">🎭 Rôles-Réactions</div>
 </div>
 
 <div class="main">
-    <div class="header">
-        <button class="menu-btn" onclick="toggleMenu()">☰ Menu</button>
-        <h3 style="margin:0;">Configuration</h3>
-    </div>
-
+    <button onclick="toggleMenu()" style="background:#333; color:white; border:none; padding:10px; margin-bottom:10px;">☰ Menu</button>
+    
     <div class="panel">
-        <div class="tabs">
-            <div class="tab active" id="t-simple" onclick="setMode('simple')">Simple</div>
-            <div class="tab" id="t-embed" onclick="setMode('embed')">Embed</div>
-        </div>
-
+        <h3 style="margin-top:0">Configuration Simple</h3>
+        
         <label>Salon Discord</label>
-        <select id="channelId"><option value="">Chargement...</option></select>
+        <select id="channelId"></select>
 
-        <label>Rôle à attribuer</label>
-        <select id="roleId"><option value="">Chargement...</option></select>
+        <label>Rôle à donner</label>
+        <select id="roleId"></select>
 
-        <div id="f-simple">
-            <label>Contenu du message</label>
-            <textarea id="contentSimple" rows="3"></textarea>
-        </div>
+        <label>Texte du message</label>
+        <textarea id="content" rows="3">Cliquez pour obtenir le rôle</textarea>
 
-        <div id="f-embed" style="display:none;">
-            <label>Titre</label>
-            <input type="text" id="title">
-            <label>Description</label>
-            <textarea id="desc" rows="3"></textarea>
-            <label>Image</label>
-            <input type="file" id="imageFile">
-        </div>
-
-        <label>ID Message (Optionnel)</label>
-        <input type="text" id="messageId" placeholder="Coller l'ID pour modifier">
-
-        <label>Type de composant</label>
-        <select id="displayType">
-            <option value="button">Bouton</option>
-            <option value="select">Menu Déroulant</option>
-        </select>
-
-        <button class="btn-send" id="btn" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
+        <button class="btn" onclick="send()">DÉPLOYER</button>
     </div>
 </div>
 
 <script>
-    let mode = 'simple';
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
-    function setMode(m) {
-        mode = m;
-        document.getElementById('t-simple').className = m === 'simple' ? 'tab active' : 'tab';
-        document.getElementById('t-embed').className = m === 'embed' ? 'tab active' : 'tab';
-        document.getElementById('f-simple').style.display = m === 'simple' ? 'block' : 'none';
-        document.getElementById('f-embed').style.display = m === 'embed' ? 'block' : 'none';
-    }
 
     async function load() {
-        const [cR, rR] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
-        const c = await cR.json();
-        const r = await rR.json();
-        document.getElementById('channelId').innerHTML = c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
-        document.getElementById('roleId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
+        const cRes = await fetch('/api/channels');
+        const rRes = await fetch('/api/roles');
+        const channels = await cRes.json();
+        const roles = await rRes.json();
+        
+        document.getElementById('channelId').innerHTML = channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+        document.getElementById('roleId').innerHTML = roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
     }
 
-    async function deploy() {
-        // RÉCUPÉRATION MANUELLE DES IDS (Fix pour mobile)
-        const cSelect = document.getElementById('channelId');
-        const rSelect = document.getElementById('roleId');
-        
-        const cVal = cSelect.options[cSelect.selectedIndex]?.value;
-        const rVal = rSelect.options[rSelect.selectedIndex]?.value;
+    async function send() {
+        const cId = document.getElementById('channelId').value;
+        const rId = document.getElementById('roleId').value;
+        const txt = document.getElementById('content').value;
 
-        if (!cVal || cVal === "" || cVal === "undefined") {
-            return alert("❌ Erreur : Aucun salon sélectionné !");
-        }
+        // Sécurité ultime avant envoi
+        if(!cId || cId === "undefined") return alert("Attends que les salons chargent !");
 
-        const btn = document.getElementById('btn');
-        btn.innerText = "ENVOI...";
-        btn.disabled = true;
+        const res = await fetch('/update-bot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ channelId: cId, roleId: rId, content: txt })
+        });
 
-        const fd = new FormData();
-        fd.append('mode', mode);
-        fd.append('channelId', cVal);
-        fd.append('roleId', rVal);
-        fd.append('displayType', document.getElementById('displayType').value);
-        fd.append('messageId', document.getElementById('messageId').value.trim());
-        fd.append('content', document.getElementById('contentSimple').value);
-        fd.append('title', document.getElementById('title').value);
-        fd.append('description', document.getElementById('desc').value);
-        
-        const file = document.getElementById('imageFile').files[0];
-        if (file) fd.append('imageFile', file);
-
-        try {
-            const res = await fetch('/update-bot', { method: 'POST', body: fd });
-            const data = await res.json();
-            alert(data.success ? "✅ Message envoyé !" : "❌ " + data.message);
-        } catch(e) {
-            alert("❌ Erreur de connexion au serveur.");
-        } finally {
-            btn.innerText = "DÉPLOYER SUR DISCORD";
-            btn.disabled = false;
-        }
+        const data = await res.json();
+        alert(data.success ? "✅ Réussi !" : "❌ Erreur : " + data.message);
     }
+
     load();
 </script>
 </body>
