@@ -6,16 +6,27 @@ const upload = multer({ dest: 'public/uploads/' });
 module.exports = function(app, client) {
     if (!fs.existsSync('public/uploads')) fs.mkdirSync('public/uploads', { recursive: true });
 
+    // Route API pour les Salons
     app.get('/api/channels', (req, res) => {
         const guild = client.guilds.cache.first();
-        res.json(guild ? guild.channels.cache.filter(c => c.type === 0).map(c => ({ id: String(c.id), name: c.name })) : []);
+        if (!guild) return res.json([]);
+        const channels = guild.channels.cache
+            .filter(c => c.type === 0)
+            .map(c => ({ id: String(c.id), name: c.name }));
+        res.json(channels);
     });
 
+    // Route API pour les Rôles
     app.get('/api/roles', (req, res) => {
         const guild = client.guilds.cache.first();
-        res.json(guild ? guild.roles.cache.filter(r => !r.managed && r.name !== "@everyone").map(r => ({ id: String(r.id), name: r.name })) : []);
+        if (!guild) return res.json([]);
+        const roles = guild.roles.cache
+            .filter(r => !r.managed && r.name !== "@everyone")
+            .map(r => ({ id: String(r.id), name: r.name }));
+        res.json(roles);
     });
 
+    // Route principale de déploiement
     app.post('/update-bot/:channelId/:roleId', upload.single('imageFile'), async (req, res) => {
         try {
             const { channelId, roleId } = req.params;
@@ -27,7 +38,7 @@ module.exports = function(app, client) {
 
             if (mode === 'embed') {
                 const embed = new EmbedBuilder()
-                    .setTitle(title || "Sélection")
+                    .setTitle(title || "Rôles")
                     .setDescription(description || " ")
                     .setColor("#ff4d4d");
                 if (req.file) {
@@ -57,6 +68,7 @@ module.exports = function(app, client) {
             }
             res.json({ success: true });
         } catch (err) {
+            console.error(err);
             res.status(500).json({ success: false, message: err.message });
         }
     });
