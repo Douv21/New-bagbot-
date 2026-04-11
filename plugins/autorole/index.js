@@ -1,70 +1,74 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
 
 module.exports = function(app, client) {
     
-    // --- API : Récupérer les salons pour le Dashboard ---
+    // API : Salons & Rôles (inchangé mais indispensable)
     app.get('/api/channels', async (req, res) => {
         const guild = client.guilds.cache.first();
         if (!guild) return res.json([]);
-        const channels = guild.channels.cache
-            .filter(c => c.type === 0) // Salons textuels uniquement
-            .map(c => ({ id: c.id, name: c.name }));
-        res.json(channels);
+        res.json(guild.channels.cache.filter(c => c.type === 0).map(c => ({ id: c.id, name: c.name })));
     });
 
-    // --- API : Récupérer les rôles pour le Dashboard ---
     app.get('/api/roles', async (req, res) => {
         const guild = client.guilds.cache.first();
         if (!guild) return res.json([]);
-        const roles = guild.roles.cache
-            .filter(r => r.name !== "@everyone" && !r.managed)
-            .map(r => ({ id: r.id, name: r.name }));
-        res.json(roles);
+        res.json(guild.roles.cache.filter(r => r.name !== "@everyone" && !r.managed).map(r => ({ id: r.id, name: r.name })));
     });
 
-    // --- API : Recevoir la commande du Dashboard ---
+    // API : Déploiement du message ultra-complet
     app.post('/update-bot', async (req, res) => {
-        const { title, roleId, channelId } = req.body;
+        const { channelId, roleId, title, description, imageUrl, displayType, color } = req.body;
+        
         try {
             const channel = await client.channels.fetch(channelId);
-            const embed = new EmbedBuilder()
-                .setTitle(title || "Rôles-Réactions")
-                .setDescription("Cliquez sur le bouton ci-dessous pour obtenir ou retirer votre rôle.")
-                .setColor("#ff4d4d");
+            const role = (await channel.guild.roles.fetch()).get(roleId);
 
-            const row = new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                    .setCustomId(`role_${roleId}`)
-                    .setLabel("Obtenir le rôle")
-                    .setStyle(ButtonStyle.Danger)
-            );
+            const embed = new EmbedBuilder()
+                .setTitle(title || "Choix de rôles")
+                .setDescription(description || "Interagissez ci-dessous")
+                .setColor(color || "#ff4d4d");
+            
+            if (imageUrl) embed.setImage(imageUrl);
+
+            const row = new ActionRowBuilder();
+
+            if (displayType === "select") {
+                row.addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId(`select_role_${roleId}`)
+                        .setPlaceholder('Choisissez votre rôle...')
+                        .addOptions([{ label: role.name, value: roleId, description: 'Cliquez pour obtenir ce rôle' }])
+                );
+            } else {
+                row.addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`role_${roleId}`)
+                        .setLabel(role.name)
+                        .setStyle(ButtonStyle.Danger)
+                );
+            }
 
             await channel.send({ embeds: [embed], components: [row] });
-            res.json({ success: true, message: "Panneau déployé !" });
+            res.json({ success: true });
         } catch (err) {
             res.status(500).json({ success: false, message: err.message });
         }
     });
 
-    // --- LOGIQUE : Gestion du clic sur le bouton ---
-    client.on('interactionCreate', async (interaction) => {
-        if (!interaction.isButton() || !interaction.customId.startsWith('role_')) return;
+    // Gestionnaire d'interactions (Boutons + Sélecteurs)
+    client.on('interactionCreate', async (i) => {
+        if (!i.isButton() && !i.isStringSelectMenu()) return;
+        if (!i.customId.includes('role_')) return;
 
-        const roleId = interaction.customId.replace('role_', '');
-        const role = interaction.guild.roles.cache.get(roleId);
+        const roleId = i.isStringSelectMenu() ? i.values[0] : i.customId.split('_').pop();
+        const member = i.member;
 
-        if (!role) return interaction.reply({ content: "❌ Rôle introuvable.", ephemeral: true });
-
-        try {
-            if (interaction.member.roles.cache.has(role.id)) {
-                await interaction.member.roles.remove(role);
-                await interaction.reply({ content: `➖ Rôle **${role.name}** retiré !`, ephemeral: true });
-            } else {
-                await interaction.member.roles.add(role);
-                await interaction.reply({ content: `➕ Rôle **${role.name}** ajouté !`, ephemeral: true });
-            }
-        } catch (error) {
-            interaction.reply({ content: "❌ Erreur de permissions (mon rôle est peut-être trop bas).", ephemeral: true });
+        if (member.roles.cache.has(roleId)) {
+            await member.roles.remove(roleId);
+            await i.reply({ content: "✅ Rôle retiré.", ephemeral: true });
+        } else {
+            await member.roles.add(roleId);
+            await i.reply({ content: "✅ Rôle ajouté.", ephemeral: true });
         }
     });
 };
