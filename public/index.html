@@ -36,37 +36,22 @@
             <div class="tab active" id="t-simple" onclick="setMode('simple')">Simple</div>
             <div class="tab" id="t-embed" onclick="setMode('embed')">Embed</div>
         </div>
-        
         <label>Salon Discord</label>
         <select id="channelId"><option value="">Chargement...</option></select>
-        
         <label>Rôle</label>
         <select id="roleId"><option value="">Chargement...</option></select>
-
-        <div id="f-simple">
-            <label>Message</label>
-            <textarea id="txtSimple">Cliquez pour obtenir votre rôle</textarea>
-        </div>
-
+        <div id="f-simple"><label>Message</label><textarea id="txtSimple">Cliquez ici</textarea></div>
         <div id="f-embed" style="display:none;">
-            <label>Titre de l'Embed</label>
-            <input type="text" id="title">
-            <label>Description</label>
-            <textarea id="desc"></textarea>
-            <label>Image</label>
-            <input type="file" id="img">
+            <label>Titre</label><input type="text" id="title">
+            <label>Description</label><textarea id="desc"></textarea>
+            <label>Image</label><input type="file" id="img">
         </div>
-
-        <label>ID Message (Optionnel)</label>
-        <input type="text" id="msgId">
-
+        <label>ID Message (Optionnel)</label><input type="text" id="msgId">
         <label>Affichage</label>
         <select id="disp"><option value="button">Bouton</option><option value="select">Menu</option></select>
-
         <button class="btn-send" id="btn" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
     </div>
 </div>
-
 <script>
     let mode = 'simple';
     function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
@@ -81,19 +66,21 @@
     async function load() {
         try {
             const [cR, rR] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
+            if (!cR.ok || !rR.ok) throw new Error("Erreur serveur API");
             const c = await cR.json(); const r = await rR.json();
-            document.getElementById('channelId').innerHTML = c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
-            document.getElementById('roleId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
-        } catch(e) { console.error("Erreur chargement"); }
+            
+            document.getElementById('channelId').innerHTML = c.length ? c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('') : '<option>Aucun salon trouvé</option>';
+            document.getElementById('roleId').innerHTML = r.length ? r.map(x => `<option value="${x.id}">${x.name}</option>`).join('') : '<option>Aucun rôle trouvé</option>';
+        } catch(e) {
+            console.error("Erreur de chargement des données:", e);
+            alert("Erreur de chargement des listes. Vérifie que le bot est bien allumé.");
+        }
     }
 
     async function deploy() {
         const cId = document.getElementById('channelId').value;
         const rId = document.getElementById('roleId').value;
-        if(!cId || cId === "undefined") return alert("Sélectionnez un salon.");
-
-        const btn = document.getElementById('btn');
-        btn.disabled = true; btn.innerText = "ENVOI...";
+        if (!cId || cId.length < 15) return alert("Sélectionne un salon valide.");
 
         const fd = new FormData();
         fd.append('mode', mode);
@@ -102,15 +89,15 @@
         fd.append('content', document.getElementById('txtSimple').value);
         fd.append('title', document.getElementById('title').value);
         fd.append('description', document.getElementById('desc').value);
-        if(document.getElementById('img').files[0]) fd.append('imageFile', document.getElementById('img').files[0]);
+        if (document.getElementById('img').files[0]) fd.append('imageFile', document.getElementById('img').files[0]);
 
+        const b = document.getElementById('btn'); b.disabled = true; b.innerText = "ENVOI...";
         try {
             const res = await fetch(`/update-bot/${cId}/${rId}`, { method: 'POST', body: fd });
             const d = await res.json();
             alert(d.success ? "✅ Succès !" : "❌ " + d.message);
-        } catch(e) { alert("❌ Erreur serveur."); }
-        
-        btn.disabled = false; btn.innerText = "DÉPLOYER SUR DISCORD";
+        } catch(e) { alert("❌ Erreur de connexion"); }
+        b.disabled = false; b.innerText = "DÉPLOYER SUR DISCORD";
     }
     load();
 </script>
