@@ -9,65 +9,67 @@ module.exports = function(app, client) {
 
     app.get('/api/channels', (req, res) => {
         const guild = client.guilds.cache.first();
-        if (!guild) return res.json([]);
-        res.json(guild.channels.cache.filter(c => c.type === 0).map(c => ({ id: c.id, name: c.name })));
+        res.json(guild ? guild.channels.cache.filter(c => c.type === 0).map(c => ({ id: c.id, name: c.name })) : []);
     });
 
     app.get('/api/roles', (req, res) => {
         const guild = client.guilds.cache.first();
-        if (!guild) return res.json([]);
-        res.json(guild.roles.cache.filter(r => r.name !== "@everyone" && !r.managed).map(r => ({ id: r.id, name: r.name })));
+        res.json(guild ? guild.roles.cache.filter(r => !r.managed && r.name !== "@everyone").map(r => ({ id: r.id, name: r.name })) : []);
     });
 
+    // On utilise upload.none() si pas d'image, ou on gère le JSON
     app.post('/update-bot', upload.single('imageFile'), async (req, res) => {
         try {
-            // Extraction directe - On force l'ID en String pour Discord
-            const channelId = String(req.body.channelId);
-            const roleId = String(req.body.roleId);
+            // Nettoyage forcé des IDs pour éviter le bug Snowflake
+            const channelId = String(req.body.channelId || "").trim();
+            const roleId = String(req.body.roleId || "").trim();
 
-            if (channelId === "undefined" || channelId.length < 10) {
-                return res.status(400).json({ success: false, message: "ID Salon manquant ou invalide." });
+            if (!/^\d{17,20}$/.test(channelId)) {
+                return res.status(400).json({ success: false, message: `ID Salon invalide : ${channelId}` });
             }
 
             const channel = await client.channels.fetch(channelId);
             const role = await channel.guild.roles.fetch(roleId);
             
-            let options = { embeds: [], components: [], files: [] };
+            let messageOptions = { embeds: [], components: [], files: [] };
 
-            // Construction du message
             if (req.body.mode === 'embed') {
                 const embed = new EmbedBuilder()
-                    .setTitle(req.body.title || "Sélection")
-                    .setDescription(req.body.description || " ")
+                    .setTitle(req.body.title || "Sélection de rôle")
+                    .setDescription(req.body.description || "Cliquez ci-dessous")
                     .setColor("#ff4d4d");
-                
+
                 if (req.file) {
-                    const file = new AttachmentBuilder(req.file.path, { name: 'img.png' });
-                    embed.setImage('attachment://img.png');
-                    options.files = [file];
+                    const file = new AttachmentBuilder(req.file.path, { name: 'banner.png' });
+                    embed.setImage('attachment://banner.png');
+                    messageOptions.files = [file];
                 }
-                options.embeds = [embed];
+                messageOptions.embeds = [embed];
             } else {
-                options.content = req.body.content || "Choisissez votre rôle :";
+                messageOptions.content = req.body.content || "Veuillez choisir votre rôle :";
             }
 
-            // Bouton ou Menu
             const row = new ActionRowBuilder();
-            const cid = `role_normal_${roleId}`;
-            
-            if (req.body.displayType === 'select') {
-                row.addComponents(new StringSelectMenuBuilder().setCustomId(cid).addOptions([{ label: role.name, value: roleId }]));
-            } else {
-                row.addComponents(new ButtonBuilder().setCustomId(cid).setLabel(role.name).setStyle(ButtonStyle.Danger));
-            }
-            options.components = [row];
+            const customId = `role_normal_${roleId}`;
 
-            // Envoi
-            if (req.body.messageId && req.body.messageId.length > 15) {
-                const msg = await channel.messages.fetch(req.body.messageId);
-                await msg.edit(options);
+            if (req.body.displayType === 'select') {
+                row.addComponents(new StringSelectMenuBuilder()
+                    .setCustomId(customId)
+                    .addOptions([{ label: role.name, value: roleId }]));
             } else {
-                await channel.send(options);
+                row.addComponents(new ButtonBuilder()
+                    .setCustomId(customId)
+                    .setLabel(role.name)
+                    .setStyle(ButtonStyle.Danger));
+            }
+
+            messageOptions.components = [row];
+
+            if (req.body.messageId && /^\d{17,20}$/.test(req.body.messageId)) {
+                const targetMsg = await channel.messages.fetch(req.body.messageId);
+                await targetMsg.edit(messageOptions);
+            } else {
+                await channel.send(messageOptions);
             }
 
             res.json({ success: true });
