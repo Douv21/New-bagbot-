@@ -8,18 +8,18 @@
         :root { --bg: #0f1012; --card: #18191c; --accent: #ff4d4d; --sidebar: #0b0c0e; --text: #f2f3f5; }
         body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; }
         
-        /* Sidebar avec bouton de fermeture */
-        .sidebar { width: 280px; background: var(--sidebar); height: 100vh; position: fixed; left: -280px; transition: 0.3s; z-index: 1001; }
+        /* Sidebar corrigée */
+        .sidebar { width: 260px; background: var(--sidebar); height: 100vh; position: fixed; left: -260px; transition: 0.3s; z-index: 1001; }
         .sidebar.open { left: 0; }
         .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
-        .close-sidebar { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
-
+        .close-btn { background: none; border: none; color: var(--accent); font-size: 30px; cursor: pointer; line-height: 1; }
+        
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; }
         .overlay.active { display: block; }
 
         .main { flex: 1; padding: 15px; width: 100%; box-sizing: border-box; }
         .header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; background: var(--card); padding: 10px; border-radius: 8px; }
-        .menu-btn { background: #2f3136; border: none; color: white; padding: 10px 15px; border-radius: 6px; cursor: pointer; }
+        .menu-toggle { background: #2f3136; border: none; color: white; padding: 10px 15px; border-radius: 6px; cursor: pointer; }
 
         .panel { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid #282a2e; max-width: 500px; margin: auto; }
         .tabs { display: flex; background: #2f3136; border-radius: 8px; margin-bottom: 20px; overflow: hidden; }
@@ -29,7 +29,7 @@
         label { display: block; margin: 15px 0 5px; font-size: 11px; color: #8e9297; text-transform: uppercase; font-weight: bold; }
         input, select, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 6px; box-sizing: border-box; }
         
-        .btn-send { background: var(--accent); color: white; border: none; padding: 18px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .btn-deploy { background: var(--accent); color: white; border: none; padding: 18px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
         .preview { margin-top: 20px; padding: 15px; background: #2f3136; border-radius: 8px; border-left: 4px solid var(--accent); }
     </style>
 </head>
@@ -39,16 +39,16 @@
 
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-        <span style="color: var(--accent); font-weight: bold; font-size: 20px;">BAG BOT V2</span>
-        <button class="close-sidebar" onclick="toggleMenu()">×</button>
+        <span style="font-weight: bold; color: var(--accent);">BAG BOT V2</span>
+        <button class="close-btn" onclick="toggleMenu()">×</button>
     </div>
     <div style="padding: 15px 20px; background: #1a1a1a; border-left: 4px solid var(--accent);">🎭 Rôles-Réactions</div>
 </div>
 
 <div class="main">
     <div class="header">
-        <button class="menu-btn" onclick="toggleMenu()">☰ Menu</button>
-        <h4 style="margin:0;">Configuration Rôles</h4>
+        <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+        <h4 style="margin:0;">Configuration</h4>
     </div>
 
     <div class="panel">
@@ -57,8 +57,8 @@
             <div class="tab" id="t-embed" onclick="setMode('embed')">Embed</div>
         </div>
 
-        <label>ID Message (Modifier)</label>
-        <input type="text" id="messageId" placeholder="Laisser vide pour un nouveau">
+        <label>ID Message (Optionnel)</label>
+        <input type="text" id="messageId" placeholder="Coller l'ID pour modifier">
 
         <label>Salon Discord</label>
         <select id="channelId"><option value="">Chargement...</option></select>
@@ -66,35 +66,34 @@
         <label>Rôle</label>
         <select id="roleId"><option value="">Chargement...</option></select>
 
-        <label>Mode</label>
+        <label>Mode de fonctionnement</label>
         <select id="roleMode">
             <option value="normal">Normal (Ajout/Retrait)</option>
             <option value="inverse">Inversé</option>
             <option value="definitif">Définitif</option>
         </select>
 
-        <label>Composant</label>
+        <label>Type de composant</label>
         <select id="displayType">
             <option value="button">Bouton</option>
             <option value="select">Menu Déroulant</option>
         </select>
 
         <div id="f-simple">
-            <label>Contenu texte</label>
+            <label>Contenu du message</label>
             <textarea id="simpleContent" rows="3"></textarea>
         </div>
 
         <div id="f-embed" style="display:none;">
-            <label>Titre</label>
+            <label>Titre de l'Embed</label>
             <input type="text" id="title">
             <label>Description</label>
             <textarea id="description" rows="3"></textarea>
             <label>Image</label>
             <input type="file" id="imageFile" accept="image/*">
-            <input type="text" id="imageUrl" placeholder="Ou lien URL...">
         </div>
 
-        <button class="btn-send" id="btn-deploy" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
+        <button class="btn-deploy" id="btn-deploy" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
     </div>
 </div>
 
@@ -120,49 +119,48 @@
             const channels = await cRes.json();
             const roles = await rRes.json();
             
-            // On force les IDs en string pour éviter les erreurs de type
-            document.getElementById('channelId').innerHTML = channels.map(c => `<option value="${String(c.id)}"># ${c.name}</option>`).join('');
-            document.getElementById('roleId').innerHTML = roles.map(r => `<option value="${String(r.id)}">${r.name}</option>`).join('');
-        } catch(e) { alert("Erreur de chargement des données."); }
+            // On force l'injection propre des values
+            const cSelect = document.getElementById('channelId');
+            const rSelect = document.getElementById('roleId');
+            
+            cSelect.innerHTML = channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            rSelect.innerHTML = roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+            
+        } catch(e) { alert("Erreur de chargement."); }
     }
 
     async function deploy() {
-        const cEl = document.getElementById('channelId');
-        const rEl = document.getElementById('roleId');
-        
-        // RECUPERATION CRITIQUE
-        const selChan = cEl.value;
-        const selRole = rEl.value;
+        const chan = document.getElementById('channelId').value;
+        const role = document.getElementById('roleId').value;
 
-        if (!selChan || selChan === "undefined" || selChan.length < 15) {
-            return alert("❌ Erreur : Le salon n'est pas chargé. Attendez 2 secondes.");
+        // VERIFICATION DE SECURITE AVANT ENVOI
+        if (!chan || chan === "undefined" || chan.length < 15) {
+            return alert("❌ Erreur : L'ID du salon est invalide (" + chan + ").");
         }
 
         const btn = document.getElementById('btn-deploy');
-        btn.innerText = "ENVOI...";
+        btn.innerText = "PATIENTEZ...";
         btn.disabled = true;
 
         const fd = new FormData();
         fd.append('mode', currentMode);
-        fd.append('channelId', selChan);
-        fd.append('roleId', selRole);
+        fd.append('channelId', chan);
+        fd.append('roleId', role);
         fd.append('roleMode', document.getElementById('roleMode').value);
         fd.append('displayType', document.getElementById('displayType').value);
         fd.append('messageId', document.getElementById('messageId').value.trim());
         fd.append('content', document.getElementById('simpleContent').value);
         fd.append('title', document.getElementById('title').value);
         fd.append('description', document.getElementById('description').value);
-        fd.append('imageUrl', document.getElementById('imageUrl').value);
         
-        if (document.getElementById('imageFile').files[0]) {
-            fd.append('imageFile', document.getElementById('imageFile').files[0]);
-        }
+        const file = document.getElementById('imageFile').files[0];
+        if (file) fd.append('imageFile', file);
 
         try {
             const res = await fetch('/update-bot', { method: 'POST', body: fd });
             const data = await res.json();
-            if (data.success) alert("✅ Déployé avec succès !");
-            else alert("❌ Erreur : " + data.message);
+            if (data.success) alert("✅ Succès !");
+            else alert("❌ Erreur Discord : " + data.message);
         } catch(e) { alert("Erreur serveur."); }
         
         btn.innerText = "DÉPLOYER SUR DISCORD";
