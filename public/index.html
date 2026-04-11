@@ -20,41 +20,34 @@
     </style>
 </head>
 <body>
-<div class="sidebar" id="sidebar">
-    <div style="padding:20px; display:flex; justify-content:space-between; align-items:center;">
-        <b style="color:var(--accent)">BAG BOT V2</b>
-        <button onclick="toggleMenu()" style="background:none; border:none; color:red; font-size:30px;">×</button>
-    </div>
-</div>
+<div class="sidebar" id="sidebar"><div style="padding:20px;"><b>BAG BOT V2</b></div></div>
 <div class="main">
-    <button onclick="toggleMenu()" style="background:#2f3136; color:white; border:none; padding:10px 15px; border-radius:6px; margin-bottom:15px;">☰ Menu</button>
+    <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="background:#2f3136; color:white; border:none; padding:10px; border-radius:6px; margin-bottom:15px;">☰ Menu</button>
     <div class="panel">
         <div class="tabs">
-            <div class="tab active" id="t-s" onclick="setMode('simple')">Simple</div>
-            <div class="tab" id="t-e" onclick="setMode('embed')">Embed</div>
+            <div class="tab active" id="ts" onclick="setMode('simple')">Simple</div>
+            <div class="tab" id="te" onclick="setMode('embed')">Embed</div>
         </div>
-        <label>Salon</label><select id="channelId"><option>Chargement...</option></select>
-        <label>Rôle</label><select id="roleId"><option>Chargement...</option></select>
-        <div id="f-s"><label>Message</label><textarea id="txt">Cliquez ici</textarea></div>
-        <div id="f-e" style="display:none;">
+        <label>Salon</label><select id="channelId"></select>
+        <label>Rôle</label><select id="roleId"></select>
+        <div id="fs"><label>Message</label><textarea id="txt">Cliquez ici</textarea></div>
+        <div id="fe" style="display:none;">
             <label>Titre</label><input type="text" id="tit">
             <label>Description</label><textarea id="des"></textarea>
             <label>Image</label><input type="file" id="img">
         </div>
-        <label>ID Message (Modif)</label><input type="text" id="mid">
         <label>Affichage</label><select id="disp"><option value="button">Bouton</option><option value="select">Menu</option></select>
         <button class="btn" id="btn" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
     </div>
 </div>
 <script>
     let mode = 'simple';
-    function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
     function setMode(m) {
         mode = m;
-        document.getElementById('t-s').className = m === 'simple' ? 'tab active' : 'tab';
-        document.getElementById('t-e').className = m === 'embed' ? 'tab active' : 'tab';
-        document.getElementById('f-s').style.display = m === 'simple' ? 'block' : 'none';
-        document.getElementById('f-e').style.display = m === 'embed' ? 'block' : 'none';
+        document.getElementById('ts').className = m === 'simple' ? 'tab active' : 'tab';
+        document.getElementById('te').className = m === 'embed' ? 'tab active' : 'tab';
+        document.getElementById('fs').style.display = m === 'simple' ? 'block' : 'none';
+        document.getElementById('fe').style.display = m === 'embed' ? 'block' : 'none';
     }
     async function load() {
         try {
@@ -62,7 +55,7 @@
             const c = await cR.json(); const r = await rR.json();
             document.getElementById('channelId').innerHTML = c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
             document.getElementById('roleId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
-        } catch(e) { document.getElementById('channelId').innerHTML = '<option>Erreur Connexion</option>'; }
+        } catch(e) { console.error(e); }
     }
     async function deploy() {
         const fd = new FormData();
@@ -70,17 +63,18 @@
         fd.append('roleId', document.getElementById('roleId').value);
         fd.append('mode', mode);
         fd.append('displayType', document.getElementById('disp').value);
-        fd.append('messageId', document.getElementById('mid').value.trim());
         fd.append('content', document.getElementById('txt').value);
         fd.append('title', document.getElementById('tit').value);
         fd.append('description', document.getElementById('des').value);
         if (document.getElementById('img').files[0]) fd.append('imageFile', document.getElementById('img').files[0]);
         
+        const b = document.getElementById('btn'); b.innerText = "ENVOI...";
         try {
             const res = await fetch('/api/deploy', { method: 'POST', body: fd });
             const d = await res.json();
-            alert(d.success ? "✅ Succès" : "❌ " + d.message);
-        } catch(e) { alert("❌ Erreur"); }
+            if(d.success) alert("✅ Envoyé !"); else alert("❌ " + d.message);
+        } catch(e) { alert("❌ Erreur serveur"); }
+        b.innerText = "DÉPLOYER SUR DISCORD";
     }
     load();
 </script>
