@@ -17,13 +17,13 @@ module.exports = function(app, client) {
         res.json(guild ? guild.roles.cache.filter(r => !r.managed && r.name !== "@everyone").map(r => ({ id: r.id, name: r.name })) : []);
     });
 
-    // On utilise upload.none() si pas d'image, ou on gère le JSON
     app.post('/update-bot', upload.single('imageFile'), async (req, res) => {
         try {
-            // Nettoyage forcé des IDs pour éviter le bug Snowflake
-            const channelId = String(req.body.channelId || "").trim();
-            const roleId = String(req.body.roleId || "").trim();
+            // Sécurité : Nettoyage strict des IDs
+            const channelId = req.body.channelId ? String(req.body.channelId).trim() : "";
+            const roleId = req.body.roleId ? String(req.body.roleId).trim() : "";
 
+            // Si l'ID n'est pas un nombre de 17-19 chiffres, on refuse tout de suite
             if (!/^\d{17,20}$/.test(channelId)) {
                 return res.status(400).json({ success: false, message: `ID Salon invalide : ${channelId}` });
             }
@@ -31,7 +31,7 @@ module.exports = function(app, client) {
             const channel = await client.channels.fetch(channelId);
             const role = await channel.guild.roles.fetch(roleId);
             
-            let messageOptions = { embeds: [], components: [], files: [] };
+            let options = { embeds: [], components: [], files: [] };
 
             if (req.body.mode === 'embed') {
                 const embed = new EmbedBuilder()
@@ -42,34 +42,28 @@ module.exports = function(app, client) {
                 if (req.file) {
                     const file = new AttachmentBuilder(req.file.path, { name: 'banner.png' });
                     embed.setImage('attachment://banner.png');
-                    messageOptions.files = [file];
+                    options.files = [file];
                 }
-                messageOptions.embeds = [embed];
+                options.embeds = [embed];
             } else {
-                messageOptions.content = req.body.content || "Veuillez choisir votre rôle :";
+                options.content = req.body.content || "Veuillez choisir votre rôle :";
             }
 
             const row = new ActionRowBuilder();
-            const customId = `role_normal_${roleId}`;
+            const cid = `role_normal_${roleId}`;
 
             if (req.body.displayType === 'select') {
-                row.addComponents(new StringSelectMenuBuilder()
-                    .setCustomId(customId)
-                    .addOptions([{ label: role.name, value: roleId }]));
+                row.addComponents(new StringSelectMenuBuilder().setCustomId(cid).addOptions([{ label: role.name, value: roleId }]));
             } else {
-                row.addComponents(new ButtonBuilder()
-                    .setCustomId(customId)
-                    .setLabel(role.name)
-                    .setStyle(ButtonStyle.Danger));
+                row.addComponents(new ButtonBuilder().setCustomId(cid).setLabel(role.name).setStyle(ButtonStyle.Danger));
             }
-
-            messageOptions.components = [row];
+            options.components = [row];
 
             if (req.body.messageId && /^\d{17,20}$/.test(req.body.messageId)) {
                 const targetMsg = await channel.messages.fetch(req.body.messageId);
-                await targetMsg.edit(messageOptions);
+                await targetMsg.edit(options);
             } else {
-                await channel.send(messageOptions);
+                await channel.send(options);
             }
 
             res.json({ success: true });
