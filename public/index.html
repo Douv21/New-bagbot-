@@ -3,47 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BAGBOT PANEL</title>
+    <title>BagBot Admin</title>
     <style>
-        body { background: #0f1012; color: white; font-family: sans-serif; padding: 15px; }
-        .card { background: #18191c; padding: 20px; border-radius: 10px; border: 1px solid #333; max-width: 400px; margin: auto; }
-        label { display: block; margin-top: 15px; color: #888; font-size: 11px; font-weight: bold; }
-        select, input, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 5px; box-sizing: border-box; }
-        .btn { background: #ff4d4d; color: white; border: none; width: 100%; padding: 15px; border-radius: 5px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+        :root { --accent: #ff4d4d; --bg: #121212; }
+        body { background: var(--bg); color: white; font-family: sans-serif; padding: 20px; }
+        .panel { background: #1e1e1e; padding: 20px; border-radius: 10px; max-width: 450px; margin: auto; }
+        label { display: block; margin-top: 15px; color: #bbb; font-size: 12px; }
+        select, input, textarea { width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; }
+        .btn { background: var(--accent); color: white; border: none; width: 100%; padding: 15px; border-radius: 5px; font-weight: bold; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
-<div class="card">
-    <h3 style="text-align:center;">BAGBOT V2</h3>
-    <label>SALON</label><select id="cId"></select>
-    <label>RÔLE</label><select id="rId"></select>
-    <label>MESSAGE</label><textarea id="txt">Cliquez ci-dessous</textarea>
-    <label>AFFICHAGE</label>
-    <select id="disp"><option value="button">Bouton</option><option value="select">Menu</option></select>
-    <button class="btn" onclick="send()">LANCER LE DÉPLOIEMENT</button>
-</div>
-<script>
-    async function load() {
-        const [cR, rR] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
-        const chans = await cR.json(); const roles = await rR.json();
-        document.getElementById('cId').innerHTML = chans.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
-        document.getElementById('rId').innerHTML = roles.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
-    }
-    async function send() {
-        const fd = new FormData();
-        fd.append('channelId', document.getElementById('cId').value);
-        fd.append('roleId', document.getElementById('rId').value);
-        fd.append('content', document.getElementById('txt').value);
-        fd.append('displayType', document.getElementById('disp').value);
-        fd.append('mode', 'simple');
+    <div class="panel">
+        <h2 style="text-align:center;">ADMINISTRATION</h2>
+        <label>SALON</label><select id="cId"></select>
+        <label>RÔLE</label><select id="rId"></select>
+        <label>MESSAGE</label><textarea id="msg">Cliquez ici</textarea>
+        <button class="btn" onclick="send()">DÉPLOYER</button>
+    </div>
 
-        try {
-            const res = await fetch('/api/deploy', { method: 'POST', body: fd });
-            const data = await res.json();
-            alert(data.success ? "✅ Succès !" : "❌ Erreur : " + data.message);
-        } catch(e) { alert("❌ Erreur de connexion au serveur"); }
-    }
-    load();
-</script>
+    <script>
+        async function load() {
+            try {
+                const [cR, rR] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
+                const c = await cR.json(); const r = await rR.json();
+                document.getElementById('cId').innerHTML = c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
+                document.getElementById('rId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
+            } catch(e) { alert("Erreur de chargement des salons"); }
+        }
+
+        async function send() {
+            const fd = new FormData();
+            fd.append('channelId', document.getElementById('cId').value);
+            fd.append('roleId', document.getElementById('rId').value);
+            fd.append('content', document.getElementById('msg').value);
+            fd.append('mode', 'simple');
+            fd.append('displayType', 'button');
+
+            try {
+                const res = await fetch('/api/deploy', { method: 'POST', body: fd });
+                const data = await res.json();
+                if (data.success) alert("✅ Déployé !"); else alert("❌ Erreur : " + data.message);
+            } catch(e) { alert("❌ Erreur de connexion au serveur"); }
+        }
+        load();
+    </script>
 </body>
 </html>
