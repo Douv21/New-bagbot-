@@ -10,7 +10,7 @@
         .sidebar { width: 260px; background: #0b0c0e; height: 100vh; position: fixed; left: -260px; transition: 0.3s; z-index: 1000; border-right: 1px solid #222; }
         .sidebar.open { left: 0; }
         .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
-        .close-btn { background: none; border: none; color: var(--accent); font-size: 30px; cursor: pointer; }
+        .close-btn { background: none; border: none; color: var(--accent); font-size: 32px; cursor: pointer; }
         .main { flex: 1; padding: 20px; width: 100%; box-sizing: border-box; }
         .panel { background: var(--card); border-radius: 12px; padding: 20px; max-width: 500px; margin: auto; border: 1px solid #282a2e; }
         .tabs { display: flex; background: #2f3136; border-radius: 8px; margin-bottom: 20px; padding: 4px; }
@@ -49,12 +49,12 @@
             <input type="text" id="title">
             <label>Description</label>
             <textarea id="description" rows="3"></textarea>
-            <label>Image (Fichier)</label>
+            <label>Image</label>
             <input type="file" id="imageFile">
         </div>
-        <label>ID Message (Optionnel)</label>
+        <label>ID Message (Modifier)</label>
         <input type="text" id="messageId">
-        <label>Affichage</label>
+        <label>Type d'affichage</label>
         <select id="displayType"><option value="button">Bouton</option><option value="select">Menu</option></select>
         <button class="btn-send" id="btn" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
     </div>
@@ -76,14 +76,12 @@
         document.getElementById('roleId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
     }
     async function deploy() {
-        // RÉCUPÉRATION DIRECTE DE L'ID (Évite le bug mobile)
         const cVal = document.getElementById('channelId').value;
         const rVal = document.getElementById('roleId').value;
+        if (!cVal || cVal === "undefined") return alert("Attends que les salons chargent.");
 
-        if (!cVal || cVal.length < 15) return alert("❌ Salon invalide. Attends le chargement.");
-        
         const btn = document.getElementById('btn');
-        btn.innerText = "PATIENTEZ..."; btn.disabled = true;
+        btn.innerText = "ENVOI..."; btn.disabled = true;
 
         const fd = new FormData();
         fd.append('mode', mode);
@@ -101,7 +99,7 @@
             const data = await res.json();
             alert(data.success ? "✅ Envoyé !" : "❌ " + data.message);
         } catch(e) { alert("❌ Erreur serveur."); }
-        btn.innerText = "DÉPLOYER SUR DISCORD"; btn.disabled = false;
+        btn.innerText = "DÉPLOYER"; btn.disabled = false;
     }
     load();
 </script>
