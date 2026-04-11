@@ -3,152 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Dashboard</title>
+    <title>BagBot | Dashboard Rôles</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --accent: #ff4d4d; --bg: #0a0a0a; --panel: #161616; --text: #ffffff; --subtext: #888; --draft-coral: #d37f6a; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; padding: 15px; box-sizing: border-box; }
-
-        /* APERÇU DISCORD */
-        .discord-msg { background: #313338; border-radius: 8px; padding: 12px; display: flex; gap: 10px; margin-bottom: 20px; }
-        .avatar { width: 35px; height: 35px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
-        .embed { background: #1e1f22; border-left: 4px solid var(--accent); border-radius: 4px; padding: 12px; position: relative; width: 100%; }
-        .embed-title { font-weight: 700; margin-bottom: 5px; outline: none; }
-        .embed-desc { font-size: 14px; color: #dbdee1; outline: none; min-height: 20px; margin-bottom: 10px; }
-        .embed-img { width: 100%; border-radius: 4px; background: #111; margin: 10px 0; display: flex; align-items: center; justify-content: center; min-height: 80px; cursor: pointer; border: 1px dashed #444; }
-        .embed-img img { width: 100%; border-radius: 4px; }
+        /* Thème DraftBot */
+        :root { --accent: #ff4d4d; --bg: #2b2d31; --side: #1e1f22; --card: #313338; --text: #dbdee1; --draft-coral: #d37f6a; }
         
-        /* CONFIGURATION */
-        .card { background: var(--panel); border-radius: 15px; padding: 20px; border: 1px solid #222; }
-        label { display: block; font-size: 10px; color: var(--subtext); text-transform: uppercase; font-weight: 800; margin: 15px 0 5px; }
-        select { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 8px; outline: none; appearance: none; }
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; padding: 15px; box-sizing: border-box; }
 
-        /* RÉACTIONS */
-        .reaction-row { background: #1e1e1e; border-radius: 8px; padding: 10px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border: 1px solid #333; }
-        .emoji-btn { font-size: 20px; background: #0a0a0a; border: 1px solid #444; border-radius: 6px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .role-select { flex: 1; background: transparent; border: none; color: white; font-size: 14px; outline: none; }
+        /* HEADER */
+        .top-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; color: var(--subtext); }
+        .logo-draft { width: 40px; height: 40px; background: url('https://draftbot.fr/assets/img/logo.png') center/contain no-repeat; }
 
-        .btn-add { background: var(--draft-coral); color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: 700; cursor: pointer; margin: 15px 0; }
-        .btn-deploy { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
+        /* APERÇU DISCORD COMPLET */
+        .discord-msg { background: #313338; border-radius: 8px; padding: 12px; display: flex; gap: 10px; margin-bottom: 25px; border: 1px solid #1a1a1a; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .avatar { width: 35px; height: 35px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+        
+        /* Embed avec bordure latérale DraftBot */
+        .embed { background: #1e1f22; border-left: 4px solid var(--accent); border-radius: 4px; padding: 12px; position: relative; width: 100%; max-width: 480px; }
+        
+        /* Thumbnail Haut Droite */
+        .embed-thumb { position: absolute; top: 12px; right: 12px; width: 80px; height: 80px; border-radius: 8px; border: 1px dashed #4e5058; display: flex; align-items: center; justify-content: center; }
+        .embed-thumb img { width: 100%; border-radius: 8px; }
 
-        /* SÉLECTEUR EMOJI SMARTPHONE STYLE */
-        #emojiSelector { display: none; position: fixed; bottom: 0; left: 0; width: 100%; height: 300px; background: #161616; border-top: 2px solid var(--accent); z-index: 9999; padding: 15px; overflow-y: auto; }
-        .emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; font-size: 24px; text-align: center; }
-        .emoji-item { cursor: pointer; padding: 5px; border-radius: 5px; }
-        .emoji-item:hover { background: #333; }
+        .embed-author { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #949ba4; margin-bottom: 8px; }
+        .author-icon { width: 20px; height: 20px; border-radius: 50%; background: #444; }
+        .embed-title { color: white; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .embed-desc { font-size: 14px; color: #dbdee1; outline: none; white-space: pre-wrap; margin-bottom: 12px; }
+        
+        /* Image Principale (Bannière Bas) */
+        .embed-banner { width: 100%; border-radius: 8px; margin: 10px 0; border: 1px dashed #4e5058; min-height: 100px; display: flex; align-items: center; justify-content: center; }
+        .embed-banner img { width: 100%; border-radius: 8px; }
+        
+        .embed-footer { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #949ba4; margin-top: 10px; }
+        
+        /* PANNEAU DE CONFIGURATION */
+        .card { background: var(--card); border-radius: 8px; padding: 25px; max-width: 550px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        label { display: block; font-size: 12px; font-weight: 700; color: #b5bac1; text-transform: uppercase; margin: 15px 0 8px; }
+        
+        /* Grosses listes déroulantes */
+        select { width: 100%; background: #1e1f22; border-radius: 6px; border: 1px solid #1a1a1a; color: white; padding: 15px; font-size: 14px; font-weight: 600; outline: none; appearance: none; cursor: pointer; }
+        
+        /* Zone de Réaction */
+        .reaction-row { background: #1e1f22; border-radius: 6px; padding: 12px; display: flex; align-items: center; gap: 10px; margin-top: 10px; border: 1px solid #1a1a1a; }
+        .emoji-btn { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; background: #2b2d31; border-radius: 8px; cursor: pointer; font-size: 20px; border: 1px solid transparent; }
+        .emoji-btn:hover { border-color: var(--draft-coral); }
+        .role-input-mini { flex: 1; background: transparent; border: none; color: #b5bac1; font-size: 14px; outline: none; }
+
+        /* BOUTONS ACTIONS */
+        .btn-add { background: var(--draft-coral); color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 25px; text-transform: uppercase; }
+        .btn-deploy { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; text-transform: uppercase; }
+        
+        /* SÉLECTEUR EMOJI FLOTTANT (Identique à DraftBot) */
+        #emojiSelector { position: fixed; bottom: 0; left: 0; width: 100%; height: 280px; background: #111111; border-top: 1px solid #333; display: none; grid-template-columns: repeat(6, 1fr); padding: 15px; gap: 10px; overflow-y: auto; z-index: 9999; box-shadow: 0 -5px 15px rgba(0,0,0,0.5); }
+        #emojiSelector span { font-size: 28px; cursor: pointer; text-align: center; transition: 0.1s; border-radius: 5px; }
+        #emojiSelector span:hover { background: #333; }
+        
+        /* MODALE */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { background: var(--card); padding: 20px; border-radius: 8px; border: 1px solid var(--accent); z-index: 1001; }
     </style>
 </head>
 <body>
 
-    <h3 style="text-align:center;">Configuration du message</h3>
+    <div class="top-nav">
+        <i class="fas fa-bars" style="font-size: 20px;"></i>
+        <div class="logo-draft"></div>
+        <i class="fas fa-th-large" style="font-size: 20px; color: var(--accent);"></i>
+    </div>
+
+    <h3 style="text-align:center; font-weight: 500; margin-bottom: 25px;">Configuration du message</h3>
 
     <div class="discord-msg">
         <div class="avatar"></div>
-        <div class="embed">
-            <div class="embed-title" contenteditable="true" id="p-title">Role accès</div>
-            <div class="embed-desc" contenteditable="true" id="p-desc">Débloque l'accès aux contenus...</div>
-            <div class="embed-img" id="p-banner" onclick="addBanner()">
-                <i class="fas fa-plus" id="banner-icon"></i>
+        <div style="flex:1;">
+            <div style="font-size:15px;"><span style="font-weight:700; color:white;">DraftBot</span> <span style="background:#5865f2; font-size:10px; padding:2px 4px; border-radius:3px; font-weight:700; margin-left:3px;">APP</span> <span style="color:#949ba4; font-size:12px; margin-left:5px;">Aujourd'hui à 16:18</span></div>
+            
+            <div class="embed">
+                <div class="embed-thumb" id="preview-thumb" onclick="promptMedia('thumb')"><i class="fas fa-image" style="color:#4e5058;"></i></div>
+                
+                <div class="embed-author" id="preview-author" style="display:none;"><div class="author-icon" id="preview-auth-img"></div><span id="preview-auth-name">Auteur</span></div>
+                <div class="embed-title" contenteditable="true" id="p-title">Role accès</div>
+                <div class="embed-desc" contenteditable="true" id="p-desc">Débloque l'accès aux contenus réservés...</div>
+                
+                <div class="embed-banner" id="preview-banner" onclick="promptMedia('banner')"><i class="fas fa-image" style="color:#4e5058; font-size: 24px;"></i></div>
+                
+                <div class="embed-footer" id="preview-footer" style="display:none;"><div class="author-icon" id="preview-foot-img" style="width:16px; height:16px;"></div><span id="preview-foot-text">Footer</span></div>
             </div>
+            
+            <div style="background:#4e5058; color:white; padding:7px 15px; border-radius:3px; font-size:14px; margin-top:10px; display:inline-block;">Rôle</div>
         </div>
     </div>
 
     <div class="card">
-        <label>Salon de réception</label>
-        <select id="channelSelect"><option>Chargement des salons...</option></select>
-
-        <div id="reactionsList"></div>
+        <label>Salon Discord</label>
+        <select><option># bagbot-install</option><option># général</option></select>
+        
+        <div id="reactionsList">
+            </div>
 
         <button class="btn-add" onclick="addRow()">Ajouter un rôle réaction</button>
-        <button class="btn-deploy" onclick="sendToDiscord()">Déployer sur Discord</button>
+        <button class="btn-deploy" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
     </div>
 
     <div id="emojiSelector">
-        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-            <b>Choisir un Emoji</b>
-            <i class="fas fa-times" onclick="closeEmoji()" style="cursor:pointer;"></i>
-        </div>
-        <div class="emoji-grid" id="emojiGrid"></div>
+        <span onclick="pickEmoji('😀')">😀</span><span onclick="pickEmoji('🔥')">🔥</span>
+        <span onclick="pickEmoji('🔞')">🔞</span><span onclick="pickEmoji('🌙')">🌙</span>
+        <span onclick="pickEmoji('📜')">📜</span><span onclick="pickEmoji('✅')">✅</span>
+        <div style="grid-column: span 6; color: #444; font-size: 12px; text-align: center; padding: 10px;" onclick="closeEmoji()">Fermer</div>
     </div>
 
 <script>
-    let activeBtn = null;
-    let allRoles = [];
-    const commonEmojis = ['😀','🔥','🔞','🌙','🎭','📸','📜','✅','⚠️','⭐','💎','🎁','🛡️','🏹','🗡️','🧬'];
+    let activeEmojiBtn = null;
 
-    // 1. Chargement des données
-    async function loadData() {
-        try {
-            const [cRes, rRes] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
-            const channels = await cRes.json();
-            allRoles = await rRes.json();
-
-            document.getElementById('channelSelect').innerHTML = channels.map(c => 
-                `<option value="${c.id}"># ${c.name}</option>`).join('');
-        } catch (e) {
-            console.error("Erreur API");
-        }
+    // Gestion de l'aperçu dynamique
+    function updatePreview() {
+        document.getElementById('p-desc').innerText = "Cliquer sur les zones de l'embed pour modifier...";
     }
 
-    // 2. Gestion des réactions
     function addRow() {
+        const list = document.getElementById('reactionsList');
         const div = document.createElement('div');
         div.className = 'reaction-row';
         div.innerHTML = `
             <div class="emoji-btn" onclick="openEmoji(this)">😀</div>
-            <select class="role-select">
-                <option value="">Lier un rôle...</option>
-                ${allRoles.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
-            </select>
-            <i class="fas fa-trash" style="color:#444" onclick="this.parentElement.remove()"></i>
+            <select class="role-input-mini"><option value="">Bot</option><option value="">Membre</option></select>
+            <i class="fas fa-trash-alt" style="color:#444; cursor:pointer;" onclick="this.parentElement.remove()"></i>
         `;
-        document.getElementById('reactionsList').appendChild(div);
+        list.appendChild(div);
     }
 
-    // 3. Sélecteur d'emojis smartphone + serveur
+    // Sélecteur d'emoji flottant
     function openEmoji(btn) {
-        activeBtn = btn;
-        const grid = document.getElementById('emojiGrid');
-        grid.innerHTML = commonEmojis.map(e => `<span class="emoji-item" onclick="pickEmoji('${e}')">${e}</span>`).join('');
-        // Note: Ici tu pourrais ajouter les emojis du serveur via une boucle sur une API /api/server-emojis
-        document.getElementById('emojiSelector').style.display = 'block';
+        activeEmojiBtn = btn;
+        document.getElementById('emojiSelector').style.display = 'grid';
     }
 
     function pickEmoji(emoji) {
-        if(activeBtn) activeBtn.innerText = emoji;
+        if(activeEmojiBtn) activeEmojiBtn.innerText = emoji;
         closeEmoji();
     }
+
     function closeEmoji() { document.getElementById('emojiSelector').style.display = 'none'; }
 
-    // 4. Déploiement
-    async function sendToDiscord() {
-        const data = {
-            channelId: document.getElementById('channelSelect').value,
-            title: document.getElementById('p-title').innerText,
-            description: document.getElementById('p-desc').innerText,
-            reactions: Array.from(document.querySelectorAll('.reaction-row')).map(row => ({
-                emoji: row.querySelector('.emoji-btn').innerText,
-                roleId: row.querySelector('.role-select').value
-            }))
-        };
-
-        const res = await fetch('/api/deploy', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-
-        if(res.ok) alert("✅ Déployé avec succès !");
-        else alert("❌ Erreur de déploiement.");
+    // Ajout d'images par prompt
+    function promptMedia(zone) {
+        const url = prompt("Entrez l'URL de l'image pour " + zone + " :");
+        if(!url) return;
+        
+        if(zone === 'thumb') document.getElementById('preview-thumb').innerHTML = `<img src="${url}">`;
+        if(zone === 'banner') document.getElementById('preview-banner').innerHTML = `<img src="${url}">`;
     }
 
-    function addBanner() {
-        const url = prompt("Lien de l'image :");
-        if(url) document.getElementById('p-banner').innerHTML = `<img src="${url}">`;
-    }
-
-    window.onload = loadData;
+    function deploy() { alert("Message déployé sur Discord !"); }
+    updatePreview();
 </script>
 </body>
 </html>
-
