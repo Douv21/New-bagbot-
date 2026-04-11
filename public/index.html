@@ -3,247 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot | Dashboard Draft</title>
+    <title>BagBot Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --accent: #ff4d4d; --bg: #000000; --panel: #111111; --input: #000000; --text: #dcddde; --subtext: #8e9297; --discord-bg: #36393f; --discord-embed: #2f3136; }
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); display: flex; overflow: hidden; }
+        :root { --accent: #d3846d; --bg: #2b2d31; --side: #1e1f22; --card: #313338; --text: #dbdee1; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; }
 
-        /* Barre Latérale (Sidebar) - Identique à DraftBot */
-        .sidebar { width: 60px; background: var(--panel); height: 100vh; display: flex; flex-direction: column; align-items: center; padding-top: 20px; border-right: 1px solid #222; }
-        .side-icon { font-size: 18px; color: var(--subtext); padding: 15px; cursor: pointer; transition: 0.2s; border-radius: 8px; margin-bottom: 5px; position: relative; }
-        .side-icon:hover, .side-icon.active { color: white; background: #1a1a1a; }
-        .side-icon.active::before { content:''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--accent); border-radius: 0 4px 4px 0; }
-        .side-icon.close { color: #5c6066; } .side-icon.close:hover { color: var(--accent); }
+        /* Barre latérale flottante type Draft */
+        .sidebar { width: 70px; background: var(--side); height: 100vh; display: flex; flex-direction: column; align-items: center; padding-top: 15px; border-right: 1px solid #1a1a1a; }
+        .side-btn { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; color: #80848e; cursor: pointer; border-radius: 50%; margin-bottom: 12px; transition: 0.2s; }
+        .side-btn:hover, .side-btn.active { background: var(--accent); color: white; border-radius: 15px; }
 
-        /* Conteneur Principal */
-        .main { flex: 1; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .main { flex: 1; padding: 20px; overflow-y: auto; }
         
-        /* Aperçu Discord Pro (Identique à DraftBot) */
-        .preview-discord { background: var(--discord-bg); padding: 15px; border-radius: 5px; display: flex; gap: 12px; max-width: 600px; margin-bottom: 25px; border: 1px solid #222; }
-        .discord-avatar { width: 40px; height: 40px; border-radius: 50%; background: #444; flex-shrink: 0; }
-        .discord-bot-badge { background: #5865f2; color: white; font-size: 10px; padding: 2px 4px; border-radius: 3px; font-weight: bold; margin-left: 5px; }
-        .discord-embed { background: var(--discord-embed); border-left: 4px solid var(--accent); border-radius: 3px; padding: 10px; margin-top: 5px; max-width: 480px; position: relative; }
+        /* Navigation supérieure */
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .logo-box { width: 40px; height: 40px; background: url('https://draftbot.fr/assets/img/logo.png') center/contain no-repeat; }
+
+        /* Onglets */
+        .tabs { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .tab { padding: 8px 25px; border-radius: 20px; border: 1px solid #4e5058; color: #b5bac1; cursor: pointer; font-size: 14px; }
+        .tab.active { background: #4e5058; color: white; }
+
+        /* APERÇU DISCORD (Cœur du design) */
+        .discord-preview { background: #2b2d31; border-radius: 8px; padding: 15px; max-width: 550px; margin: 0 auto 30px; display: flex; gap: 15px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #5865f2; }
+        .embed { background: #1e1f22; border-left: 4px solid var(--accent); border-radius: 4px; padding: 12px; margin-top: 5px; position: relative; }
+        .embed-author { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #949ba4; margin-bottom: 8px; }
+        .embed-title { color: white; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .embed-desc { font-size: 14px; line-height: 1.4; white-space: pre-wrap; margin-bottom: 12px; }
         
-        /* Elements d'Embed */
-        .embed-author { display: flex; align-items: center; gap: 5px; color: white; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
-        .embed-thumbnail { position: absolute; top: 10px; right: 10px; width: 60px; height: 60px; border-radius: 8px; border: 1px dashed #444; background: #222; display: flex; align-items: center; justify-content: center; color: #444; }
-        .embed-title { font-size: 16px; font-weight: 700; color: white; margin-bottom: 10px; margin-top: -5px; }
-        .embed-footer { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #b9bbbe; margin-top: 15px; padding-top: 5px; border-top: 1px solid #333; }
-
-        /* Onglets Contenu/Image/Embed */
-        .tabs { display: flex; gap: 8px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #222; justify-content: start; }
-        .tab-btn { background: #1a1a1a; color: #b9bbbe; border: 1px solid transparent; padding: 8px 18px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: 0.2s; }
-        .tab-btn.active { background: rgba(255, 77, 77, 0.1); color: var(--accent); border-color: var(--accent); }
-
-        /* Zone de Configuration (Modale) */
-        .config-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 999; display: none; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
-        .config-overlay.open { display: flex; }
-        .config-card { background: var(--panel); border: 1px solid #222; border-radius: 8px; width: 90%; max-width: 500px; padding: 25px; }
-        .config-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; color: var(--accent); text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
-
-        /* Inputs & Labels */
-        label { display: block; font-size: 10px; color: var(--subtext); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; margin-top: 15px; letter-spacing: 0.5px; }
-        .input-box { background: var(--input); border: 1px solid #222; border-radius: 5px; display: flex; align-items: center; transition: 0.2s; }
-        .input-box:focus-within { border-color: var(--accent); box-shadow: 0 0 10px rgba(255,77,77,0.1); }
-        input, select, textarea { width: 100%; background: transparent; border: none; color: white; padding: 12px; outline: none; font-size: 14px; box-sizing: border-box; }
-        input[type="color"] { width: 40px; height: 40px; padding: 0; border: none; cursor: pointer; margin-right: 10px; }
+        /* Images dans l'embed */
+        .embed-thumb { position: absolute; top: 12px; right: 12px; width: 80px; height: 80px; border-radius: 8px; border: 1px dashed #4e5058; display: flex; align-items: center; justify-content: center; }
+        .embed-banner { width: 100%; border-radius: 8px; margin: 10px 0; border: 1px dashed #4e5058; min-height: 100px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .embed-banner img { width: 100%; height: auto; }
         
-        /* Emoji Picker Type Draft */
-        .emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 5px; max-height: 120px; overflow-y: auto; background: #000; padding: 10px; border-radius: 5px; border: 1px solid #222; margin-top: 5px; }
-        .emoji-btn { cursor: pointer; border-radius: 4px; padding: 5px; display: flex; justify-content: center; align-items: center; }
-        .emoji-btn.selected, .emoji-btn:hover { background: var(--accent); }
-        .emoji-btn img { width: 22px; height: 22px; }
+        .embed-footer { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #949ba4; margin-top: 10px; }
 
-        /* Bouton Action */
-        .btn-action { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 25px; transition: 0.2s; }
-        .btn-action:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        /* CONFIGURATION */
+        .config-card { background: var(--card); border-radius: 8px; padding: 25px; max-width: 550px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        label { display: block; font-size: 12px; font-weight: 700; color: #b5bac1; text-transform: uppercase; margin: 15px 0 8px; }
+        .input-group { background: #1e1f22; border-radius: 4px; border: 1px solid #1a1a1a; padding: 10px; }
+        input, textarea, select { width: 100%; background: transparent; border: none; color: white; outline: none; font-size: 14px; }
+        
+        .btn-add { background: var(--accent); color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-weight: 700; cursor: pointer; margin-top: 25px; text-transform: uppercase; }
+
+        /* Modales flottantes */
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 20px; border-radius: 8px; border: 1px solid var(--accent); z-index: 100; display: none; width: 300px; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <div style="width:30px; height:30px; background:var(--accent); border-radius:8px; margin-bottom:30px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;">B</div>
-    <div class="side-icon active" id="ico-content"><i class="fas fa-edit"></i></div>
-    <div class="side-icon" id="ico-view" onclick="openConfig('previs')"><i class="fas fa-eye"></i></div>
-    <div class="side-icon" id="ico-author" onclick="openConfig('auteur')"><i class="fas fa-user"></i></div>
-    <div class="side-icon" id="ico-footer" onclick="openConfig('footer')"><i class="fas fa-paragraph"></i></div>
-    <div style="flex:1;"></div>
-    <div class="side-icon close" id="ico-reset"><i class="fas fa-times"></i></div>
+    <div class="side-btn" style="background:var(--accent); color:white;"><i class="fas fa-home"></i></div>
+    <div class="side-btn" onclick="toggleModal('m-author')"><i class="fas fa-user-edit"></i></div>
+    <div class="side-btn" onclick="toggleModal('m-image')"><i class="fas fa-image"></i></div>
+    <div class="side-btn" onclick="toggleModal('m-footer')"><i class="fas fa-quote-left"></i></div>
+    <div class="side-btn" style="margin-top:auto;"><i class="fas fa-trash-alt"></i></div>
 </div>
 
 <div class="main">
-    <h3 style="margin: 0 0 20px 0; font-weight: 500;">Configurer le message</h3>
+    <div class="top-header">
+        <i class="fas fa-bars" style="font-size: 20px; cursor: pointer;"></i>
+        <div class="logo-box"></div>
+        <i class="fas fa-th-large" style="font-size: 20px; color: var(--accent);"></i>
+    </div>
 
     <div class="tabs">
-        <div class="tab-btn active" id="tab-simple" onclick="setMode('simple')">Contenu</div>
-        <div class="tab-btn" id="tab-embed" onclick="setMode('embed')">Embed Pro</div>
+        <div class="tab" onclick="setMode('text')">Contenu</div>
+        <div class="tab" onclick="setMode('img')">Image</div>
+        <div class="tab active" onclick="setMode('embed')">Embed</div>
     </div>
 
-    <div class="preview-discord">
-        <div class="discord-avatar"></div>
-        <div class="discord-content">
-            <div style="font-size:15px; color:white; font-weight:600;">BagBot <span class="discord-bot-badge">BOT</span> <span style="font-size:12px; color:var(--subtext); margin-left:8px;">Aujourd'hui à 15:43</span></div>
+    <div class="discord-preview">
+        <div class="avatar"></div>
+        <div style="flex:1;">
+            <div style="font-size:15px;"><span style="font-weight:700; color:white;">DraftBot</span> <span style="background:#5865f2; font-size:10px; padding:2px 4px; border-radius:3px; font-weight:700;">APP</span> <span style="color:#949ba4; font-size:12px; margin-left:5px;">11:06</span></div>
             
-            <div id="viewSimple">Contenu du message simple...</div>
-            
-            <div id="viewEmbed" class="discord-embed" style="display:none;">
-                <div class="embed-thumbnail" id="viewThumb" style="display:none;"><img src="" style="width:100%; height:100%; object-fit:cover; border-radius:8px;"></div>
-                <div class="embed-author" id="viewAuth" style="display:none;">
-                    <img src="" id="viewAuthImg" style="width:18px; height:18px; border-radius:50%; display:none;">
-                    <span id="viewAuthName">Staff</span>
-                </div>
-                <div class="embed-title" id="vTit">Titre de l'embed</div>
-                <div id="vDes" style="font-size:14px; margin-top:-5px;">Description...</div>
+            <div class="embed">
+                <div class="embed-thumb" id="p-thumb"><i class="far fa-image"></i></div>
+                <div class="embed-author" id="p-author"><i class="far fa-image"></i> <span id="p-auth-name">Nom de l'auteur</span></div>
+                <div class="embed-title" id="p-title">Role accès</div>
+                <div class="embed-desc" id="p-desc">Débloque l'accès aux contenus réservés :
+RP ✍️ : salons RP et ERP...</div>
                 
-                <div class="embed-footer" id="viewFooter" style="display:none;">
-                    <img src="" id="viewFootImg" style="width:16px; height:16px; border-radius:50%; display:none;">
-                    <span id="vFootTxt"></span>
-                </div>
+                <div class="embed-banner" id="p-banner"><i class="far fa-image"></i></div>
+                
+                <div class="embed-footer" id="p-footer"><i class="far fa-image"></i> <span id="p-foot-text">Footer</span> <span style="margin-left:auto;">Aujourd'hui à 15:17</span></div>
             </div>
             
-            <button class="discord-btn" style="background:#4f545c; border:none; color:white; padding:6px 14px; border-radius:3px; font-size:13px; margin-top:10px; display:inline-flex; align-items:center; gap:8px;">
-                <span id="viewEmo"></span> <span id="vBtn">Rôle</span>
-            </button>
+            <div style="display:inline-block; background:#4e5058; color:white; padding:6px 15px; border-radius:3px; font-size:14px; margin-top:10px;">Bouton</div>
         </div>
     </div>
 
-    <div style="max-width: 600px; background:var(--panel); border-radius:8px; padding:20px; border:1px solid #222;">
-        <label>Texte du bouton</label>
-        <div class="input-box" style="margin-bottom:15px;"><input type="text" id="btnLab" placeholder="Ex: Valider" oninput="update()"></div>
+    <div class="config-card">
+        <label>Titre de l'embed</label>
+        <div class="input-group"><input type="text" id="in-title" oninput="sync()" value="Role accès"></div>
+        
+        <label>Description</label>
+        <div class="input-group"><textarea id="in-desc" rows="5" oninput="sync()">Débloque l'accès aux contenus réservés...</textarea></div>
 
-        <label>Émojis (Draft Style)</label>
-        <div class="emoji-grid" id="emojiPicker"></div>
-        <input type="hidden" id="selectedEmoji">
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top:20px;">
-            <div><label>Salon</label><div class="input-box"><select id="cId" onchange="update()"></select></div></div>
-            <div><label>Rôle</label><div class="input-box"><select id="rId" onchange="update()"></select></div></div>
-        </div>
-
-        <button class="btn-action" onclick="send()">ENVOYER LE MESSAGE</button>
+        <button class="btn-add">Ajouter un rôle réaction</button>
     </div>
 </div>
 
-<div class="config-overlay" id="configOverlay">
-    
-    <div class="config-card" id="paneAuteur" style="display:none;">
-        <div class="config-header"><span>Config. Auteur</span><i class="fas fa-times" style="cursor:pointer;" onclick="closeConfig()"></i></div>
-        <label>Nom de l'auteur</label>
-        <div class="input-box"><input type="text" id="authName" placeholder="Ex: Staff BagBot" oninput="update()"></div>
-        <label>Image de l'auteur (URL)</label>
-        <div class="input-box"><input type="text" id="authImg" placeholder="Lien .png" oninput="update()"></div>
-    </div>
+<div class="modal" id="m-author">
+    <label>Nom de l'auteur</label>
+    <div class="input-group"><input type="text" id="in-auth" oninput="sync()"></div>
+    <label>URL Image Auteur</label>
+    <div class="input-group"><input type="text" id="in-auth-img" oninput="sync()"></div>
+    <button class="btn-add" onclick="toggleModal('m-author')">OK</button>
+</div>
 
-    <div class="config-card" id="paneFooter" style="display:none;">
-        <div class="config-header"><span>Config. Bas de page</span><i class="fas fa-times" style="cursor:pointer;" onclick="closeConfig()"></i></div>
-        <label>Texte du footer</label>
-        <div class="input-box"><input type="text" id="footTxt" placeholder="Ex: Propulsé par BagBot" oninput="update()"></div>
-        <label>Image du footer (URL)</label>
-        <div class="input-box"><input type="text" id="footImg" placeholder="Lien .png" oninput="update()"></div>
-    </div>
+<div class="modal" id="m-image">
+    <label>URL Image Principale (Bannière)</label>
+    <div class="input-group"><input type="text" id="in-banner" oninput="sync()"></div>
+    <label>URL Thumbnail (Petit carré)</label>
+    <div class="input-group"><input type="text" id="in-thumb" oninput="sync()"></div>
+    <button class="btn-add" onclick="toggleModal('m-image')">OK</button>
+</div>
 
-    <div class="config-card" id="panePrevis" style="display:none;">
-        <div class="config-header"><span>Style & Image</span><i class="fas fa-times" style="cursor:pointer;" onclick="closeConfig()"></i></div>
-        <label>Couleur de l'Embed (Rouge & Noir)</label>
-        <div class="input-box" style="padding:5px;"><input type="color" id="embColor" value="#ff4d4d" oninput="updateColor()"> <span style="color:#888;">#ff4d4d</span></div>
-        <label>Image Thumbnail (Droite)</label>
-        <div class="input-box"><input type="text" id="thumbImg" placeholder="Lien d'image" oninput="update()"></div>
-    </div>
+<div class="modal" id="m-footer">
+    <label>Texte du footer</label>
+    <div class="input-group"><input type="text" id="in-foot" oninput="sync()"></div>
+    <button class="btn-add" onclick="toggleModal('m-footer')">OK</button>
 </div>
 
 <script>
-    let mode = 'simple';
-    
-    // Changement d'onglet
-    function setMode(m) {
-        mode = m;
-        document.getElementById('tab-simple').classList.toggle('active', m === 'simple');
-        document.getElementById('tab-embed').classList.toggle('active', m === 'embed');
-        document.getElementById('viewSimple').style.display = m === 'simple' ? 'block' : 'none';
-        document.getElementById('viewEmbed').style.display = m === 'embed' ? 'block' : 'none';
-        update();
+    function toggleModal(id) {
+        const m = document.getElementById(id);
+        m.style.display = m.style.display === 'block' ? 'none' : 'block';
     }
 
-    // Gestion des modales cliquables
-    function openConfig(pane) {
-        document.getElementById('configOverlay').classList.add('open');
-        document.querySelectorAll('.config-card').forEach(p => p.style.display = 'none');
-        document.getElementById('pane' + pane.charAt(0).toUpperCase() + pane.slice(1)).style.display = 'block';
-        document.querySelectorAll('.side-icon').forEach(i => i.classList.remove('active'));
-        document.getElementById('ico-' + pane).classList.add('active');
-    }
-    function closeConfig() {
-        document.getElementById('configOverlay').classList.remove('open');
-    }
-
-    // Chargement API
-    async function load() {
-        const [cR, rR, eR] = await Promise.all([fetch('/api/channels'), fetch('/api/roles'), fetch('/api/emojis')]);
-        const c = await cR.json(); const r = await rR.json(); const e = await eR.json();
+    function sync() {
+        document.getElementById('p-title').innerText = document.getElementById('in-title').value;
+        document.getElementById('p-desc').innerText = document.getElementById('in-desc').value;
+        document.getElementById('p-auth-name').innerText = document.getElementById('in-auth').value || "Nom de l'auteur";
+        document.getElementById('p-foot-text').innerText = document.getElementById('in-foot').value || "Footer";
         
-        document.getElementById('cId').innerHTML = c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
-        document.getElementById('rId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
+        // Gestion des images
+        const bannerUrl = document.getElementById('in-banner').value;
+        if(bannerUrl) document.getElementById('p-banner').innerHTML = `<img src="${bannerUrl}">`;
         
-        document.getElementById('emojiPicker').innerHTML = e.map(x => `
-            <div class="emoji-btn" onclick="selEmo('${x.id}', '${x.url}', this)"><img src="${x.url}"></div>
-        `).join('') + `<div class="emoji-btn" onclick="selEmo('', '', this)"><i class="fas fa-ban"></i></div>`;
-        update();
+        const thumbUrl = document.getElementById('in-thumb').value;
+        if(thumbUrl) document.getElementById('p-thumb').innerHTML = `<img src="${thumbUrl}" style="width:100%; border-radius:8px;">`;
     }
-
-    function selEmo(id, url, el) {
-        document.querySelectorAll('.emoji-btn').forEach(i => i.classList.remove('selected'));
-        el.classList.add('selected');
-        document.getElementById('selectedEmoji').value = id;
-        document.getElementById('viewEmo').innerHTML = url ? `<img src="${url}" style="width:16px;">` : '';
-    }
-
-    function updateColor() {
-        const color = document.getElementById('embColor').value;
-        document.getElementById('viewEmbed').style.borderColor = color;
-    }
-
-    // Mise à jour de l'Aperçu (Draft Style)
-    function update() {
-        // Bouton
-        const label = document.getElementById('btnLab').value || document.getElementById('rId').options[document.getElementById('rId').selectedIndex]?.text || 'Rôle';
-        document.getElementById('vBtn').innerText = label;
-
-        // Auteur
-        const an = document.getElementById('authName').value;
-        const ai = document.getElementById('authImg').value;
-        document.getElementById('viewAuth').style.display = an ? 'flex' : 'none';
-        document.getElementById('viewAuthName').innerText = an;
-        document.getElementById('viewAuthImg').src = ai;
-        document.getElementById('viewAuthImg').style.display = ai ? 'block' : 'none';
-
-        // Thumbnail (Image Droite)
-        const ti = document.getElementById('thumbImg').value;
-        const thumb = document.getElementById('viewThumb');
-        thumb.style.display = ti ? 'flex' : 'none';
-        if(ti) thumb.querySelector('img').src = ti;
-
-        // Footer
-        const ft = document.getElementById('footTxt').value;
-        const fi = document.getElementById('footImg').value;
-        document.getElementById('viewFooter').style.display = ft ? 'flex' : 'none';
-        document.getElementById('vFootTxt').innerText = ft;
-        const footImg = document.getElementById('viewFootImg');
-        footImg.src = fi;
-        footImg.style.display = fi ? 'block' : 'none';
-
-        // Contenu Embed
-        if (mode === 'simple') {
-            document.getElementById('viewSimple').innerText = 'Contenu Simple...';
-        } else {
-            document.getElementById('viewSimple').style.display = 'none';
-        }
-    }
-
-    async function send() {
-        alert("Envoi simulé sur Discord !");
-    }
-    load();
 </script>
 </body>
 </html>
