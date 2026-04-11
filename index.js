@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, REST, Routes } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const express = require('express');
 require('dotenv').config();
 
@@ -6,66 +6,58 @@ const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages]
 });
 
-// --- CONFIGURATION ---
-const PORT = 49500;
-const BOT_ID = "TON_ID_DE_BOT_ICI"; // <--- METS TON ID ICI
-const ROLE_ID = "ID_DU_ROLE_A_DONNER"; // <--- METS L'ID DU ROLE ICI
-
-// --- DASHBOARD ---
 const app = express();
+app.use(express.json()); // Pour que le bot puisse lire les messages du Dashboard
 app.use(express.static('public'));
-app.listen(PORT, () => console.log(`🌐 Dashboard: http://192.168.1.133:${PORT}`));
 
-// --- COMMANDES ---
-const commands = [{ name: 'refresh-panel', description: 'Affiche le panneau de rôles' }];
-const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+// Variables pour stocker la config envoyée par le Dashboard
+let currentDashboardConfig = {
+    title: "🎒 Autorole",
+    roleId: ""
+};
 
-client.once('ready', async () => {
-    console.log(`✅ Connecté en tant que ${client.user.tag}`);
+// ROUTE : Le Dashboard envoie les infos ici
+app.post('/update-bot', async (req, res) => {
+    const { title, roleId, channelId } = req.body;
+    
     try {
-        await rest.put(Routes.applicationCommands(BOT_ID), { body: commands });
-        console.log('✅ Commande /refresh-panel enregistrée');
-    } catch (e) { console.error("Erreur deploy:", e); }
+        const channel = await client.channels.fetch(channelId);
+        const embed = new EmbedBuilder()
+            .setTitle(title)
+            .setDescription("Cliquez ci-dessous pour obtenir votre rôle.")
+            .setColor("#00FF00");
+
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('role_toggle')
+                .setLabel('Obtenir le Rôle')
+                .setStyle(ButtonStyle.Success)
+        );
+
+        await channel.send({ embeds: [embed], components: [row] });
+        currentDashboardConfig = { title, roleId }; // On sauvegarde
+        
+        res.json({ success: true, message: "Panneau envoyé sur Discord !" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
 });
 
-// --- LOGIQUE ---
+// Gestion du bouton (ID du rôle stocké dynamiquement)
 client.on('interactionCreate', async (interaction) => {
-    if (interaction.isChatInputCommand() && interaction.commandName === 'refresh-panel') {
-        try {
-            const embed = new EmbedBuilder()
-                .setTitle("🎒 Sélection des Rôles")
-                .setDescription("Clique sur le bouton pour obtenir ton rôle.")
-                .setColor("#5865F2");
-
-            const row = new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                    .setCustomId('role_toggle')
-                    .setLabel('Obtenir le Rôle')
-                    .setStyle(ButtonStyle.Primary)
-            );
-
-            await interaction.reply({ embeds: [embed], components: [row] });
-        } catch (err) {
-            console.error("Erreur interaction:", err);
-        }
-    }
-
     if (interaction.isButton() && interaction.customId === 'role_toggle') {
-        const role = interaction.guild.roles.cache.get(ROLE_ID);
-        if (!role) return interaction.reply({ content: "❌ Rôle introuvable. Vérifie l'ID dans le code.", ephemeral: true });
+        const role = interaction.guild.roles.cache.get(currentDashboardConfig.roleId);
+        if (!role) return interaction.reply({ content: "❌ ID de rôle invalide.", ephemeral: true });
 
-        try {
-            if (interaction.member.roles.cache.has(ROLE_ID)) {
-                await interaction.member.roles.remove(role);
-                await interaction.reply({ content: `➖ Rôle ${role.name} retiré !`, ephemeral: true });
-            } else {
-                await interaction.member.roles.add(role);
-                await interaction.reply({ content: `➕ Rôle ${role.name} ajouté !`, ephemeral: true });
-            }
-        } catch (e) {
-            await interaction.reply({ content: "⚠️ Erreur de permissions. Mon rôle doit être au-dessus.", ephemeral: true });
+        if (interaction.member.roles.cache.has(role.id)) {
+            await interaction.member.roles.remove(role);
+            await interaction.reply({ content: `➖ Rôle retiré !`, ephemeral: true });
+        } else {
+            await interaction.member.roles.add(role);
+            await interaction.reply({ content: `➕ Rôle ajouté !`, ephemeral: true });
         }
     }
 });
 
 client.login(process.env.TOKEN);
+app.listen(49500, () => console.log("🌐 Dashboard lié au Bot sur le port 49500"));
