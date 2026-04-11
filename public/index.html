@@ -6,99 +6,140 @@
     <title>BagBot Dashboard</title>
     <style>
         :root {
-            --bg-dark: #1e1e1e;
-            --sidebar-bg: #2b2b2b;
-            --accent: #d07c5d; /* Couleur orange/marron style DraftBot */
+            --bg-dark: #0a0a0a;       /* Noir profond */
+            --sidebar-bg: #151515;    /* Gris très sombre */
+            --accent: #ff4d4d;        /* Rouge vif */
+            --accent-hover: #cc0000;
             --text-main: #ffffff;
-            --text-muted: #b9bbbe;
-            --input-bg: #383838;
+            --text-muted: #a0a0a0;
+            --input-bg: #222222;
         }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
             display: flex;
+            flex-direction: row;
             height: 100vh;
         }
 
-        /* Barre latérale */
+        /* --- SIDEBAR (S'adapte au mobile) --- */
         .sidebar {
             width: 260px;
             background-color: var(--sidebar-bg);
             display: flex;
             flex-direction: column;
             padding: 20px 0;
-            border-right: 1px solid #333;
+            border-right: 2px solid var(--accent);
+            transition: all 0.3s;
         }
 
         .sidebar-header {
             text-align: center;
-            padding-bottom: 20px;
-            font-weight: bold;
-            font-size: 1.2rem;
+            padding-bottom: 30px;
+            font-size: 1.4rem;
+            font-weight: 900;
             color: var(--accent);
+            letter-spacing: 2px;
         }
 
         .nav-item {
-            padding: 12px 25px;
+            padding: 15px 25px;
             color: var(--text-muted);
             text-decoration: none;
             display: flex;
             align-items: center;
-            transition: 0.3s;
+            font-size: 0.95rem;
+            transition: 0.2s;
             cursor: pointer;
+            border-left: 3px solid transparent;
         }
 
         .nav-item:hover, .nav-item.active {
-            background-color: #3f3f3f;
+            background: linear-gradient(90deg, rgba(255,77,77,0.1) 0%, rgba(0,0,0,0) 100%);
             color: var(--text-main);
-            border-left: 4px solid var(--accent);
+            border-left: 3px solid var(--accent);
         }
 
-        /* Zone de contenu */
+        /* --- CONTENU --- */
         .content {
             flex: 1;
             padding: 40px;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
         }
 
         .card {
             background-color: var(--sidebar-bg);
-            padding: 25px;
-            border-radius: 8px;
-            max-width: 600px;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        h1 { font-size: 1.8rem; margin-bottom: 5px; }
-        p { color: var(--text-muted); margin-bottom: 25px; }
+        h1 { font-size: 2rem; margin: 0 0 10px 0; color: var(--accent); }
+        .subtitle { color: var(--text-muted); margin-bottom: 30px; }
 
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; }
+        .form-group { margin-bottom: 25px; }
+        label { display: block; margin-bottom: 10px; font-size: 0.8rem; font-weight: bold; color: var(--accent); text-transform: uppercase; }
 
-        input, select {
+        input {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background-color: var(--input-bg);
-            border: 1px solid #444;
-            border-radius: 4px;
+            border: 1px solid #333;
+            border-radius: 6px;
             color: white;
-            box-sizing: border-box;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
         }
+
+        input:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(255,77,77,0.2); }
 
         .btn-main {
             background-color: var(--accent);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 4px;
+            padding: 16px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 1rem;
             width: 100%;
+            transition: 0.3s;
+            text-transform: uppercase;
         }
 
-        .btn-main:hover { opacity: 0.8; }
+        .btn-main:hover { background-color: var(--accent-hover); transform: translateY(-2px); }
+
+        /* --- MEDIA QUERY (MOBILE) --- */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding: 10px 0;
+                flex-direction: row;
+                overflow-x: auto;
+                border-right: none;
+                border-bottom: 2px solid var(--accent);
+            }
+            .sidebar-header { display: none; } /* On cache le titre sur mobile pour gagner de la place */
+            .nav-item { padding: 10px 15px; font-size: 0.8rem; border-left: none; border-bottom: 3px solid transparent; }
+            .nav-item.active { border-left: none; border-bottom: 3px solid var(--accent); }
+            .content { padding: 20px; }
+            .card { padding: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -106,33 +147,35 @@
     <div class="sidebar">
         <div class="sidebar-header">BAG BOT V2</div>
         <div class="nav-item">🏠 Général</div>
-        <div class="nav-item">👋 Arrivées et départs</div>
+        <div class="nav-item">👋 Arrivées</div>
         <div class="nav-item active">🎭 Rôles-Réactions</div>
         <div class="nav-item">🛡️ Modération</div>
         <div class="nav-item">💰 Économie</div>
     </div>
 
     <div class="content">
-        <h1>Rôles-Réactions</h1>
-        <p>Configurez vos boutons de sélection de rôles en toute simplicité.</p>
+        <div class="container">
+            <h1>Rôles-Réactions</h1>
+            <p class="subtitle">Créez un panneau de rôles avec boutons en un clic.</p>
 
-        <div class="card">
-            <div class="form-group">
-                <label>Nom du panneau</label>
-                <input type="text" id="title" placeholder="Ex: Choix des rôles">
+            <div class="card">
+                <div class="form-group">
+                    <label>Nom du panneau</label>
+                    <input type="text" id="title" placeholder="Ex: Rôles de notifications">
+                </div>
+
+                <div class="form-group">
+                    <label>ID du Salon (Channel)</label>
+                    <input type="text" id="channelId" placeholder="Collez l'ID du salon Discord">
+                </div>
+
+                <div class="form-group">
+                    <label>ID du Rôle à donner</label>
+                    <input type="text" id="roleId" placeholder="Collez l'ID du rôle">
+                </div>
+
+                <button class="btn-main" onclick="sendToBot()">Déployer sur Discord</button>
             </div>
-
-            <div class="form-group">
-                <label>ID du Salon du message</label>
-                <input type="text" id="channelId" placeholder="Collez l'ID du salon">
-            </div>
-
-            <div class="form-group">
-                <label>ID du Rôle à donner</label>
-                <input type="text" id="roleId" placeholder="Collez l'ID du rôle">
-            </div>
-
-            <button class="btn-main" onclick="sendToBot()">DÉPLOYER LE PANNEAU</button>
         </div>
     </div>
 
@@ -144,16 +187,21 @@
                 channelId: document.getElementById('channelId').value
             };
 
-            if(!data.channelId || !data.roleId) return alert("Veuillez remplir les IDs !");
+            if(!data.channelId || !data.roleId || !data.title) {
+                return alert("⚠️ Remplis tous les champs !");
+            }
 
-            const response = await fetch('/update-bot', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            });
-            
-            const result = await response.json();
-            alert(result.message);
+            try {
+                const response = await fetch('/update-bot', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                alert(result.success ? "✅ Envoyé !" : "❌ Erreur: " + result.message);
+            } catch (e) {
+                alert("❌ Impossible de contacter le bot.");
+            }
         }
     </script>
 </body>
