@@ -16,20 +16,23 @@ module.exports = function(app, client) {
         res.json(guild ? guild.roles.cache.filter(r => !r.managed && r.name !== "@everyone").map(r => ({ id: String(r.id), name: r.name })) : []);
     });
 
-    // Nouvelle route hybride : les IDs passent par l'URL pour être insensibles aux bugs de formulaire
+    // Route avec IDs en paramètres pour une stabilité maximale
     app.post('/update-bot/:channelId/:roleId', upload.single('imageFile'), async (req, res) => {
         try {
             const { channelId, roleId } = req.params;
             const { mode, displayType, messageId, content, title, description } = req.body;
 
-            if (!/^\d{17,20}$/.test(channelId)) return res.status(400).json({ success: false, message: "ID Salon invalide." });
+            if (!/^\d{17,20}$/.test(channelId)) return res.status(400).json({ success: false, message: "ID Snowflake invalide." });
 
             const channel = await client.channels.fetch(channelId);
             const role = await channel.guild.roles.fetch(roleId);
             let options = { embeds: [], components: [], files: [] };
 
             if (mode === 'embed') {
-                const embed = new EmbedBuilder().setTitle(title || "Rôles").setDescription(description || " ").setColor("#ff4d4d");
+                const embed = new EmbedBuilder()
+                    .setTitle(title || "Sélection de rôle")
+                    .setDescription(description || " ")
+                    .setColor("#ff4d4d");
                 if (req.file) {
                     const file = new AttachmentBuilder(req.file.path, { name: 'banner.png' });
                     embed.setImage('attachment://banner.png');
@@ -37,7 +40,7 @@ module.exports = function(app, client) {
                 }
                 options.embeds = [embed];
             } else {
-                options.content = content || "Sélectionnez votre rôle :";
+                options.content = content || "Choisissez votre rôle :";
             }
 
             const row = new ActionRowBuilder();
