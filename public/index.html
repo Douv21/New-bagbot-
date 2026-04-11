@@ -1,26 +1,160 @@
-<div class="card">
-    <h2>Configuration de l'Autorole</h2>
-    <input type="text" id="title" placeholder="Titre de l'embed"><br><br>
-    <input type="text" id="roleId" placeholder="ID du Rôle Discord"><br><br>
-    <input type="text" id="channelId" placeholder="ID du Salon Discord"><br><br>
-    <button onclick="sendToBot()">Envoyer le panneau sur Discord</button>
-</div>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BagBot Dashboard</title>
+    <style>
+        :root {
+            --bg-dark: #1e1e1e;
+            --sidebar-bg: #2b2b2b;
+            --accent: #d07c5d; /* Couleur orange/marron style DraftBot */
+            --text-main: #ffffff;
+            --text-muted: #b9bbbe;
+            --input-bg: #383838;
+        }
 
-<script>
-async function sendToBot() {
-    const data = {
-        title: document.getElementById('title').value,
-        roleId: document.getElementById('roleId').value,
-        channelId: document.getElementById('channelId').value
-    };
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+        }
 
-    const response = await fetch('/update-bot', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-    });
-    
-    const result = await response.json();
-    alert(result.message);
-}
-</script>
+        /* Barre latérale */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            border-right: 1px solid #333;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            padding-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+
+        .nav-item {
+            padding: 12px 25px;
+            color: var(--text-muted);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: #3f3f3f;
+            color: var(--text-main);
+            border-left: 4px solid var(--accent);
+        }
+
+        /* Zone de contenu */
+        .content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .card {
+            background-color: var(--sidebar-bg);
+            padding: 25px;
+            border-radius: 8px;
+            max-width: 600px;
+        }
+
+        h1 { font-size: 1.8rem; margin-bottom: 5px; }
+        p { color: var(--text-muted); margin-bottom: 25px; }
+
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--input-bg);
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .btn-main {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .btn-main:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">BAG BOT V2</div>
+        <div class="nav-item">🏠 Général</div>
+        <div class="nav-item">👋 Arrivées et départs</div>
+        <div class="nav-item active">🎭 Rôles-Réactions</div>
+        <div class="nav-item">🛡️ Modération</div>
+        <div class="nav-item">💰 Économie</div>
+    </div>
+
+    <div class="content">
+        <h1>Rôles-Réactions</h1>
+        <p>Configurez vos boutons de sélection de rôles en toute simplicité.</p>
+
+        <div class="card">
+            <div class="form-group">
+                <label>Nom du panneau</label>
+                <input type="text" id="title" placeholder="Ex: Choix des rôles">
+            </div>
+
+            <div class="form-group">
+                <label>ID du Salon du message</label>
+                <input type="text" id="channelId" placeholder="Collez l'ID du salon">
+            </div>
+
+            <div class="form-group">
+                <label>ID du Rôle à donner</label>
+                <input type="text" id="roleId" placeholder="Collez l'ID du rôle">
+            </div>
+
+            <button class="btn-main" onclick="sendToBot()">DÉPLOYER LE PANNEAU</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendToBot() {
+            const data = {
+                title: document.getElementById('title').value,
+                roleId: document.getElementById('roleId').value,
+                channelId: document.getElementById('channelId').value
+            };
+
+            if(!data.channelId || !data.roleId) return alert("Veuillez remplir les IDs !");
+
+            const response = await fetch('/update-bot', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            alert(result.message);
+        }
+    </script>
+</body>
+</html>
