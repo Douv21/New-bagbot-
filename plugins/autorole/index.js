@@ -19,14 +19,12 @@ module.exports = function(app, client) {
 
     app.post('/update-bot', upload.single('imageFile'), async (req, res) => {
         try {
-            // Nettoyage forcé des entrées
             const channelId = String(req.body.channelId || "").trim();
             const roleId = String(req.body.roleId || "").trim();
             const messageId = String(req.body.messageId || "").trim();
 
-            // Validation Snowflake stricte
             if (!/^\d{17,20}$/.test(channelId)) {
-                return res.status(400).json({ success: false, message: `ID Salon invalide : ${channelId}` });
+                return res.status(400).json({ success: false, message: "ID Salon invalide (Snowflake Error)" });
             }
 
             const channel = await client.channels.fetch(channelId);
@@ -36,7 +34,7 @@ module.exports = function(app, client) {
 
             if (req.body.mode === 'embed') {
                 const embed = new EmbedBuilder()
-                    .setTitle(req.body.title || "Sélection")
+                    .setTitle(req.body.title || "Sélection de rôle")
                     .setDescription(req.body.description || " ")
                     .setColor("#ff4d4d");
 
@@ -69,7 +67,6 @@ module.exports = function(app, client) {
 
             res.json({ success: true });
         } catch (err) {
-            console.error(err);
             res.status(500).json({ success: false, message: err.message });
         }
     });
