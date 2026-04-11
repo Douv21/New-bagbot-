@@ -8,27 +8,21 @@
         :root { --accent: #ff4d4d; --bg: #0f1012; --side: #0b0c0e; --panel: #18191c; }
         body { margin: 0; font-family: sans-serif; background: var(--bg); color: white; display: flex; overflow-x: hidden; }
         
-        /* Sidebar améliorée */
         .sidebar { width: 260px; background: var(--side); height: 100vh; position: fixed; left: -260px; transition: 0.3s; z-index: 1000; border-right: 1px solid #222; }
         .sidebar.open { left: 0; }
         .sidebar-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
         .close-btn { background: none; border: none; color: #888; font-size: 24px; cursor: pointer; }
         
-        .sidebar-content { padding: 15px; }
-        .nav-item { padding: 12px; border-radius: 6px; cursor: pointer; margin-bottom: 5px; color: #888; transition: 0.2s; display: flex; align-items: center; }
-        .nav-item:hover, .nav-item.active { background: #1a1b1e; color: white; }
-
         .main { flex: 1; padding: 20px; width: 100%; box-sizing: border-box; }
         .hamburger { background: #2f3136; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; margin-bottom: 20px; font-size: 18px; }
 
-        /* Panel & Tabs */
         .panel { background: var(--panel); border-radius: 12px; padding: 20px; max-width: 500px; margin: auto; border: 1px solid #282a2e; }
         .tabs { display: flex; background: #2f3136; border-radius: 8px; margin-bottom: 20px; padding: 4px; }
         .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; color: #888; }
         .tab.active { background: var(--accent); color: white; font-weight: bold; }
 
         label { display: block; margin: 15px 0 5px; font-size: 11px; color: #8e9297; text-transform: uppercase; font-weight: bold; }
-        select, input, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 6px; box-sizing: border-box; }
+        select, input, textarea { width: 100%; padding: 12px; background: #202225; border: 1px solid #111; color: white; border-radius: 6px; box-sizing: border-box; margin-bottom: 5px; }
         .btn { background: var(--accent); color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
@@ -39,14 +33,13 @@
         <h3 style="color:var(--accent); margin:0;">BAGBOT V2</h3>
         <button class="close-btn" onclick="toggleMenu()">×</button>
     </div>
-    <div class="sidebar-content">
-        <div class="nav-item active" onclick="toggleMenu()">🏠 Dashboard</div>
-        <div class="nav-item" onclick="toggleMenu()">🎭 Auto-Rôles</div>
-        <div class="nav-item" onclick="toggleMenu()">⚙️ Paramètres</div>
+    <div class="sidebar-content" style="padding:15px;">
+        <div class="nav-item" style="padding:12px; color:#888;">🏠 Dashboard</div>
+        <div class="nav-item" style="padding:12px; color:white; background:#1a1b1e; border-radius:6px;">🎭 Auto-Rôles</div>
     </div>
 </div>
 
-<div class="main" id="main">
+<div class="main">
     <button class="hamburger" onclick="toggleMenu()">☰ Menu</button>
     
     <div class="panel">
@@ -55,41 +48,43 @@
             <div class="tab" id="t-embed" onclick="setMode('embed')">Embed</div>
         </div>
 
-        <label>Salon Discord</label>
+        <label>Salon & Rôle</label>
         <select id="cId"></select>
-
-        <label>Rôle à donner</label>
         <select id="rId"></select>
+
+        <label>Mode du Rôle</label>
+        <select id="roleMode">
+            <option value="normal">Normal (Ajout/Retrait)</option>
+            <option value="unique">Unique (Un seul par salon)</option>
+            <option value="definitif">Définitif (Donne mais ne retire pas)</option>
+            <option value="retrait">Retrait Uniquement</option>
+        </select>
 
         <div id="f-simple">
             <label>Message</label>
-            <textarea id="txt">Cliquez sur le bouton pour votre rôle !</textarea>
+            <textarea id="txt">Cliquez ici !</textarea>
         </div>
 
         <div id="f-embed" style="display:none;">
-            <label>Titre</label><input type="text" id="tit" placeholder="Titre de l'embed">
-            <label>Description</label><textarea id="des" placeholder="Description..."></textarea>
-            <label>Image (Bannière)</label><input type="file" id="img">
+            <label>Contenu Embed</label>
+            <input type="text" id="tit" placeholder="Titre">
+            <textarea id="des" placeholder="Description"></textarea>
+            <input type="file" id="img">
         </div>
 
-        <label>Affichage</label>
+        <label>Type d'affichage</label>
         <select id="disp">
-            <option value="button">Bouton Rouge</option>
-            <option value="select">Menu Déroulant</option>
+            <option value="button">Bouton</option>
+            <option value="select">Menu</option>
         </select>
 
-        <button class="btn" id="go" onclick="deploy()">DÉPLOYER SUR DISCORD</button>
+        <button class="btn" onclick="deploy()">DÉPLOYER</button>
     </div>
 </div>
 
 <script>
     let mode = 'simple';
-    
-    // Fonction qui ouvre ET ferme
-    function toggleMenu() { 
-        document.getElementById('sidebar').classList.toggle('open'); 
-    }
-
+    function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
     function setMode(m) {
         mode = m;
         document.getElementById('t-simple').className = m === 'simple' ? 'tab active' : 'tab';
@@ -99,32 +94,27 @@
     }
 
     async function load() {
-        try {
-            const [cR, rR] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
-            const c = await cR.json(); const r = await rR.json();
-            document.getElementById('cId').innerHTML = c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
-            document.getElementById('rId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
-        } catch(e) { console.error(e); }
+        const [cR, rR] = await Promise.all([fetch('/api/channels'), fetch('/api/roles')]);
+        const c = await cR.json(); const r = await rR.json();
+        document.getElementById('cId').innerHTML = c.map(x => `<option value="${x.id}"># ${x.name}</option>`).join('');
+        document.getElementById('rId').innerHTML = r.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
     }
 
     async function deploy() {
-        const btn = document.getElementById('go'); btn.innerText = "ENVOI...";
         const fd = new FormData();
         fd.append('channelId', document.getElementById('cId').value);
         fd.append('roleId', document.getElementById('rId').value);
         fd.append('mode', mode);
+        fd.append('roleMode', document.getElementById('roleMode').value);
         fd.append('displayType', document.getElementById('disp').value);
         fd.append('content', document.getElementById('txt').value);
         fd.append('title', document.getElementById('tit').value);
         fd.append('description', document.getElementById('des').value);
-        if (document.getElementById('img').files[0]) fd.append('imageFile', document.getElementById('img').files[0]);
+        if(document.getElementById('img').files[0]) fd.append('imageFile', document.getElementById('img').files[0]);
 
-        try {
-            const res = await fetch('/api/deploy', { method: 'POST', body: fd });
-            const d = await res.json();
-            if(d.success) alert("✅ Déployé !"); else alert("❌ Erreur : " + d.message);
-        } catch(e) { alert("❌ Erreur de connexion"); }
-        btn.innerText = "DÉPLOYER SUR DISCORD";
+        const res = await fetch('/api/deploy', { method: 'POST', body: fd });
+        const d = await res.json();
+        alert(d.success ? "✅ OK" : "❌ Erreur");
     }
     load();
 </script>
