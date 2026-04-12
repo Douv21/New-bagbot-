@@ -6,33 +6,20 @@
     <title>BagBot OS | Dashboard Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- CORE SYSTEM --- */
         :root {
             --accent: #ed4245;
-            --accent-hover: #c03537;
             --bg-dark: #0b0b0b;
             --bg-side: #000000;
             --bg-card: #1e1f22;
             --bg-input: #111214;
             --border: #2b2d31;
-            --text-main: #f2f3f5;
-            --text-muted: #949ba4;
+            --text: #f2f3f5;
+            --text-m: #949ba4;
             --sidebar-w: 260px;
-            --header-h: 60px;
-            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            background: var(--bg-dark);
-            color: var(--text-main);
-            font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            display: flex;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        body { background: var(--bg-dark); color: var(--text); font-family: 'Helvetica Neue', Arial, sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
         /* --- SIDEBAR ENGINE --- */
         #sidebar {
@@ -41,323 +28,191 @@
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            flex-shrink: 0;
-            z-index: 999;
-            transition: var(--transition);
+            transition: transform 0.3s ease;
+            z-index: 1000;
         }
 
-        .brand-zone {
-            padding: 30px 24px;
+        #sidebar.closed { transform: translateX(-100%); position: absolute; height: 100%; }
+
+        .brand { padding: 30px 24px; font-size: 24px; font-weight: 900; color: var(--accent); letter-spacing: 2px; display: flex; align-items: center; gap: 10px; }
+        
+        .nav-scroll { flex: 1; overflow-y: auto; padding: 10px; }
+        .nav-label { font-size: 11px; font-weight: 800; color: #4e5058; text-transform: uppercase; padding: 20px 12px 8px; letter-spacing: 0.5px; }
+        
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 5px;
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 22px;
-            font-weight: 900;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .nav-container { flex: 1; padding: 12px; }
-        
-        .nav-group-label {
-            font-size: 11px;
-            font-weight: 800;
-            color: #4e5058;
-            text-transform: uppercase;
-            padding: 20px 12px 8px;
-            letter-spacing: 0.5px;
-        }
-
-        .nav-link {
-            padding: 12px 16px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            color: var(--text-muted);
-            text-decoration: none;
+            color: var(--text-m);
             cursor: pointer;
-            transition: var(--transition);
-            font-weight: 600;
+            transition: 0.2s;
             margin-bottom: 2px;
+            font-weight: 600;
         }
 
-        .nav-link:hover { background: rgba(255,255,255,0.05); color: #fff; }
-        
-        .nav-link.active {
-            background: rgba(237, 66, 69, 0.1);
-            color: var(--accent);
-        }
+        .nav-item:hover, .nav-item.active { background: rgba(237, 66, 69, 0.1); color: #fff; }
+        .nav-item.active { color: var(--accent); border-left: 3px solid var(--accent); border-radius: 0 5px 5px 0; }
+        .nav-item i { width: 20px; text-align: center; }
 
         /* --- MAIN VIEWPORT --- */
-        .viewport {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            position: relative;
-            background: var(--bg-dark);
-        }
-
-        .top-nav {
-            height: var(--header-h);
-            background: rgba(5, 5, 5, 0.8);
-            backdrop-filter: blur(10px);
+        .viewport { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
+        
+        header {
+            height: 60px;
+            background: #050505;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            padding: 0 24px;
-            justify-content: space-between;
-            flex-shrink: 0;
+            padding: 0 20px;
+            gap: 20px;
         }
 
-        .page-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 15px;
-        }
+        #hamburger { font-size: 20px; color: var(--accent); cursor: pointer; transition: 0.2s; }
+        #hamburger:hover { transform: scale(1.1); }
 
-        .main-scroll {
-            flex: 1;
-            overflow-y: auto;
-            padding: 40px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            scroll-behavior: smooth;
-        }
+        .scroll-area { flex: 1; overflow-y: auto; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; }
 
-        /* --- EMBED ARCHITECTURE --- */
-        .embed-container {
+        /* --- EMBED BUILDER --- */
+        .embed-card {
             width: 100%;
             max-width: 520px;
             background: var(--bg-card);
             border-radius: 4px;
             border-left: 4px solid var(--accent);
             padding: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             margin-bottom: 30px;
         }
 
-        .embed-header-flex { display: flex; gap: 16px; }
-        .fields-stack { flex: 1; }
+        .embed-header { display: flex; gap: 15px; margin-bottom: 10px; }
+        .title-in { background: transparent; border: none; color: #fff; font-size: 18px; font-weight: 700; width: 100%; }
+        .desc-in { background: transparent; border: none; color: #dbdee1; font-size: 14px; width: 100%; resize: none; min-height: 100px; line-height: 1.5; margin-top: 10px; }
 
-        .title-in {
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-size: 18px;
-            font-weight: 700;
-            width: 100%;
-            margin-bottom: 10px;
+        .thumb-zone {
+            width: 80px; height: 80px; background: rgba(0,0,0,0.2); border: 2px dashed #333;
+            border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-m); flex-shrink: 0;
         }
 
-        .desc-in {
-            background: transparent;
-            border: none;
-            color: #dbdee1;
-            font-size: 14px;
-            width: 100%;
-            resize: none;
-            min-height: 120px;
-            line-height: 1.5;
+        .image-banner {
+            width: 100%; height: 220px; background: #2b2d31; border-radius: 4px; margin-top: 20px;
+            display: flex; align-items: center; justify-content: center; border: 1px dashed #333; overflow: hidden;
         }
 
-        .thumb-upload {
-            width: 80px;
-            height: 80px;
-            background: rgba(0,0,0,0.2);
-            border: 2px dashed #333;
-            border-radius: 4px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: #4e5058;
-            transition: var(--transition);
-        }
-
-        .thumb-upload:hover { border-color: var(--accent); color: #fff; }
-
-        .banner-box {
-            width: 100%;
-            height: 240px;
-            background: #2b2d31;
-            border-radius: 4px;
-            margin-top: 20px;
-            border: 1px dashed #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            overflow: hidden;
-        }
-
-        /* --- CONTROLS BOX --- */
-        .control-panel { width: 100%; max-width: 520px; }
+        /* --- CONTROLS --- */
+        .panel { width: 100%; max-width: 520px; }
+        .panel-label { font-size: 11px; font-weight: 800; color: var(--text-m); text-transform: uppercase; margin-bottom: 10px; display: block; }
         
-        .input-group { margin-bottom: 24px; }
-        .label {
-            display: block;
-            font-size: 11px;
-            font-weight: 800;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
+        select {
+            width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+            color: #fff; padding: 14px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;
         }
 
-        .custom-select {
-            width: 100%;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            color: #fff;
-            padding: 14px 18px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: var(--transition);
+        .grid-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-action {
+            background: #2b2d31; color: #fff; border: none; padding: 12px;
+            border-radius: 4px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
 
-        .btn-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 15px;
-        }
-
-        .btn {
-            border: none;
-            border-radius: 4px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: var(--transition);
-        }
-
-        .btn-gray { background: #4e5058; color: #fff; padding: 12px; }
-        .btn-gray:hover { background: #6d6f78; }
-
-        .btn-primary {
-            width: 100%;
-            background: var(--accent);
-            color: #fff;
-            padding: 18px;
-            font-size: 16px;
-            text-transform: uppercase;
-            font-weight: 900;
-            margin-top: 30px;
+        .btn-deploy {
+            width: 100%; background: var(--accent); color: #fff; padding: 18px;
+            border: none; border-radius: 6px; font-weight: 900; font-size: 16px;
+            text-transform: uppercase; cursor: pointer; margin-top: 30px;
             box-shadow: 0 4px 15px rgba(237, 66, 69, 0.3);
         }
 
-        .btn-primary:active { transform: scale(0.98); }
-
-        /* --- ANIMATIONS & MODALS (JavaScript Dependancy) --- */
+        /* --- MOBILE ADAPT --- */
+        @media (max-width: 768px) {
+            #sidebar { position: absolute; left: 0; height: 100%; }
+            #sidebar.closed { transform: translateX(-100%); }
+        }
     </style>
 </head>
 <body>
 
-    <aside id="sidebar">
-        <div class="brand-zone">
-            <i class="fas fa-shield-cat"></i>
-            <span>BagBot</span>
+    <nav id="sidebar">
+        <div class="brand"><i class="fas fa-robot"></i> BAGBOT</div>
+        <div class="nav-scroll">
+            <div class="nav-label">Gestion Message</div>
+            <div class="nav-item active"><i class="fas fa-pen-nib"></i> Designer</div>
+            <div class="nav-item"><i class="fas fa-clock"></i> Planificateur</div>
+            <div class="nav-item"><i class="fas fa-history"></i> Historique</div>
+
+            <div class="nav-label">Automatisations</div>
+            <div class="nav-item"><i class="fas fa-shield-alt"></i> Auto-Mod</div>
+            <div class="nav-item"><i class="fas fa-door-open"></i> Welcomer</div>
+            <div class="nav-item"><i class="fas fa-ticket-alt"></i> Tickets</div>
+
+            <div class="nav-label">Système</div>
+            <div class="nav-item"><i class="fas fa-database"></i> Logs Serveur</div>
+            <div class="nav-item"><i class="fas fa-cog"></i> Configuration</div>
         </div>
-        
-        <div class="nav-container">
-            <div class="nav-group-label">Serveur</div>
-            <div class="nav-link active"><i class="fas fa-pen-fancy"></i> Designer</div>
-            <div class="nav-link"><i class="fas fa-list-check"></i> Auto-Mod</div>
-            
-            <div class="nav-group-label">Configuration</div>
-            <div class="nav-link"><i class="fas fa-terminal"></i> Commandes</div>
-            <div class="nav-link"><i class="fas fa-database"></i> Journaux</div>
-            <div class="nav-link"><i class="fas fa-sliders-h"></i> Paramètres</div>
-        </div>
-        
-        <div style="padding: 20px; text-align: center; border-top: 1px solid var(--border);">
-            <div style="font-size: 10px; color: var(--text-muted); font-weight: 800;">BAGBOT V3.1.2-STABLE</div>
-        </div>
-    </aside>
+        <div style="padding: 15px; font-size: 10px; text-align: center; color: #333;">BAGBOT OS v3.5.0</div>
+    </nav>
 
     <div class="viewport">
-        <header class="top-nav">
-            <div class="page-title">
-                <i class="fas fa-bars" style="color: var(--accent); cursor: pointer;"></i>
-                <span>DASHBOARD</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 11px; font-weight: 900; color: #23a559;">● BOT ACTIF</span>
-            </div>
+        <header>
+            <i class="fas fa-bars" id="hamburger"></i>
+            <div style="font-weight: 900; letter-spacing: 1px; font-size: 14px;">DASHBOARD</div>
         </header>
 
-        <div class="main-scroll">
-            <div class="embed-container">
-                <div class="embed-header-flex">
-                    <div class="fields-stack">
-                        <input type="text" class="title-in" value="Titre de l'Annonce" id="inp-title">
-                        <textarea class="desc-in" id="inp-desc" placeholder="Rédigez votre message ici..."></textarea>
+        <div class="scroll-area">
+            <div class="embed-card">
+                <div class="embed-header">
+                    <div style="flex:1">
+                        <input type="text" class="title-in" value="Titre de l'annonce">
+                        <textarea class="desc-in" placeholder="Rédigez ici votre message..."></textarea>
                     </div>
-                    <div class="thumb-upload">
-                        <i class="fas fa-camera"></i>
-                        <span style="font-size: 9px; margin-top: 5px; font-weight: 800;">IMAGE</span>
-                    </div>
+                    <div class="thumb-zone"><i class="fas fa-image"></i><span style="font-size:8px;margin-top:5px">IMAGE</span></div>
                 </div>
-                <div class="banner-box">
-                    <i class="fas fa-cloud-arrow-up" style="font-size: 40px; color: #333;"></i>
-                </div>
+                <div class="image-banner"><i class="fas fa-cloud-upload-alt" style="font-size:30px;color:#333"></i></div>
             </div>
 
-            <div class="control-panel">
-                <div class="input-group">
-                    <label class="label">Salon de destination</label>
-                    <select class="custom-select" id="channel-list">
-                        <option>Chargement des canaux...</option>
-                    </select>
+            <div class="panel">
+                <span class="panel-label">Salon de diffusion</span>
+                <select id="chan-list"><option>Chargement des salons...</option></select>
+
+                <div class="grid-btns">
+                    <button class="btn-action"><i class="fas fa-smile"></i> Réaction</button>
+                    <button class="btn-action"><i class="fas fa-thumbtack"></i> Épingler</button>
+                    <button class="btn-action"><i class="fas fa-at"></i> Mention @</button>
+                    <button class="btn-action"><i class="fas fa-trash"></i> Purge</button>
                 </div>
 
-                <div class="btn-grid">
-                    <button class="btn btn-gray"><i class="fas fa-plus-circle"></i> Réaction</button>
-                    <button class="btn btn-gray"><i class="fas fa-at"></i> Mentionner</button>
-                </div>
-
-                <button class="btn btn-primary" id="send-trigger">
-                    <i class="fas fa-paper-plane" style="margin-right: 12px;"></i> Publier maintenant
-                </button>
+                <button class="btn-deploy" id="deploy"><i class="fas fa-paper-plane" style="margin-right:10px"></i> Déployer le message</button>
             </div>
         </div>
     </div>
 
     <script>
-        // LOGIQUE DE CHARGEMENT API
-        async function bootstrap() {
+        // Menu Hamburger
+        const side = document.getElementById('sidebar');
+        const btn = document.getElementById('hamburger');
+        
+        btn.onclick = () => {
+            side.classList.toggle('closed');
+        };
+
+        // API Fetch
+        async function load() {
             try {
                 const res = await fetch('/api/get_server_info');
                 const data = await res.json();
                 if (data.channels) {
-                    const el = document.getElementById('channel-list');
-                    el.innerHTML = data.channels.map(c => 
+                    document.getElementById('chan-list').innerHTML = data.channels.map(c => 
                         `<option value="${c.id}"># ${c.name}</option>`
                     ).join('');
                 }
-            } catch (e) {
-                console.error("API Link Error");
-            }
+            } catch(e) { console.error("Erreur API"); }
         }
 
-        // Action bouton principal
-        document.getElementById('send-trigger').onclick = () => {
-            const chan = document.getElementById('channel-list').selectedOptions[0].text;
-            alert("Envoi en cours vers " + chan);
-        };
+        window.onload = load;
 
-        window.onload = bootstrap;
+        document.getElementById('deploy').onclick = () => {
+            alert("Envoi en cours...");
+        };
     </script>
 </body>
 </html>
