@@ -2,76 +2,123 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Dashboard v2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BagBot | Master Accueil</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --accent: #ed4245; --bg: #050505; --card: #111214; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); color: white; font-family: sans-serif; display: flex; height: 100vh; }
-        
-        /* SIDEBAR CORRIGÉE */
-        #sidebar { width: 250px; background: #000; border-right: 1px solid #2b2d31; }
-        .nav-item { padding: 15px 20px; display: flex; align-items: center; gap: 10px; color: #949ba4; font-weight: bold; }
-        .nav-item.active { color: var(--accent); background: rgba(237, 66, 69, 0.1); }
+        :root { --accent: #ed4245; --bg: #050505; --card: #111214; --embed: #2b2d31; --text-m: #949ba4; }
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        body { background: var(--bg); color: white; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; display: flex; height: 100vh; }
 
-        .main { flex: 1; padding: 20px; overflow-y: auto; }
-        .embed { background: #2b2d31; border-left: 4px solid var(--accent); padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        /* SIDEBAR */
+        #sidebar { width: 260px; background: #000; border-right: 1px solid #2b2d31; display: flex; flex-direction: column; }
+        .nav-item { padding: 16px 20px; display: flex; align-items: center; gap: 12px; color: var(--text-m); font-weight: bold; cursor: pointer; }
+        .nav-item.active { background: rgba(237, 66, 69, 0.1); color: var(--accent); border-right: 3px solid var(--accent); }
+
+        .viewport { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; align-items: center; }
+
+        /* DISCORD EMBED COMPLETE */
+        .discord-embed {
+            width: 100%; max-width: 520px; background: var(--embed); border-left: 4px solid var(--accent);
+            border-radius: 4px; padding: 16px; position: relative; margin-bottom: 25px;
+        }
+        .embed-author { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer; }
+        .embed-author img { width: 24px; height: 24px; border-radius: 50%; }
         
-        /* ZONES D'IMAGES */
-        .img-zone { border: 1px dashed #444; background: #1e1f22; display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 10px 0; overflow: hidden; }
-        .banner { width: 100%; height: 120px; }
-        .thumb { width: 60px; height: 60px; float: right; }
+        .embed-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; cursor: pointer; }
+        .embed-desc { font-size: 14px; color: #dbdee1; line-height: 1.4; cursor: pointer; }
         
-        input, textarea, select { width: 100%; background: #080808; border: 1px solid #2b2d31; color: white; padding: 12px; margin-bottom: 10px; border-radius: 6px; }
-        .btn { width: 100%; background: var(--accent); color: white; border: none; padding: 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .embed-thumb { width: 80px; height: 80px; background: #1e1f22; border-radius: 4px; float: right; margin-left: 10px; display: flex; align-items: center; justify-content: center; border: 1px dashed #444; cursor: pointer; }
+        .embed-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        .embed-banner { width: 100%; height: 180px; background: #1e1f22; border-radius: 4px; margin-top: 15px; display: flex; align-items: center; justify-content: center; border: 1px dashed #444; cursor: pointer; overflow: hidden; }
+        .embed-banner img { width: 100%; height: 100%; object-fit: cover; }
+
+        .embed-footer { display: flex; align-items: center; gap: 8px; margin-top: 15px; font-size: 12px; color: var(--text-m); cursor: pointer; }
+        .embed-footer img { width: 20px; height: 20px; border-radius: 50%; }
+
+        /* EDITOR */
+        .editor-card { width: 100%; max-width: 520px; background: var(--card); padding: 20px; border-radius: 8px; border: 1px solid #2b2d31; }
+        .field-label { font-size: 11px; font-weight: 800; color: var(--text-m); text-transform: uppercase; margin-bottom: 10px; display: block; color: var(--accent); }
+        input, textarea, select { width: 100%; background: #080808; border: 1px solid #2b2d31; color: white; padding: 12px; border-radius: 6px; margin-bottom: 15px; }
+        .btn-save { width: 100%; background: var(--accent); color: white; border: none; padding: 16px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
     </style>
 </head>
 <body>
     <nav id="sidebar">
-        <div style="padding: 25px; color: var(--accent); font-weight: 900; font-size: 20px;">BAGBOT</div>
+        <div style="padding: 30px 20px; color: var(--accent); font-weight: 900; font-size: 22px; letter-spacing: 1px;">BAGBOT</div>
         <div class="nav-item active"><i class="fas fa-home"></i> ACCUEIL</div>
         <div class="nav-item"><i class="fas fa-shield-alt"></i> AUTO-MOD</div>
     </nav>
-    <div class="main">
-        <div class="embed">
-            <div id="p-thumb" class="img-zone thumb" onclick="edit('thumb')"><i class="fas fa-plus"></i></div>
-            <div id="p-title" style="font-weight:bold; font-size:18px;" onclick="edit('title')">Titre de l'accueil</div>
-            <div id="p-desc" style="color:#dbdee1;" onclick="edit('desc')">Cliquez ici pour changer la description...</div>
-            <div id="p-banner" class="img-zone banner" onclick="edit('banner')"><i class="fas fa-image"></i></div>
-            <div id="p-footer" style="font-size:12px; color:#949ba4; margin-top:10px;" onclick="edit('footer')">Footer • BagBot</div>
+
+    <div class="viewport">
+        <div class="discord-embed">
+            <div class="embed-author" onclick="setEdit('author', 'Lien Image Auteur')">
+                <img id="p-auth-img" src="">
+                <span id="p-auth-name" style="font-weight: 700; font-size: 13px;">BagBot</span>
+            </div>
+
+            <div class="embed-thumb" id="p-thumb" onclick="setEdit('thumb', 'Lien Miniature (Carrée)')">
+                <i class="fas fa-plus" style="color:#333"></i>
+            </div>
+
+            <div class="embed-title" id="p-title" onclick="setEdit('title', 'Titre de l\'Embed')">Bienvenue !</div>
+            <div class="embed-desc" id="p-desc" onclick="setEdit('desc', 'Description')">Cliquez sur un élément pour le modifier...</div>
+            
+            <div class="embed-banner" id="p-banner" onclick="setEdit('banner', 'Lien Grande Image')">
+                <i class="fas fa-image" style="font-size: 30px; color:#222"></i>
+            </div>
+
+            <div class="embed-footer" onclick="setEdit('footer', 'Texte du Footer')">
+                <img id="p-foot-img" src="">
+                <span id="p-foot-text">ID: {user_id} • BagBot System</span>
+            </div>
         </div>
 
-        <div style="background: var(--card); padding: 15px; border-radius: 8px;">
-            <label id="edit-label" style="font-size:12px; color:var(--accent)">MODE ÉDITION : Sélectionnez un élément</label>
-            <input type="text" id="main-input" placeholder="Entrez la valeur ici...">
+        <div class="editor-card">
+            <span class="field-label" id="edit-title-label">SÉLECTIONNEZ UN ÉLÉMENT</span>
+            <input type="text" id="main-input" placeholder="Nouvelle valeur...">
+            <textarea id="main-area" rows="3" style="display:none"></textarea>
+            
+            <span class="field-label">SALON DE DESTINATION</span>
             <select id="chan-list"></select>
-            <button class="btn" onclick="save()">VALIDER ET DÉPLOYER</button>
+
+            <button class="btn-save" onclick="saveData()">Enregistrer et Déployer</button>
         </div>
     </div>
 
     <script>
-        let current = '';
-        function edit(type) {
-            current = type;
-            document.getElementById('edit-label').innerText = "MODIFIER : " + type.toUpperCase();
+        let currentField = '';
+        const input = document.getElementById('main-input');
+        const area = document.getElementById('main-area');
+
+        function setEdit(type, label) {
+            currentField = type;
+            document.getElementById('edit-title-label').innerText = label;
+            input.style.display = (type === 'desc') ? 'none' : 'block';
+            area.style.display = (type === 'desc') ? 'block' : 'none';
         }
 
-        document.getElementById('main-input').oninput = (e) => {
-            const val = e.target.value;
-            if(current === 'title') document.getElementById('p-title').innerText = val;
-            if(current === 'desc') document.getElementById('p-desc').innerText = val;
-            if(current === 'footer') document.getElementById('p-footer').innerText = val;
-            if(current === 'banner') document.getElementById('p-banner').innerHTML = `<img src="${val}" style="width:100%">`;
-            if(current === 'thumb') document.getElementById('p-thumb').innerHTML = `<img src="${val}" style="width:100%">`;
+        // Mise à jour temps réel
+        input.oninput = (e) => update(e.target.value);
+        area.oninput = (e) => update(e.target.value);
+
+        function update(val) {
+            if(currentField === 'title') document.getElementById('p-title').innerText = val;
+            if(currentField === 'desc') document.getElementById('p-desc').innerText = val;
+            if(currentField === 'footer') document.getElementById('p-foot-text').innerText = val;
+            if(currentField === 'banner') document.getElementById('p-banner').innerHTML = `<img src="${val}">`;
+            if(currentField === 'thumb') document.getElementById('p-thumb').innerHTML = `<img src="${val}">`;
+            if(currentField === 'author') document.getElementById('p-auth-img').src = val;
         }
 
-        async function save() {
+        async function saveData() {
             const data = {
                 category: "accueil",
                 settings: {
                     title: document.getElementById('p-title').innerText,
                     description: document.getElementById('p-desc').innerText,
+                    footer: document.getElementById('p-foot-text').innerText,
                     channel: document.getElementById('chan-list').value
                 }
             };
@@ -80,13 +127,16 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(data)
             });
-            alert("Sauvegardé avec succès !");
+            alert("✅ Enregistré !");
         }
 
         window.onload = async () => {
             const res = await fetch('/api/get_server_info');
             const data = await res.json();
             document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            document.getElementById('p-auth-img').src = data.bot.avatar;
+            document.getElementById('p-foot-img').src = data.bot.avatar;
+            document.getElementById('p-auth-name').innerText = data.bot.name;
         }
     </script>
 </body>
