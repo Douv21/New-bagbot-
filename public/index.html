@@ -2,189 +2,349 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>BagBot Panel | Full Embed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BagBot | Dashboard Elite</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #050505; --card: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord: #2b2d31; }
-        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; }
-        
-        #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .nav-item { padding: 20px 30px; cursor: pointer; color: #888; font-weight: bold; transition: 0.2s; border-right: 4px solid transparent; }
-        .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right-color: var(--accent); }
+        :root {
+            --bg: #050505;
+            --sidebar-bg: #000000;
+            --card-bg: #0f0f0f;
+            --accent: #ed4245;
+            --border: #1e1e1e;
+            --discord-bg: #2b2d31;
+            --text-muted: #888;
+        }
 
-        main { flex-grow: 1; padding: 40px; overflow-y: auto; }
-        .section { display: none; max-width: 900px; margin: 0 auto; }
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR & HAMBURGER --- */
+        #sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .hamburger {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1100;
+            background: var(--accent);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .brand {
+            padding: 30px;
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--accent);
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-item {
+            padding: 18px 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+            background: rgba(237, 66, 69, 0.1);
+            border-right: 4px solid var(--accent);
+        }
+
+        /* --- CONTENT AREA --- */
+        main {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .section { display: none; max-width: 900px; margin: 0 auto; animation: fadeIn 0.4s; }
         .section.active { display: block; }
 
-        .card { background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
-        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-top: 10px; box-sizing: border-box; }
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            border: 1px solid var(--border);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
 
-        /* Discord Embed Mockup */
-        .discord-ui { background: var(--discord); border-left: 4px solid var(--accent); padding: 15px; border-radius: 4px; max-width: 520px; position: relative; }
-        .embed-top { display: flex; justify-content: space-between; }
-        .embed-thumb { width: 80px; height: 80px; background: #202225; border-radius: 8px; cursor: pointer; overflow: hidden; border: 1px dashed #444; flex-shrink: 0; }
-        .embed-thumb img { width: 100%; height: 100%; object-fit: cover; }
-        .embed-banner { width: 100%; height: 180px; background: #202225; border-radius: 8px; margin-top: 15px; cursor: pointer; overflow: hidden; border: 1px dashed #444; }
-        .embed-banner img { width: 100%; height: 100%; object-fit: cover; }
-        .embed-footer { font-size: 12px; color: #b9bbbe; margin-top: 10px; display: flex; align-items: center; gap: 5px; }
+        /* --- DISCORD EMBED MOCKUP --- */
+        .discord-mockup {
+            background: var(--discord-bg);
+            border-left: 4px solid var(--accent);
+            border-radius: 4px;
+            padding: 15px;
+            max-width: 500px;
+            margin-bottom: 25px;
+        }
 
-        .btn { width: 100%; padding: 15px; background: var(--accent); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .embed-main { display: flex; justify-content: space-between; gap: 10px; }
+        .embed-text { flex-grow: 1; }
+        .embed-title { color: #00a8fc; font-weight: bold; margin-bottom: 5px; }
+        .embed-desc { font-size: 14px; color: #dbdee1; white-space: pre-wrap; }
         
-        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-box { background: var(--card); padding: 25px; border-radius: 15px; width: 500px; border: 1px solid var(--border); }
-        .img-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; max-height: 300px; overflow-y: auto; padding: 10px; }
-        .img-grid img { width: 100%; height: 80px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 2px solid transparent; }
-        .img-grid img:hover { border-color: var(--accent); }
+        .embed-thumb { 
+            width: 80px; height: 80px; border-radius: 8px; 
+            background: #1e1f22; border: 2px dashed #444; 
+            cursor: pointer; overflow: hidden; flex-shrink: 0;
+        }
+        .embed-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        .embed-banner {
+            width: 100%; height: 180px; border-radius: 8px;
+            background: #1e1f22; border: 2px dashed #444;
+            margin-top: 15px; cursor: pointer; overflow: hidden;
+        }
+        .embed-banner img { width: 100%; height: 100%; object-fit: cover; }
+
+        .embed-footer {
+            margin-top: 10px; font-size: 12px; color: #b9bbbe;
+            display: flex; align-items: center; gap: 5px;
+        }
+
+        /* --- FORMS & BUTTONS --- */
+        label { display: block; margin: 15px 0 5px; color: var(--text-muted); font-size: 12px; font-weight: 800; text-transform: uppercase; }
+        input, textarea, select {
+            width: 100%; background: #000; border: 1px solid var(--border);
+            color: white; padding: 12px; border-radius: 8px; box-sizing: border-box;
+        }
+
+        .btn {
+            width: 100%; padding: 15px; background: var(--accent); border: none;
+            color: white; border-radius: 8px; font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            margin-top: 15px;
+        }
+
+        /* --- RESPONSIVE (SMARTPHONE) --- */
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed; left: 0; top: 0; bottom: 0;
+                transform: translateX(-100%);
+            }
+            #sidebar.open { transform: translateX(0); }
+            .hamburger { display: block; }
+            main { padding: 80px 20px 20px; }
+            .discord-mockup { max-width: 100%; }
+        }
+
+        /* --- MODAL --- */
+        #gallery-modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.9); z-index: 2000;
+            align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: var(--card-bg); width: 90%; max-width: 600px;
+            padding: 30px; border-radius: 20px; border: 1px solid var(--border);
+        }
+        .img-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px; max-height: 400px; overflow-y: auto; margin-top: 20px;
+        }
+        .img-grid img { width: 100%; height: 90px; object-fit: cover; border-radius: 10px; cursor: pointer; border: 2px solid transparent; }
+        .img-grid img:hover { border-color: var(--accent); transform: scale(1.05); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } }
     </style>
 </head>
 <body>
+
+    <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+
     <nav id="sidebar">
-        <div style="padding: 30px; font-weight: 900; color: var(--accent); font-size: 24px;">BAGBOT</div>
-        <div class="nav-item active" onclick="show('welcome', this)"><i class="fas fa-home"></i> BIENVENUE</div>
-        <div class="nav-item" onclick="show('admin', this)"><i class="fas fa-lock"></i> ADMIN</div>
+        <div class="brand">BAGBOT</div>
+        <div class="nav-item active" onclick="showSection('welcome', this)">
+            <i class="fas fa-home"></i> BIENVENUE
+        </div>
+        <div class="nav-item" onclick="showSection('admin', this)">
+            <i class="fas fa-user-shield"></i> ACCÈS PANEL
+        </div>
+        <div class="nav-item" onclick="location.href='/api/login'">
+            <i class="fas fa-sign-out-alt"></i> RECONNEXION
+        </div>
     </nav>
 
     <main>
         <div id="welcome" class="section active">
-            <div class="discord-ui">
-                <div class="embed-top">
-                    <div style="flex-grow: 1;">
-                        <div id="pv-title" style="font-weight:bold; font-size: 1.1em; color:#00a8fc">Titre</div>
-                        <div id="pv-desc" style="color:#dbdee1; margin-top:8px; font-size:14px; white-space:pre-wrap;">Description...</div>
+            <div class="discord-mockup">
+                <div class="embed-main">
+                    <div class="embed-text">
+                        <div id="pv-title" class="embed-title">Titre</div>
+                        <div id="pv-desc" class="embed-desc">Message de bienvenue...</div>
                     </div>
-                    <div class="embed-thumb" onclick="openGal('thumb')">
-                        <img id="pv-thumb" style="display:none">
-                        <div id="thumb-hint" style="font-size:10px; text-align:center; padding-top:25px; color:#444;">THUMB</div>
+                    <div class="embed-thumb" onclick="openGallery('thumb')">
+                        <img id="pv-thumb-img" style="display:none">
+                        <div id="thumb-hint" style="font-size:10px; text-align:center; padding-top:30px; color:#444">THUMB</div>
                     </div>
                 </div>
-                <div class="embed-banner" onclick="openGal('banner')">
-                    <img id="pv-banner" style="display:none">
-                    <div id="banner-hint" style="text-align:center; padding-top:80px; color:#444;">CLIQUE POUR BANNIÈRE</div>
+                <div class="embed-banner" onclick="openGallery('banner')">
+                    <img id="pv-banner-img" style="display:none">
+                    <div id="banner-hint" style="text-align:center; padding-top:80px; color:#444">CLIQUE POUR BANNIÈRE</div>
                 </div>
                 <div class="embed-footer">
-                    <img id="pv-foot-img" src="" style="width:18px; height:18px; border-radius:50%; display:none">
-                    <span id="pv-foot-txt">Bas de page</span>
+                    <i class="fas fa-clock"></i> <span id="pv-footer-txt">Bas de page</span>
                 </div>
             </div>
 
             <div class="card">
+                <h2><i class="fas fa-pen-fancy"></i> Configuration</h2>
                 <label>Titre</label><input type="text" id="w-title" oninput="sync()">
                 <label>Description</label><textarea id="w-desc" rows="3" oninput="sync()"></textarea>
-                <label>Footer (Bas de page)</label><input type="text" id="w-foot" oninput="sync()">
-                <label>Salon d'envoi</label><select id="w-chan"></select>
-                <label>Rôle Déclencheur (Facultatif)</label><select id="w-trigger"><option value="">Immédiat (Join)</option></select>
-                <button class="btn" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
+                <label>Footer</label><input type="text" id="w-footer" oninput="sync()">
+                
+                <label>Salon d'envoi</label>
+                <select id="w-chan"></select>
+                
+                <label>Rôle Déclencheur (Facultatif)</label>
+                <select id="w-trigger"><option value="">Immédiat (Arrivée)</option></select>
+
+                <button class="btn" onclick="saveConfig()"><i class="fas fa-save"></i> SAUVEGARDER</button>
             </div>
         </div>
 
         <div id="admin" class="section">
             <div class="card">
-                <h3>Permissions Admin</h3>
-                <div id="admin-roles" style="background:#000; border-radius:8px; padding:10px; max-height:300px; overflow-y:auto;"></div>
-                <button class="btn" onclick="save()">METTRE À JOUR</button>
+                <h2><i class="fas fa-lock"></i> Permissions</h2>
+                <p style="color:var(--text-muted); font-size:13px">Rôles autorisés à modifier ce bot :</p>
+                <div id="admin-roles-list" style="max-height: 400px; overflow-y:auto"></div>
+                <button class="btn" onclick="saveConfig()"><i class="fas fa-check"></i> VALIDER</button>
             </div>
         </div>
     </main>
 
-    <div id="modal">
-        <div class="modal-box">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3>Ma Galerie</h3>
-                <input type="file" id="file-input" style="display:none" onchange="upload()">
-                <button class="btn" style="width:auto; font-size:12px;" onclick="document.getElementById('file-input').click()">+ UPLOAD</button>
+    <div id="gallery-modal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+                <h3>Choisir une image</h3>
+                <i class="fas fa-times" onclick="closeGallery()" style="cursor:pointer"></i>
             </div>
-            <div id="modal-grid" class="img-grid"></div>
-            <button class="btn" style="background:#444" onclick="closeGal()">ANNULER</button>
+            <input type="file" id="upload-file" style="display:none" onchange="handleUpload()">
+            <button class="btn" style="background:#5865f2; width:auto; font-size:12px" onclick="document.getElementById('upload-file').click()">+ AJOUTER IMAGE</button>
+            <div id="gallery-grid" class="img-grid"></div>
         </div>
     </div>
 
     <script>
-        let server = {};
-        let targetImg = ''; // 'thumb' ou 'banner'
+        let serverData = {};
+        let activeTarget = '';
 
         async function init() {
             const res = await fetch('/api/get_data');
-            if(!res.ok) return location.href='/api/login';
-            server = await res.json();
+            if(!res.ok) return;
+            serverData = await res.json();
+
+            // Salons & Rôles
+            document.getElementById('w-chan').innerHTML = serverData.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            document.getElementById('w-trigger').innerHTML += serverData.roles.map(r => `<option value="${r}">${r}</option>`).join('');
             
-            document.getElementById('w-chan').innerHTML = server.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            document.getElementById('w-trigger').innerHTML += server.roles.map(r => `<option value="${r}">${r}</option>`).join('');
-            
-            document.getElementById('admin-roles').innerHTML = server.roles.map(r => `
-                <div style="display:flex; gap:10px; padding:8px; border-bottom:1px solid #1a1a1a;">
-                    <input type="checkbox" value="${r}" class="adm-ck" ${server.config.admin_roles?.includes(r)?'checked':''}> ${r}
+            document.getElementById('admin-roles-list').innerHTML = serverData.roles.map(r => `
+                <div style="display:flex; gap:10px; padding:10px; border-bottom:1px solid #1a1a1a" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked">
+                    <input type="checkbox" value="${r}" class="adm-ck" ${serverData.config.admin_roles?.includes(r)?'checked':''}> ${r}
                 </div>`).join('');
 
-            const w = server.config.welcome || {};
+            // Chargement Config
+            const w = serverData.config.welcome || {};
             document.getElementById('w-title').value = w.title || "";
             document.getElementById('w-desc').value = w.desc || "";
-            document.getElementById('w-foot').value = w.footer || "";
+            document.getElementById('w-footer').value = w.footer || "";
             document.getElementById('w-chan').value = w.channel || "";
             document.getElementById('w-trigger').value = w.trigger_role || "";
             
             if(w.banner) setImg('banner', w.banner);
             if(w.thumbnail) setImg('thumb', w.thumbnail);
-            
+
             sync();
-            updateGrid();
+            renderGallery();
+        }
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+        function showSection(id, el) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+            if(window.innerWidth < 768) toggleSidebar();
         }
 
         function sync() {
             document.getElementById('pv-title').innerText = document.getElementById('w-title').value || "Titre";
             document.getElementById('pv-desc').innerText = document.getElementById('w-desc').value || "Description...";
-            document.getElementById('pv-foot-txt').innerText = document.getElementById('w-foot').value || "Bas de page";
+            document.getElementById('pv-footer-txt').innerText = document.getElementById('w-footer').value || "Bas de page";
         }
 
-        function updateGrid() {
-            document.getElementById('modal-grid').innerHTML = server.images.map(i => `<img src="${i}" onclick="selectImg('${i}')">`).join('');
+        function openGallery(t) { activeTarget = t; document.getElementById('gallery-modal').style.display='flex'; }
+        function closeGallery() { document.getElementById('gallery-modal').style.display='none'; }
+
+        function renderGallery() {
+            document.getElementById('gallery-grid').innerHTML = serverData.images.map(img => `
+                <img src="${img}" onclick="selectImage('${img}')">
+            `).join('');
         }
 
-        function openGal(t) { targetImg = t; document.getElementById('modal').style.display='flex'; }
-        function closeGal() { document.getElementById('modal').style.display='none'; }
-
-        function selectImg(path) {
-            setImg(targetImg, path);
-            closeGal();
+        function selectImage(url) {
+            setImg(activeTarget, url);
+            closeGallery();
         }
 
-        function setImg(type, path) {
-            const el = document.getElementById('pv-' + type);
-            const hint = document.getElementById(type + '-hint');
-            el.src = path; el.style.display = 'block';
-            el.dataset.path = path;
+        function setImg(target, url) {
+            const img = document.getElementById('pv-' + target + '-img');
+            const hint = document.getElementById(target + '-hint');
+            img.src = url; img.style.display = 'block'; img.dataset.path = url;
             if(hint) hint.style.display = 'none';
         }
 
-        async function upload() {
-            const fd = new FormData(); fd.append('file', document.getElementById('file-input').files[0]);
+        async function handleUpload() {
+            const fd = new FormData(); fd.append('file', document.getElementById('upload-file').files[0]);
             const r = await fetch('/api/upload', {method:'POST', body:fd});
             const d = await r.json();
-            server.images.push(d.url);
-            updateGrid();
+            serverData.images.push(d.url);
+            renderGallery();
         }
 
-        async function save() {
+        async function saveConfig() {
             const config = {
                 welcome: {
                     title: document.getElementById('w-title').value,
                     desc: document.getElementById('w-desc').value,
-                    footer: document.getElementById('w-foot').value,
+                    footer: document.getElementById('w-footer').value,
                     channel: document.getElementById('w-chan').value,
                     trigger_role: document.getElementById('w-trigger').value,
-                    banner: document.getElementById('pv-banner').dataset.path || "",
-                    thumbnail: document.getElementById('pv-thumb').dataset.path || ""
+                    banner: document.getElementById('pv-banner-img').dataset.path || "",
+                    thumbnail: document.getElementById('pv-thumb-img').dataset.path || ""
                 },
                 admin_roles: Array.from(document.querySelectorAll('.adm-ck:checked')).map(i => i.value)
             };
             await fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
-            alert("Sauvegardé !");
-        }
-
-        function show(id, el) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            el.classList.add('active');
+            alert("Configuration sauvegardée !");
         }
 
         window.onload = init;
