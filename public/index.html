@@ -9,42 +9,31 @@
         :root { --bg-dark: #050505; --bg-panel: #0f0f0f; --sidebar-bg: #000000; --accent: #ed4245; --embed-bg: #2b2d31; --text-muted: #949ba4; --border: #1e1e1e; --discord-blue: #5865F2; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg-dark); color: white; display: flex; height: 100vh; overflow: hidden; }
-        
         #sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; height: 100%; z-index: 2000; transition: 0.3s; }
         .nav-item { padding: 18px 25px; display: flex; align-items: center; gap: 15px; color: var(--text-muted); cursor: pointer; font-weight: 700; border-right: 3px solid transparent; }
         .nav-item.active { color: var(--accent); background: rgba(237, 66, 69, 0.05); border-right-color: var(--accent); }
-        
         main { flex: 1; margin-left: 260px; display: flex; flex-direction: column; height: 100vh; }
         header { height: 60px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 15px; }
-        
         .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; flex: 1; padding-bottom: 80px; }
         .content-section.active { display: flex; }
-        
         .discord-embed { width: 100%; max-width: 480px; background: var(--embed-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px; margin-bottom: 20px; position: relative; }
         .thumb-preview { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: rgba(0,0,0,0.2); border: 1px dashed #444; }
         .banner-preview { width: 100%; height: 140px; margin-top: 10px; background: rgba(0,0,0,0.2); border: 1px dashed #444; }
         .img-zone img { width: 100%; height: 100%; object-fit: cover; }
-        
         .config-card { width: 100%; max-width: 480px; background: var(--bg-panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
-        
-        /* STYLE DU SÉLECTEUR DE RÔLES */
         #role-selector { height: 200px; padding: 5px; }
         #role-selector option { padding: 12px; border-bottom: 1px solid #111; background: #000; color: white; }
         #role-selector option:checked { background: var(--accent) !important; color: white; }
-
         .btn { border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-bottom: 10px; }
         .btn-save { background: var(--accent); }
         .btn-test { background: var(--discord-blue); }
-        
         #gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; max-width: 480px; }
         .gallery-card { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #000; border: 1px solid var(--border); }
         .gallery-card img { width: 100%; height: 100%; object-fit: cover; }
         .del-btn { position: absolute; top: 5px; right: 5px; background: var(--accent); border: none; width: 28px; height: 28px; border-radius: 50%; color: white; cursor: pointer; }
-        
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal.active { display: flex; }
-
         @media (max-width: 900px) { main { margin-left: 0; } #sidebar { transform: translateX(-100%); } #sidebar.open { transform: translateX(0); } }
     </style>
 </head>
@@ -64,13 +53,13 @@
         <section id="accueil" class="content-section active">
             <div class="discord-embed">
                 <div class="thumb-preview img-zone" onclick="openM('thumb')" id="box-thumb"></div>
-                <div id="p-title" style="font-weight: 700; margin-bottom: 5px;">Titre</div>
+                <div id="p-title" style="font-weight: 700; margin-bottom: 5px; font-size: 16px;">Titre</div>
                 <div id="p-desc" style="font-size: 14px; color: #dbdee1; white-space: pre-wrap;">Description...</div>
                 <div class="banner-preview img-zone" onclick="openM('banner')" id="box-banner"></div>
             </div>
             <div class="config-card">
                 <input type="text" id="in-title" placeholder="Titre..." oninput="sync()">
-                <textarea id="in-desc" rows="4" placeholder="Description..." oninput="sync()"></textarea>
+                <textarea id="in-desc" rows="4" placeholder="Utilisez {user}, {server}, {count}..." oninput="sync()"></textarea>
                 <select id="chan-list"></select>
                 <button class="btn btn-save" onclick="save()">SAUVEGARDER L'ACCUEIL</button>
                 <button class="btn btn-test" onclick="test()">ENVOYER UN TEST</button>
@@ -84,7 +73,6 @@
         <section id="admin" class="content-section">
             <div class="config-card">
                 <h3 style="margin-bottom:15px">Rôles autorisés</h3>
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom:10px">Sélectionne les rôles qui peuvent accéder au bot :</p>
                 <select id="role-selector" multiple></select>
                 <button class="btn btn-save" onclick="saveRoles()">VALIDER LES RÔLES</button>
             </div>
@@ -103,6 +91,8 @@
 
     <script>
         let target = ''; const API = window.location.origin;
+        let userData = { name: "Utilisateur", server: "Serveur", count: "0" };
+
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
         function show(id, el) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
@@ -111,10 +101,23 @@
             if(id === 'images') loadG();
             if(window.innerWidth < 900) toggleSidebar();
         }
-        function sync() {
-            document.getElementById('p-title').innerText = document.getElementById('in-title').value || "Titre";
-            document.getElementById('p-desc').innerText = document.getElementById('in-desc').value || "Description...";
+
+        // FONCTION DE REMPLACEMENT POUR L'APERÇU
+        function replacePlaceholders(text) {
+            return text
+                .replace(/{user}/g, `<span style="color:var(--accent)">@${userData.name}</span>`)
+                .replace(/{server}/g, userData.server)
+                .replace(/{count}/g, userData.count)
+                .replace(/{channel}/g, "#salon-test");
         }
+
+        function sync() {
+            const rawTitle = document.getElementById('in-title').value || "Titre";
+            const rawDesc = document.getElementById('in-desc').value || "Description...";
+            document.getElementById('p-title').innerHTML = replacePlaceholders(rawTitle);
+            document.getElementById('p-desc').innerHTML = replacePlaceholders(rawDesc);
+        }
+
         function openM(t) { target = t; document.getElementById('modal').classList.add('active'); }
         async function up() {
             const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]);
@@ -136,7 +139,6 @@
             document.getElementById('gallery').innerHTML = data.images.map(u => `<div class="gallery-card"><button class="del-btn" onclick="deleteImg('${u}')"><i class="fas fa-trash"></i></button><img src="${API+u}" onclick="document.getElementById('url-in').value='${u}'; apply();"></div>`).join('');
         }
         async function deleteImg(p) { if(confirm("Supprimer ?")) { await fetch(`${API}/api/delete_image`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({path:p}) }); loadG(); } }
-        
         async function saveRoles() {
             const roles = Array.from(document.getElementById('role-selector').selectedOptions).map(o => o.value);
             await fetch(`${API}/api/save_roles`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({roles}) });
@@ -156,18 +158,20 @@
             if(res.status === 401) { window.location.href = "/login"; return; }
             const d = await res.json();
             
+            // On stocke les vraies valeurs pour l'aperçu
+            userData.name = d.user_connected;
+            userData.server = d.server_name;
+            userData.count = d.member_count;
+
             if(d.is_owner) document.getElementById('nav-admin').style.display = 'flex';
             document.getElementById('bot-name').innerText = d.bot.name;
             document.getElementById('chan-list').innerHTML = d.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
             
-            // REMPLISSAGE DU SÉLECTEUR DE RÔLES
-            if(d.all_roles && d.all_roles.length > 0) {
+            if(d.all_roles) {
                 document.getElementById('role-selector').innerHTML = d.all_roles.map(r => {
                     const isSelected = d.config.admin_roles.includes(r) ? 'selected' : '';
                     return `<option value="${r}" ${isSelected}>${r}</option>`;
                 }).join('');
-            } else {
-                document.getElementById('role-selector').innerHTML = '<option disabled>Aucun rôle trouvé</option>';
             }
             
             if(d.config) {
