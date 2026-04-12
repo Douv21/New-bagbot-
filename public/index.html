@@ -3,23 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Ultimate</title>
+    <title>BagBot Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord-bg: #2b2d31; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: white; display: flex; min-height: 100vh; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: var(--bg); color: white; display: flex; overflow-x: hidden; }
 
-        /* SIDEBAR FIX */
+        /* SIDEBAR */
         #sidebar { 
             width: 260px; background: #000; border-right: 1px solid var(--border); 
             height: 100vh; position: fixed; left: 0; top: 0; z-index: 1000; transition: 0.3s;
         }
-        
-        main { 
-            flex: 1; margin-left: 260px; /* Important pour ne pas chevaucher */
-            display: flex; flex-direction: column; width: calc(100% - 260px);
-        }
+        main { flex: 1; margin-left: 260px; width: calc(100% - 260px); min-height: 100vh; display: flex; flex-direction: column; }
 
         @media (max-width: 900px) {
             #sidebar { left: -260px; }
@@ -28,46 +24,37 @@
             .menu-toggle { display: block !important; }
         }
 
-        .sidebar-header { padding: 30px; font-weight: 900; color: var(--accent); font-size: 20px; }
-        .nav-item { padding: 15px 30px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 10px; }
-        .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 3px solid var(--accent); }
+        .sidebar-header { padding: 25px; font-weight: 900; color: var(--accent); border-bottom: 1px solid var(--border); }
+        .nav-item { padding: 15px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 10px; }
+        .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); }
 
-        header { height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; font-weight: bold; }
-        
-        .content-section { display: none; padding: 30px; flex-direction: column; align-items: center; }
+        header { height: 60px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding-left: 60px; font-weight: bold; }
+        .menu-toggle { position: fixed; top: 12px; left: 12px; z-index: 2000; display: none; background: var(--accent); padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+
+        .content-section { display: none; padding: 20px; flex-direction: column; align-items: center; width: 100%; }
         .content-section.active { display: flex; }
 
-        /* EMBED & CARDS */
-        .discord-embed { width: 100%; max-width: 500px; background: var(--discord-bg); border-left: 4px solid var(--accent); padding: 15px; border-radius: 4px; margin-bottom: 20px; }
-        .img-click { border: 2px dashed rgba(255,255,255,0.1); cursor: pointer; position: relative; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .p-thumb-box { width: 80px; height: 80px; }
-        .p-banner-box { width: 100%; height: 120px; margin-top: 10px; }
-        .img-click img { width: 100%; height: 100%; object-fit: cover; }
+        /* CARDS */
+        .card { width: 100%; max-width: 500px; background: var(--panel); padding: 20px; border-radius: 10px; border: 1px solid var(--border); margin-top: 20px; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 5px; margin-bottom: 10px; }
+        
+        .btn { padding: 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; width: 100%; color: white; }
+        .btn-save { background: var(--accent); margin-bottom: 10px; }
+        .btn-test { background: #5865f2; }
 
-        .card { width: 100%; max-width: 550px; background: var(--panel); padding: 25px; border-radius: 12px; border: 1px solid var(--border); }
-        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
-
-        .btn { padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; width: 100%; color: white; text-transform: uppercase; }
-        .btn-save { background: var(--accent); }
-        .btn-test { background: #5865f2; margin-top: 10px; }
-
-        /* DROPDOWNS */
-        .dropdown-content { display: none; background: #0d0d0d; border: 1px solid var(--border); max-height: 200px; overflow-y: auto; }
-        .dropdown-content.show { display: block; }
-        .option { padding: 10px; display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
-
-        #modal-gal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; padding: 20px; }
-        .menu-toggle { position: fixed; top: 15px; left: 15px; z-index: 1100; display: none; background: #111; padding: 10px; border: 1px solid var(--border); border-radius: 5px; cursor: pointer; }
+        /* EMBED PREVIEW */
+        .discord-embed { width: 100%; max-width: 500px; background: var(--discord-bg); border-left: 4px solid var(--accent); padding: 15px; border-radius: 4px; }
+        .img-preview { border: 1px dashed #444; margin-top: 10px; height: 100px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #111; }
+        .img-preview img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
     <div class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
     
     <nav id="sidebar">
-        <div class="sidebar-header">BAGBOT</div>
-        <div class="nav-item active" onclick="show('BIENVENUE', this)"><i class="fas fa-home"></i> BIENVENUE</div>
-        <div class="nav-item" onclick="show('ADMIN', this)"><i class="fas fa-lock"></i> ADMIN</div>
-        <div class="nav-item" onclick="show('GALERIE', this)"><i class="fas fa-image"></i> GALERIE</div>
+        <div class="sidebar-header">BAGBOT PANEL</div>
+        <div class="nav-item active" onclick="show('BIENVENUE', this)">BIENVENUE</div>
+        <div class="nav-item" onclick="show('ADMIN', this)">ADMIN</div>
     </nav>
 
     <main>
@@ -75,53 +62,27 @@
 
         <section id="section-BIENVENUE" class="content-section active">
             <div class="discord-embed">
-                <div style="display:flex; justify-content:space-between;">
-                    <div id="embed-text-cont">
-                        <div id="p-title" style="font-weight:bold">Titre</div>
-                        <div id="p-desc" style="font-size:14px; color:#ccc">Description...</div>
-                    </div>
-                    <div class="img-click p-thumb-box" onclick="openGal('thumb')">
-                        <img id="img-thumb" src="" style="display:none">
-                        <i class="fas fa-camera" id="icon-thumb"></i>
-                    </div>
-                </div>
-                <div class="img-click p-banner-box" onclick="openGal('banner')">
-                    <img id="img-banner" src="" style="display:none">
-                    <i class="fas fa-plus" id="icon-banner"></i>
-                </div>
+                <div id="p-title" style="font-weight:bold; margin-bottom:5px;">Titre</div>
+                <div id="p-desc" style="font-size:14px; color:#dcddde;">Description...</div>
+                <div class="img-preview" onclick="alert('Ouvrir galerie')">Images (Thumbnail/Banner)</div>
             </div>
 
             <div class="card">
-                <h3>Message</h3>
-                <input type="text" id="w-title" placeholder="Titre" oninput="sync()">
-                <textarea id="w-desc" placeholder="Description" oninput="sync()"></textarea>
+                <h3>Message de Bienvenue</h3>
+                <input type="text" id="w-title" placeholder="Titre de l'embed" oninput="sync()">
+                <textarea id="w-desc" placeholder="Description" rows="3" oninput="sync()"></textarea>
                 
-                <h3>Salon</h3>
-                <select id="w-chan"></select>
+                <h3>Configuration du Salon</h3>
+                <select id="w-chan"><option value="">Chargement...</option></select>
 
-                <h3>Rôles</h3>
-                <div class="select-box" style="background:#000; padding:12px; border:1px solid var(--border); cursor:pointer" onclick="document.getElementById('drop-roles').classList.toggle('show')">
-                    Choisir les rôles <i class="fas fa-chevron-down"></i>
-                </div>
-                <div id="drop-roles" class="dropdown-content"></div>
-
-                <button class="btn btn-save" onclick="save()" style="margin-top:20px">Sauvegarder</button>
-                <button class="btn btn-test" onclick="testMessage()">Tester le message</button>
+                <button class="btn btn-save" onclick="save()">SAUVEGARDER CONFIG</button>
+                <button class="btn btn-test" onclick="testMessage()">ENVOYER TEST DISCORD</button>
             </div>
         </section>
     </main>
 
-    <div id="modal-gal">
-        <div style="background:var(--panel); max-width:500px; margin: 50px auto; padding:20px; border-radius:10px;">
-            <h2 onclick="closeGal()" style="cursor:pointer; float:right">&times;</h2>
-            <h3>Choisir une image</h3>
-            <div id="gal-container" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px"></div>
-        </div>
-    </div>
-
     <script>
         const API = window.location.origin;
-        let CONFIG = {}; let targetSlot = '';
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
         
@@ -131,6 +92,7 @@
             document.getElementById('section-' + name).classList.add('active');
             el.classList.add('active');
             document.getElementById('main-title').innerText = name;
+            if(window.innerWidth < 900) toggleSidebar();
         }
 
         function sync() {
@@ -138,69 +100,46 @@
             document.getElementById('p-desc').innerText = document.getElementById('w-desc').value || "Description...";
         }
 
-        async function openGal(slot) {
-            targetSlot = slot;
-            const res = await fetch(`${API}/api/images`);
-            const data = await res.json();
-            document.getElementById('gal-container').innerHTML = data.images.map(img => `
-                <img src="${API+img}" style="width:100%; cursor:pointer" onclick="selectImg('${img}')">
-            `).join('');
-            document.getElementById('modal-gal').style.display = 'block';
-        }
-
-        function selectImg(path) {
-            const img = document.getElementById(`img-${targetSlot}`);
-            img.src = API + path;
-            img.style.display = 'block';
-            img.dataset.path = path;
-            document.getElementById(`icon-${targetSlot}`).style.display = 'none';
-            closeGal();
-        }
-
-        function closeGal() { document.getElementById('modal-gal').style.display = 'none'; }
-
         async function save() {
-            const payload = {
+            const data = {
                 welcome: {
                     title: document.getElementById('w-title').value,
                     desc: document.getElementById('w-desc').value,
-                    channel: document.getElementById('w-chan').value,
-                    thumb: document.getElementById('img-thumb').dataset.path || "",
-                    banner: document.getElementById('img-banner').dataset.path || "",
-                    trigger_roles: Array.from(document.querySelectorAll('#drop-roles input:checked')).map(i => i.value)
+                    channel: document.getElementById('w-chan').value
                 }
             };
-            await fetch(`${API}/api/save_config`, {
+            const res = await fetch(`${API}/api/save_config`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
+                body: JSON.stringify(data)
             });
-            alert("Sauvegardé !");
+            if(res.ok) alert("✅ Configuration enregistrée !");
         }
 
         async function testMessage() {
-            await save();
-            const res = await fetch(`${API}/api/test_welcome`, {method: 'POST'});
-            if(res.ok) alert("Test envoyé !");
+            await save(); // On sauvegarde avant de tester
+            const res = await fetch(`${API}/api/test_welcome`, { method: 'POST' });
+            const result = await res.json();
+            if(res.ok) alert("🚀 Message envoyé sur Discord !");
+            else alert("❌ Erreur : " + result.message);
         }
 
         async function init() {
-            const res = await fetch(`${API}/api/get_server_info`);
-            const data = await res.json();
-            if(data.status === "loading") return setTimeout(init, 2000);
+            try {
+                const res = await fetch(`${API}/api/get_server_info`);
+                const data = await res.json();
+                if(data.status === "loading") return setTimeout(init, 2000);
 
-            document.getElementById('w-chan').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            document.getElementById('drop-roles').innerHTML = data.all_roles.map(r => `
-                <div class="option"><span>${r}</span><input type="checkbox" value="${r}"></div>
-            `).join('');
-            
-            if(data.config.welcome) {
-                const w = data.config.welcome;
-                document.getElementById('w-title').value = w.title || "";
-                document.getElementById('w-desc').value = w.desc || "";
-                document.getElementById('w-chan').value = w.channel || "";
+                const chanSelect = document.getElementById('w-chan');
+                chanSelect.innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                
+                if(data.config.welcome) {
+                    document.getElementById('w-title').value = data.config.welcome.title || "";
+                    document.getElementById('w-desc').value = data.config.welcome.desc || "";
+                    document.getElementById('w-chan').value = data.config.welcome.channel || "";
+                }
                 sync();
-            }
+            } catch(e) { console.error(e); }
         }
         window.onload = init;
     </script>
