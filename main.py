@@ -64,13 +64,13 @@ def test_message():
             embed = discord.Embed(title=rep(data.get('title', '')), description=rep(data.get('desc', '')), color=0xed4245)
             
             files_to_send = []
-            # Gestion des images (Conversion chemin local -> Fichier Discord)
             for key in ['thumb', 'banner']:
                 val = data.get(key)
                 if val and val.startswith('/uploads/'):
                     filename = val.split('/')[-1]
                     path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                     if os.path.exists(path):
+                        # Correction : On attache le fichier proprement
                         d_file = discord.File(path, filename=filename)
                         files_to_send.append(d_file)
                         if key == 'thumb': embed.set_thumbnail(url=f"attachment://{filename}")
@@ -79,6 +79,7 @@ def test_message():
                     if key == 'thumb': embed.set_thumbnail(url=val)
                     else: embed.set_image(url=val)
 
+            # Envoi du message avec l'embed et les fichiers liés
             await channel.send(embed=embed, files=files_to_send)
 
         asyncio.run_coroutine_threadsafe(send_task(), bot.loop)
