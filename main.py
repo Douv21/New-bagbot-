@@ -7,7 +7,6 @@ from discord.ext import commands
 from flask import Flask, session, request, jsonify, redirect
 from dotenv import load_dotenv
 
-# --- INITIALISATION ---
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 CLIENT_ID = os.getenv("CLIENT_ID")
@@ -17,7 +16,7 @@ REDIRECT_URI = os.getenv("REDIRECT_URI")
 
 try:
     GUILD_ID = int(GUILD_ID_STR) if GUILD_ID_STR else 0
-except ValueError:
+except:
     GUILD_ID = 0
 
 app = Flask(__name__, static_folder='public', static_url_path='/')
@@ -27,43 +26,22 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 def load_config():
-    default_cfg = {
-        "welcome": {
-            "title": "Bienvenue {user} !",
-            "desc": "Content de te voir sur {guild}.",
-            "footer": "Nous sommes désormais {count}",
-            "channel": "",
-            "banner": "",
-            "thumbnail": "",
-            "trigger_roles": []
-        },
-        "admin_roles": []
-    }
-    if not os.path.exists('config.json'):
-        return default_cfg
+    default = {"welcome": {"title": "", "desc": "", "footer": "", "channel": "", "banner": "", "thumbnail": "", "trigger_roles": []}, "admin_roles": []}
+    if not os.path.exists('config.json'): return default
     try:
-        with open('config.json', 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            return data
-    except Exception:
-        return default_cfg
+        with open('config.json', 'r', encoding='utf-8') as f: return json.load(f)
+    except: return default
 
-# --- ROUTES API ---
 @app.route('/')
-def index():
-    return app.send_static_file('index.html')
+def index(): return app.send_static_file('index.html')
 
 @app.route('/api/get_data')
 def get_data():
     guild = bot.get_guild(GUILD_ID)
-    if not guild:
-        return jsonify({"error": "Guild non trouvée"}), 404
-
+    if not guild: return jsonify({"error": "Guild non trouvée"}), 404
     img_dir = 'public/uploads'
-    if not os.path.exists(img_dir):
-        os.makedirs(img_dir)
+    if not os.path.exists(img_dir): os.makedirs(img_dir)
     images = [f"/uploads/{f}" for f in os.listdir(img_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
-
     return jsonify({
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
         "roles": [r.name for r in guild.roles if not r.managed and r.name != "@everyone"],
@@ -75,35 +53,24 @@ def get_data():
 @app.route('/api/save', methods=['POST'])
 def save():
     try:
-        new_data = request.json
         with open('config.json', 'w', encoding='utf-8') as f:
-            json.dump(new_data, f, indent=4, ensure_ascii=False)
+            json.dump(request.json, f, indent=4, ensure_ascii=False)
         return jsonify({"status": "success"})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+    except Exception as e: return jsonify({"error": str(e)}), 500
 
 @app.route('/api/delete_image', methods=['POST'])
 def delete_image():
-    try:
-        img_path = request.json.get('path')
-        # Sécurité : on empêche de sortir du dossier uploads
-        if ".." in img_path or not img_path.startswith("/uploads/"):
-            return jsonify({"error": "Chemin invalide"}), 400
-        
-        full_path = os.path.join('public', img_path.lstrip('/'))
+    path = request.json.get('path', '')
+    if "/uploads/" in path:
+        full_path = os.path.join('public', path.lstrip('/'))
         if os.path.exists(full_path):
             os.remove(full_path)
             return jsonify({"status": "deleted"})
-        return jsonify({"error": "Fichier non trouvé"}), 404
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return jsonify({"error": "Erreur"}), 400
 
-def start_web():
-    app.run(host='0.0.0.0', port=49501, use_reloader=False)
+def run_flask(): app.run(host='0.0.0.0', port=49501, use_reloader=False)
 
 if __name__ == "__main__":
-    t = threading.Thread(target=start_web)
-    t.daemon = True
-    t.start()
+    threading.Thread(target=run_flask, daemon=True).start()
     bot.run(TOKEN)
     
