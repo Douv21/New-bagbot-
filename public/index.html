@@ -6,136 +6,140 @@
     <title>BagBot Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord: #2b2d31; }
+        :root { 
+            --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord: #2b2d31; 
+            --safe-top: env(safe-area-inset-top, 0px);
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: white; display: flex; height: 100vh; overflow: hidden; }
-        
-        #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; }
+        body { background: var(--bg); color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding-top: var(--safe-top); }
+        .layout { display: flex; flex: 1; overflow: hidden; }
+
+        /* SIDEBAR */
+        #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 5000; transition: 0.3s; }
         .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 4px solid var(--accent); }
+        @media (max-width: 900px) { #sidebar { position: fixed; transform: translateX(-100%); height: 100%; } #sidebar.open { transform: translateX(0); } }
 
+        /* HEADER & MENU MOBILE */
         main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        header { height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 25px; font-weight: 900; position: sticky; top: 0; z-index: 100; }
+        header { height: 70px; min-height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding-left: 70px; font-weight: 900; position: sticky; top: 0; z-index: 100; }
+        .menu-toggle { display: none; position: fixed; left: 15px; top: calc(15px + var(--safe-top)); font-size: 28px; color: var(--accent); cursor: pointer; z-index: 9999; background: #111; padding: 8px; border-radius: 10px; border: 1px solid var(--border); }
+        @media (max-width: 900px) { .menu-toggle { display: block; } }
 
-        .content-section { display: none; flex-direction: column; align-items: center; padding: 30px 20px; }
+        /* PREVIEW DISCORD */
+        .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; }
         .content-section.active { display: flex; }
-
-        .discord-embed { width: 100%; max-width: 480px; background: var(--discord); border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; position: relative; margin-bottom: 30px; }
+        .discord-embed { width: 100%; max-width: 480px; background: var(--discord); border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; position: relative; margin-bottom: 20px; }
         .embed-thumb { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: #000; border: 1px dashed #444; border-radius: 4px; overflow: hidden; }
         .banner-preview { width: 100%; height: 140px; margin-top: 15px; background: #000; border: 1px dashed #444; border-radius: 4px; overflow: hidden; }
         .img-fill { width: 100%; height: 100%; object-fit: cover; }
 
-        .card { width: 100%; max-width: 480px; background: var(--panel); border-radius: 12px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
-        h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; }
-        
+        /* CARDS */
+        .card { width: 100%; max-width: 480px; background: var(--panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
+        h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 14px; border-radius: 8px; margin-bottom: 15px; }
-        .btn { border: none; padding: 16px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; text-transform: uppercase; transition: 0.2s; }
-        .btn-save { background: var(--accent); }
-        .btn-save:hover { opacity: 0.8; }
 
         .multiselect { position: relative; margin-bottom: 15px; }
-        .select-box { background: #000; border: 1px solid var(--border); padding: 14px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; }
-        .dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0d0d0d; border: 1px solid var(--border); z-index: 2000; max-height: 200px; overflow-y: auto; }
+        .select-box { background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; }
+        .dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0d0d0d; border: 1px solid var(--border); z-index: 8000; max-height: 200px; overflow-y: auto; }
         .dropdown-content.show { display: block; }
         .option { padding: 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
 
-        #gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; max-width: 480px; }
-        .gal-img { width: 100%; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-        .gal-img:hover { border-color: var(--accent); }
-
-        @media (max-width: 900px) {
-            #sidebar { position: fixed; transform: translateX(-100%); height: 100%; }
-            #sidebar.open { transform: translateX(0); }
-        }
+        .btn { border: none; padding: 16px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; text-transform: uppercase; }
+        .btn-save { background: var(--accent); }
+        
+        footer { background: #000; border-top: 1px solid var(--border); padding: 15px; text-align: center; font-size: 12px; color: #555; font-weight: bold; }
+        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 4000; }
+        #overlay.show { display: block; }
     </style>
 </head>
 <body>
-    <nav id="sidebar">
-        <div style="padding: 30px 25px; font-size: 22px; font-weight: 900; color: var(--accent);">BAGBOT</div>
-        <div class="nav-item active" onclick="show('welcome', this)"><i class="fas fa-home"></i> BIENVENUE</div>
-        <div class="nav-item" onclick="show('admin', this)"><i class="fas fa-shield-alt"></i> ADMIN</div>
-        <div class="nav-item" onclick="show('images', this)"><i class="fas fa-image"></i> GALERIE</div>
-    </nav>
+    <div id="overlay" onclick="toggleSidebar()"></div>
+    <div class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
 
-    <main>
-        <header>DASHBOARD CONFIGURATION</header>
+    <div class="layout">
+        <nav id="sidebar">
+            <div style="padding: 30px 25px; font-size: 24px; font-weight: 900; color: var(--accent);">BAGBOT</div>
+            <div class="nav-item active" onclick="show('welcome', this)"><i class="fas fa-door-open"></i> BIENVENUE</div>
+            <div class="nav-item" onclick="show('admin', this)"><i class="fas fa-user-shield"></i> ADMIN</div>
+            <div class="nav-item" onclick="show('images', this)"><i class="fas fa-images"></i> GALERIE</div>
+        </nav>
 
-        <section id="welcome" class="content-section active">
-            <div class="discord-embed">
-                <div class="embed-thumb" id="p-thumb"></div>
-                <div id="p-title" style="font-weight:bold; padding-right:90px;">Titre</div>
-                <div id="p-desc" style="font-size:14px; color:#dcddde; margin-top:5px; white-space: pre-line;">Message...</div>
-                <div class="banner-preview" id="p-banner"></div>
-            </div>
-            <div class="card">
-                <h3>Paramètres de Bienvenue</h3>
-                <input type="text" id="w-title" placeholder="Titre (ex: Bienvenue {user})" oninput="sync()">
-                <textarea id="w-desc" rows="4" placeholder="Description..." oninput="sync()"></textarea>
-                <h3>Salon de destination</h3>
-                <select id="w-chan"></select>
-                <h3>Rôles déclencheurs (optionnel)</h3>
-                <div class="multiselect">
-                    <div class="select-box" onclick="toggleDrop('drop-trigger')">Choisir les rôles <i class="fas fa-chevron-down"></i></div>
-                    <div id="drop-trigger" class="dropdown-content"></div>
+        <main>
+            <header>PANEL DE CONFIGURATION</header>
+
+            <section id="welcome" class="content-section active">
+                <div class="discord-embed">
+                    <div class="embed-thumb" id="p-thumb"></div>
+                    <div id="p-title" style="font-weight:bold; padding-right:90px;">Titre</div>
+                    <div id="p-desc" style="font-size:14px; color:#dcddde; margin-top:5px; white-space: pre-wrap;">Message...</div>
+                    <div class="banner-preview" id="p-banner"></div>
                 </div>
-                <button class="btn btn-save" onclick="save()">ENREGISTRER</button>
-            </div>
-        </section>
-
-        <section id="admin" class="content-section">
-            <div class="card">
-                <h3>Accès au Panel</h3>
-                <div class="multiselect">
-                    <div class="select-box" onclick="toggleDrop('drop-admin')">Rôles autorisés <i class="fas fa-chevron-down"></i></div>
-                    <div id="drop-admin" class="dropdown-content"></div>
+                <div class="card">
+                    <h3>Message de Bienvenue</h3>
+                    <input type="text" id="w-title" placeholder="Titre (ex: Bienvenue {user})" oninput="sync()">
+                    <textarea id="w-desc" rows="3" placeholder="Message (ex: Bienvenue sur {server})" oninput="sync()"></textarea>
+                    <h3>Salon</h3>
+                    <select id="w-chan"></select>
+                    <h3>Rôle Déclencheur (Facultatif)</h3>
+                    <div class="multiselect">
+                        <div class="select-box" onclick="toggleDrop('drop-trigger')">Sélectionner les rôles <i class="fas fa-chevron-down"></i></div>
+                        <div id="drop-trigger" class="dropdown-content"></div>
+                    </div>
+                    <button class="btn btn-save" onclick="save()">ENREGISTRER</button>
                 </div>
-                <button class="btn btn-save" onclick="save()">METTRE À JOUR</button>
-            </div>
-        </section>
+            </section>
 
-        <section id="images" class="content-section">
-            <input type="file" id="file-in" onchange="uploadFile()" style="display:none">
-            <button class="btn btn-save" style="margin-bottom:20px;" onclick="document.getElementById('file-in').click()">UPLOADER UNE IMAGE</button>
-            <div id="gallery"></div>
-        </section>
-    </main>
+            <section id="admin" class="content-section">
+                <div class="card">
+                    <h3>Accès Panel</h3>
+                    <div class="multiselect">
+                        <div class="select-box" onclick="toggleDrop('drop-admin')">Rôles autorisés <i class="fas fa-chevron-down"></i></div>
+                        <div id="drop-admin" class="dropdown-content"></div>
+                    </div>
+                    <button class="btn btn-save" onclick="save()">SAUVEGARDER</button>
+                </div>
+            </section>
+
+            <section id="images" class="content-section">
+                <input type="file" id="file-in" onchange="up()" style="display:none">
+                <button class="btn btn-save" onclick="document.getElementById('file-in').click()">UPLOADER IMAGE</button>
+                <div id="gallery" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:20px; width:100%; max-width:480px;"></div>
+            </section>
+        </main>
+    </div>
+    <footer>&copy; 2026 BAGBOT DASHBOARD</footer>
 
     <script>
-        let CONFIG = {}; let currentTarget = ''; const API = window.location.origin;
+        let CONFIG = {}; const API = window.location.origin;
 
-        function show(id, el) {
-            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            el.classList.add('active');
-            if(id === 'images') loadGallery();
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
+        function toggleDrop(id) { document.getElementById(id).classList.toggle('show'); }
+        function show(id, el) { 
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active')); 
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
+            document.getElementById(id).classList.add('active'); el.classList.add('active');
+            if(window.innerWidth <= 900) toggleSidebar(); if(id === 'images') loadG();
         }
 
-        function toggleDrop(id) { document.getElementById(id).classList.toggle('show'); }
-
         function sync() {
-            const t = document.getElementById('w-title').value || "Bienvenue {user}";
-            const d = document.getElementById('w-desc').value || "Bienvenue sur {server} !";
-            const fake = {"{user}": "@Pseudo", "{server}": "Mon Serveur", "{count}": "100"};
-            let resT = t, resD = d;
+            const tVal = document.getElementById('w-title').value || "Bienvenue {user}";
+            const dVal = document.getElementById('w-desc').value || "Bienvenue sur {server}";
+            const fake = {"{user}": "@Pseudo", "{user_name}": "Pseudo", "{server}": "Mon Serveur", "{count}": "150"};
+            let resT = tVal, resD = dVal;
             for(let k in fake) { resT = resT.split(k).join(fake[k]); resD = resD.split(k).join(fake[k]); }
             document.getElementById('p-title').innerText = resT;
             document.getElementById('p-desc').innerText = resD;
         }
 
-        async function uploadFile() {
+        async function up() {
             const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]);
-            await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
-            loadGallery();
+            await fetch(`${API}/api/upload`, { method: 'POST', body: fd }); loadG();
         }
 
-        async function loadGallery() {
+        async function loadG() {
             const res = await fetch(`${API}/api/images`); const d = await res.json();
-            document.getElementById('gallery').innerHTML = d.images.map(img => `
-                <div style="text-align:center">
-                    <img src="${API+img}" class="gal-img" onclick="setImg('${img}')">
-                    <div style="font-size:10px; margin-top:5px; color:#555">Cliquez pour appliquer</div>
-                </div>`).join('');
+            document.getElementById('gallery').innerHTML = d.images.map(img => `<img src="${API+img}" style="width:100%; border-radius:8px; cursor:pointer" onclick="setImg('${img}')">`).join('');
         }
 
         function setImg(path) {
@@ -165,12 +169,12 @@
             document.getElementById('w-chan').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
             
             const rolesHtml = (id, saved) => data.all_roles.map(r => `
-                <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked">
-                    <input type="checkbox" value="${r}" ${saved.includes(r)?'checked':''}> ${r}
+                <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
+                    <input type="checkbox" value="${r}" ${saved.includes(r)?'checked':''}> <span>${r}</span>
                 </div>`).join('');
             
             document.getElementById('drop-admin').innerHTML = rolesHtml('drop-admin', CONFIG.admin_roles || []);
-            document.getElementById('drop-trigger').innerHTML = rolesHtml('drop-trigger', CONFIG.welcome.trigger_roles || []);
+            document.getElementById('drop-trigger').innerHTML = rolesHtml('drop-trigger', (CONFIG.welcome && CONFIG.welcome.trigger_roles) ? CONFIG.welcome.trigger_roles : []);
 
             if(CONFIG.welcome) {
                 document.getElementById('w-title').value = CONFIG.welcome.title || "";
