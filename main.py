@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from flask import Flask, send_from_directory, jsonify, request
 from flask_cors import CORS
-import threading, os, json
+import threading, os, json, asyncio
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
@@ -28,6 +28,8 @@ def load_config():
             return json.load(f)
     return {}
 
+# --- ROUTES API ---
+
 @app.route('/')
 def index():
     return send_from_directory('public', 'index.html')
@@ -36,50 +38,43 @@ def index():
 def get_info():
     try:
         guild = bot.get_guild(int(GUILD_ID))
-        if not guild: return jsonify({"error": "Guild not found"}), 404
         channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
         return jsonify({
             "channels": channels, 
             "bot": {"name": bot.user.name, "avatar": str(bot.user.display_avatar.url)}, 
             "config": load_config()
         })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except:
+        return jsonify({"error": "Erreur serveur"}), 500
 
 @app.route('/api/test_message', methods=['POST'])
-async def test_message():
+def test_message():
     data = request.json
     try:
         channel_id = data.get('channel')
-        if not channel_id: return jsonify({"error": "ID Salon manquant"}), 400
         
-        channel = bot.get_channel(int(channel_id))
-        if not channel: return jsonify({"error": "Salon introuvable"}), 404
+        async def send_task():
+            channel = bot.get_channel(int(channel_id))
+            if not channel: return
 
-        # Remplacement de TOUTES les variables possibles
-        title = data.get('title', '')
-        desc = data.get('desc', '')
+            def rep(text):
+                return text.replace("{user}", bot.user.mention)\
+                           .replace("{user_name}", bot.user.name)\
+                           .replace("{server}", channel.guild.name)\
+                           .replace("{count}", str(channel.guild.member_count))\
+                           .replace("{channel}", channel.mention)\
+                           .replace("{everyone}", "@everyone")\
+                           .replace("{here}", "@here")
 
-        def replace_all(text):
-            return text.replace("{user}", bot.user.mention)\
-                       .replace("{user_name}", bot.user.name)\
-                       .replace("{user_id}", str(bot.user.id))\
-                       .replace("{server}", channel.guild.name)\
-                       .replace("{server_id}", str(channel.guild.id))\
-                       .replace("{count}", str(channel.guild.member_count))\
-                       .replace("{channel}", channel.mention)\
-                       .replace("{everyone}", "@everyone")\
-                       .replace("{here}", "@here")
+            embed = discord.Embed(title=rep(data.get('title', '')), description=rep(data.get('desc', '')), color=0xed4245)
+            if data.get('thumb'): embed.set_thumbnail(url=data['thumb'])
+            if data.get('banner'): embed.set_image(url=data['banner'])
+            await channel.send(embed=embed)
 
-        embed = discord.Embed(title=replace_all(title), description=replace_all(desc), color=0xed4245)
-        
-        if data.get('thumb'): embed.set_thumbnail(url=data['thumb'])
-        if data.get('banner'): embed.set_image(url=data['banner'])
-            
-        await channel.send(content="🧪 **Test BagBot**", embed=embed)
+        # Correction de l'erreur Context Manager
+        asyncio.run_coroutine_threadsafe(send_task(), bot.loop)
         return jsonify({"status": "success"})
     except Exception as e:
-        print(f"❌ ERREUR TEST DISCORD : {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/save_config', methods=['POST'])
@@ -91,7 +86,8 @@ def api_save():
 def upload_file():
     file = request.files['file']
     filename = secure_filename(file.filename)
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(path)
     return jsonify({"url": f"/uploads/{filename}"})
 
 @app.route('/api/images', methods=['GET'])
@@ -107,8 +103,9 @@ def delete_image():
     if os.path.exists(path):
         os.remove(path)
         return jsonify({"status": "success"})
-    return jsonify({"error": "Not found"}), 404
+    return jsonify({"error": "Non trouvé"}), 404
 
+# --- BOT & RUN ---
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
