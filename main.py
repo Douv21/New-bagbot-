@@ -7,6 +7,7 @@ from discord.ext import commands
 from flask import Flask, session, request, jsonify, redirect
 from dotenv import load_dotenv
 
+# --- INITIALISATION ---
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 CLIENT_ID = os.getenv("CLIENT_ID")
@@ -16,61 +17,105 @@ REDIRECT_URI = os.getenv("REDIRECT_URI")
 
 try:
     GUILD_ID = int(GUILD_ID_STR) if GUILD_ID_STR else 0
-except:
+except ValueError:
     GUILD_ID = 0
 
+# Flask Setup - Utilisation de static_url_path pour Termux
 app = Flask(__name__, static_folder='public', static_url_path='/')
 app.secret_key = os.urandom(24)
 
+# Discord Bot Setup
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+# --- GESTION JSON ---
 def load_config():
-    default = {"welcome": {"title": "", "desc": "", "footer": "", "channel": "", "banner": "", "thumbnail": "", "trigger_roles": []}, "admin_roles": []}
-    if not os.path.exists('config.json'): return default
+    default_cfg = {
+        "welcome": {
+            "title": "Bienvenue {user} !",
+            "desc": "Content de te voir sur {guild}.",
+            "footer": "Nous sommes désormais {count}",
+            "channel": "",
+            "banner": "",
+            "thumbnail": "",
+            "trigger_roles": []
+        },
+        "admin_roles": []
+    }
+    if not os.path.exists('config.json'):
+        return default_cfg
     try:
-        with open('config.json', 'r', encoding='utf-8') as f: return json.load(f)
-    except: return default
+        with open('config.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            # Sécurité pour éviter les clés manquantes après une mise à jour
+            if "welcome" not in data: data["welcome"] = default_cfg["welcome"]
+            if "admin_roles" not in data: data["admin_roles"] = []
+            return data
+    except Exception:
+        return default_cfg
 
+# --- ROUTES API ---
 @app.route('/')
-def index(): return app.send_static_file('index.html')
+def index():
+    return app.send_static_file('index.html')
 
 @app.route('/api/get_data')
 def get_data():
     guild = bot.get_guild(GUILD_ID)
-    if not guild: return jsonify({"error": "Guild non trouvée"}), 404
+    if not guild:
+        return jsonify({"error": "Guild non trouvée. Vérifie l'ID dans le .env"}), 404
+
+    # Scan des images
     img_dir = 'public/uploads'
-    if not os.path.exists(img_dir): os.makedirs(img_dir)
+    if not os.path.exists(img_dir):
+        os.makedirs(img_dir)
     images = [f"/uploads/{f}" for f in os.listdir(img_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+
     return jsonify({
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
         "roles": [r.name for r in guild.roles if not r.managed and r.name != "@everyone"],
         "config": load_config(),
         "images": images,
-        "guild_name": guild.name
+        "guild_name": guild.name,
+        "user_name": session.get('user_name', 'Administrateur')
     })
 
 @app.route('/api/save', methods=['POST'])
 def save():
     try:
+        new_data = request.json
         with open('config.json', 'w', encoding='utf-8') as f:
-            json.dump(request.json, f, indent=4, ensure_ascii=False)
+            json.dump(new_data, f, indent=4, ensure_ascii=False)
         return jsonify({"status": "success"})
-    except Exception as e: return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/delete_image', methods=['POST'])
 def delete_image():
-    path = request.json.get('path', '')
-    if "/uploads/" in path:
-        full_path = os.path.join('public', path.lstrip('/'))
+    try:
+        img_path = request.json.get('path')
+        if not img_path or ".." in img_path:
+            return jsonify({"error": "Chemin invalide"}), 400
+        
+        full_path = os.path.join('public', img_path.lstrip('/'))
         if os.path.exists(full_path):
             os.remove(full_path)
             return jsonify({"status": "deleted"})
-    return jsonify({"error": "Erreur"}), 400
+        return jsonify({"error": "Fichier non trouvé"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-def run_flask(): app.run(host='0.0.0.0', port=49501, use_reloader=False)
+# --- LANCEMENT ---
+def run_flask():
+    app.run(host='0.0.0.0', port=49501, use_reloader=False)
 
 if __name__ == "__main__":
-    threading.Thread(target=run_flask, daemon=True).start()
-    bot.run(TOKEN)
+    t = threading.Thread(target=run_flask)
+    t.daemon = True
+    t.start()
     
+    try:
+        bot.run(TOKEN)
+    except Exception as e:
+        print(f"Erreur fatale Bot Discord : {e}")
+        
