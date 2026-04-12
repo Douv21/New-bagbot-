@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from flask import Flask, send_from_directory, jsonify, request
-import threading, json, os
+import threading, os
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
@@ -12,13 +12,38 @@ GUILD_ID = os.getenv("GUILD_ID")
 app = Flask(__name__, static_folder='public', static_url_path='')
 UPLOAD_FOLDER = 'public/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route('/')
 def index():
     return send_from_directory('public', 'index.html')
 
-# --- API GESTION IMAGES ---
+# --- NOUVELLE ROUTE DE TEST ---
+@app.route('/api/test_message', methods=['POST'])
+async def test_message():
+    data = request.json
+    channel_id = data.get('channel')
+    title = data.get('title', 'Bienvenue')
+    desc = data.get('desc', '')
+    thumb = data.get('thumb')
+    banner = data.get('banner')
+
+    # Simulation des variables pour le test
+    desc = desc.replace("{user}", bot.user.mention).replace("{user_name}", bot.user.name)
+    desc = desc.replace("{server}", "Serveur de Test").replace("{count}", "123")
+
+    channel = bot.get_channel(int(channel_id))
+    if not channel: return jsonify({"error": "Salon introuvable"}), 404
+
+    embed = discord.Embed(title=title, description=desc, color=0xed4245)
+    if thumb: embed.set_thumbnail(url=thumb)
+    if banner: embed.set_image(url=banner)
+    embed.set_footer(text="Ceci est un message de test")
+
+    await channel.send(content="🧪 **Test de configuration BagBot**", embed=embed)
+    return jsonify({"status": "success"})
+
+# (Gardez les autres routes api/upload, api/images, etc. du code précédent)
+
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files: return jsonify({"error": "No file"}), 400
@@ -30,33 +55,14 @@ def upload_file():
 @app.route('/api/images', methods=['GET'])
 def list_images():
     files = os.listdir(UPLOAD_FOLDER)
-    # On retourne le chemin complet pour l'affichage
     return jsonify({"images": [f"/uploads/{f}" for f in files]})
 
-@app.route('/api/images/delete', methods=['POST'])
-def delete_image():
-    data = request.json
-    filename = data.get('url').split('/')[-1]
-    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    if os.path.exists(path):
-        os.remove(path)
-        return jsonify({"status": "success"})
-    return jsonify({"error": "Fichier non trouvé"}), 404
-
-# --- API INFOS SERVEUR ---
 @app.route('/api/get_server_info')
 def get_info():
-    try:
-        guild = bot.get_guild(int(GUILD_ID))
-        if not guild: return jsonify({"error": "Guild non trouvée"}), 404
-        # On filtre pour n'avoir que les salons textuels
-        channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
-        return jsonify({
-            "channels": channels, 
-            "bot": {"name": bot.user.name, "avatar": str(bot.user.display_avatar.url)}
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    guild = bot.get_guild(int(GUILD_ID))
+    if not guild: return jsonify({"error": "Non trouvé"}), 404
+    channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
+    return jsonify({"channels": channels, "bot": {"name": bot.user.name, "avatar": str(bot.user.display_avatar.url)}})
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
