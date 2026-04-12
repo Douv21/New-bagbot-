@@ -11,15 +11,19 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-GUILD_ID = int(os.getenv("GUILD_ID"))
-REDIRECT_URI = "http://192.168.1.133:49501/login/callback"
+GUILD_ID = int(os.getenv("GUILD_ID")) if os.getenv("GUILD_ID") else 0
 
-# --- INITIALISATION ---
-# Correction de la ligne 14 (static_url_path) vue sur ton Termux
+# --- CONFIGURATION URI ---
+# Cette URL doit être COPIÉE/COLLÉE dans le Discord Developer Portal (OAuth2 -> Redirects)
+REDIRECT_URI = "http://192.168.1.133:49501/api/callback"
+
+# --- INITIALISATION FLASK ---
 app = Flask(__name__, static_folder='public', static_url_path='/')
 app.secret_key = os.urandom(24)
 
-bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+# --- INITIALISATION BOT ---
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 def load_config():
     if not os.path.exists('config.json'):
@@ -27,7 +31,7 @@ def load_config():
     with open('config.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
-# --- ROUTES API ---
+# --- ROUTES DASHBOARD ---
 @app.route('/')
 def index():
     return app.send_static_file('index.html')
@@ -56,38 +60,25 @@ def save():
         json.dump(request.json, f, indent=4)
     return jsonify({"status": "ok"})
 
-@app.route('/api/test_welcome', methods=['POST'])
-def test_welcome():
-    config = load_config().get('welcome', {})
-    channel = bot.get_channel(int(config.get('channel', 0)))
-    if not channel: return jsonify({"error": "Salon invalide"}), 400
-
-    u = session.get('user_name', 'Utilisateur')
-    g = channel.guild.name
-    c = str(channel.guild.member_count)
-    
-    def rep(t): return t.replace('{user}', u).replace('{guild}', g).replace('{count}', c) if t else ""
-
-    embed = discord.Embed(title=rep(config.get('title')), description=rep(config.get('desc')), color=0xed4245)
-    if config.get('banner'): embed.set_image(url=config.get('banner'))
-    if config.get('thumbnail'): embed.set_thumbnail(url=config.get('thumbnail'))
-    if config.get('footer'): embed.set_footer(text=rep(config.get('footer')))
-
-    bot.loop.create_task(channel.send(embed=embed))
-    return jsonify({"status": "ok"})
-
+# --- SYSTÈME LOGIN OAUTH2 ---
 @app.route('/api/login')
 def login():
-    return redirect(f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify")
+    # Lien d'autorisation envoyé à Discord
+    url = (f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}"
+           f"&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify")
+    return redirect(url)
 
-@app.route('/login/callback')
+@app.route('/api/callback')
 def callback():
-    session['user_id'] = "admin"
+    # Discord renvoie l'utilisateur ici après autorisation
+    # On simule la session pour le Dashboard
+    session['user_id'] = "admin_access"
     session['user_name'] = "Administrateur"
     return redirect('/')
 
+# --- LANCEMENT ---
 if __name__ == "__main__":
-    # On lance Flask dans un thread pour ne pas bloquer le Bot
+    # threading pour faire tourner Flask et le Bot en même temps
     threading.Thread(target=lambda: app.run(host='0.0.0.0', port=49501, use_reloader=False)).start()
     bot.run(TOKEN)
     
