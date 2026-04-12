@@ -19,7 +19,7 @@
         body { background-color: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
 
         /* --- SIDEBAR & NAV --- */
-        #sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; }
+        #sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; flex-shrink: 0; }
         .hamburger { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; background: var(--accent); border: none; color: white; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
         .brand { padding: 30px; font-size: 24px; font-weight: 900; color: var(--accent); text-align: center; border-bottom: 1px solid var(--border); }
         .nav-item { padding: 18px 30px; display: flex; align-items: center; gap: 15px; color: var(--text-muted); cursor: pointer; font-weight: 600; }
@@ -57,14 +57,12 @@
         .role-item { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: 0.2s; }
         .role-item:hover { background: #0a0a0a; }
         .role-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
-        .role-name { font-size: 14px; color: #eee; }
 
         /* --- MODAL GALERIE --- */
         #gallery-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; }
         .modal-content { background: var(--card-bg); width: 90%; max-width: 600px; padding: 25px; border-radius: 20px; border: 1px solid var(--border); }
         .img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; max-height: 300px; overflow-y: auto; margin: 15px 0; }
         .img-grid img { width: 100%; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
-        .img-grid img:hover { border-color: var(--accent); }
 
         @media (max-width: 768px) {
             #sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); }
@@ -73,7 +71,6 @@
             main { padding: 80px 20px 20px; }
             .grid-inputs { grid-template-columns: 1fr; }
         }
-
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } }
     </style>
 </head>
@@ -142,31 +139,20 @@
     <div id="gallery-modal">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center">
-                <h3>Images & Galerie</h3>
-                <i class="fas fa-times" onclick="closeGallery()" style="cursor:pointer"></i>
+                <h3>Images & Galerie</h3><i class="fas fa-times" onclick="closeGallery()" style="cursor:pointer"></i>
             </div>
-            
             <label>Lien par URL</label>
             <div style="display:flex; gap:10px;">
                 <input type="text" id="external-url" placeholder="https://...">
                 <button class="btn" style="width:auto; margin:0; padding:10px" onclick="useExternalLink()">OK</button>
             </div>
-
-            <div style="margin: 15px 0; border-top: 1px solid var(--border);"></div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center">
-                <label style="margin:0">Galerie</label>
-                <button class="btn" style="background:#5865f2; width:auto; font-size:11px; margin:0; padding:8px" onclick="document.getElementById('upload-file').click()">+ UPLOAD</button>
-                <input type="file" id="upload-file" style="display:none" onchange="handleUpload()">
-            </div>
-            
             <div id="gallery-grid" class="img-grid"></div>
             <button class="btn" style="background:#333" onclick="closeGallery()">FERMER</button>
         </div>
     </div>
 
     <script>
-        let serverData = { channels: [], roles: [], config: {}, images: [] };
+        let serverData = { channels: [], roles: [], config: {}, images: [], user_name: "Utilisateur" };
         let activeTarget = '';
 
         async function init() {
@@ -174,34 +160,37 @@
             if(!res.ok) { location.href='/api/login'; return; }
             serverData = await res.json();
 
-            // Salons
             document.getElementById('w-chan').innerHTML = serverData.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-
-            // Rôle Déclencheur
-            document.getElementById('w-trigger').innerHTML = '<option value="">Immédiat (Join)</option>' + 
-                                                              serverData.roles.map(r => `<option value="${r}">${r}</option>`).join('');
+            document.getElementById('w-trigger').innerHTML = '<option value="">Immédiat</option>' + serverData.roles.map(r => `<option value="${r}">${r}</option>`).join('');
             
-            // ADMIN ROLES (Correction alignement)
-            const adminList = document.getElementById('admin-roles-list');
-            adminList.innerHTML = serverData.roles.map(r => `
+            document.getElementById('admin-roles-list').innerHTML = serverData.roles.map(r => `
                 <div class="role-item" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
                     <span class="role-name">${r}</span>
                     <input type="checkbox" value="${r}" class="adm-ck" ${serverData.config.admin_roles?.includes(r)?'checked':''}> 
                 </div>`).join('');
 
-            // Config Load
             const w = serverData.config.welcome || {};
             document.getElementById('w-title').value = w.title || "";
             document.getElementById('w-desc').value = w.desc || "";
             document.getElementById('w-footer').value = w.footer || "";
             document.getElementById('w-chan').value = w.channel || "";
             document.getElementById('w-trigger').value = w.trigger_role || "";
-            
             if(w.banner) setImg('banner', w.banner);
             if(w.thumbnail) setImg('thumb', w.thumbnail);
 
             sync();
             renderGallery();
+        }
+
+        function sync() {
+            const user = serverData.user_name || "Utilisateur";
+            const guild = "Mon Serveur";
+            const count = "123";
+            const replace = (s) => s.replace(/{user}/g, user).replace(/{guild}/g, guild).replace(/{count}/g, count);
+
+            document.getElementById('pv-title').innerText = replace(document.getElementById('w-title').value) || "Titre";
+            document.getElementById('pv-desc').innerText = replace(document.getElementById('w-desc').value) || "Description...";
+            document.getElementById('pv-footer-txt').innerText = replace(document.getElementById('w-footer').value) || "Bas de page";
         }
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
@@ -213,31 +202,17 @@
             if(window.innerWidth < 768) toggleSidebar();
         }
 
-        function sync() {
-            document.getElementById('pv-title').innerText = document.getElementById('w-title').value || "Titre";
-            document.getElementById('pv-desc').innerText = document.getElementById('w-desc').value || "Description...";
-            document.getElementById('pv-footer-txt').innerText = document.getElementById('w-footer').value || "Footer";
-        }
-
         function openGallery(t) { activeTarget = t; document.getElementById('gallery-modal').style.display='flex'; }
         function closeGallery() { document.getElementById('gallery-modal').style.display='none'; }
         function renderGallery() { document.getElementById('gallery-grid').innerHTML = serverData.images.map(img => `<img src="${img}" onclick="selectImage('${img}')">`).join(''); }
-
-        function useExternalLink() { const url = document.getElementById('external-url').value; if(url) { selectImage(url); document.getElementById('external-url').value=''; } }
         function selectImage(url) { setImg(activeTarget, url); closeGallery(); }
+        function useExternalLink() { const u = document.getElementById('external-url').value; if(u) selectImage(u); }
+
         function setImg(target, url) {
             const img = document.getElementById('pv-' + target + '-img');
             const hint = document.getElementById(target + '-hint');
             img.src = url; img.style.display = 'block'; img.dataset.path = url;
             if(hint) hint.style.display = 'none';
-        }
-
-        async function handleUpload() {
-            const fd = new FormData(); fd.append('file', document.getElementById('upload-file').files[0]);
-            const r = await fetch('/api/upload', {method:'POST', body:fd});
-            const d = await r.json();
-            serverData.images.push(d.url);
-            renderGallery();
         }
 
         async function saveConfig() {
@@ -259,10 +234,8 @@
 
         async function testWelcome() {
             const res = await fetch('/api/test_welcome', { method: 'POST' });
-            if(res.ok) alert("Test envoyé !");
-            else alert("Erreur d'envoi. Vérifiez le salon et le fichier main.py");
+            if(res.ok) alert("Test envoyé !"); else alert("Erreur d'envoi.");
         }
-
         window.onload = init;
     </script>
 </body>
