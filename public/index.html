@@ -2,212 +2,204 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BagBot | Accueil Master</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BagBot OS | Master Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --accent: #ed4245;
-            --bg-dark: #0b0b0b;
-            --card: #1e1f22;
+            --bg: #050505;
+            --card: #111214;
             --embed-bg: #2b2d31;
-            --input: #111214;
-            --border: #383a40;
+            --border: #2b2d31;
             --text: #ffffff;
             --text-m: #949ba4;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
-        body { background: var(--bg-dark); color: var(--text); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        body { background: var(--bg); color: var(--text); font-family: 'Whitney', 'Helvetica Neue', Arial, sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        .viewport { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        header { height: 60px; background: #050505; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 15px; }
+        /* --- SIDEBAR --- */
+        #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: 0.3s; }
+        .sidebar-header { padding: 30px 24px; font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: 2px; }
+        .nav-item { padding: 14px 20px; display: flex; align-items: center; gap: 12px; color: var(--text-m); cursor: pointer; transition: 0.2s; font-weight: 600; }
+        .nav-item.active { background: rgba(237, 66, 69, 0.1); color: var(--accent); border-right: 3px solid var(--accent); }
+
+        /* --- MAIN --- */
+        .viewport { flex: 1; display: flex; flex-direction: column; }
+        header { height: 60px; background: #080808; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 25px; justify-content: space-between; }
         
-        .content-scroll { flex: 1; overflow-y: auto; padding: 30px 15px; display: flex; flex-direction: column; align-items: center; }
+        .content { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; align-items: center; }
 
-        .module-card { width: 100%; max-width: 580px; background: var(--card); border-radius: 8px; padding: 25px; border: 1px solid var(--border); }
-        .module-label { font-size: 11px; font-weight: 800; color: var(--text-m); text-transform: uppercase; margin-bottom: 20px; display: block; letter-spacing: 1px; }
+        /* --- EMBED DESIGNER PREMIUM --- */
+        .designer-container { width: 100%; max-width: 900px; display: grid; grid-template-columns: 1fr 320px; gap: 30px; }
 
-        /* --- EMBED INTERACTIF --- */
-        .discord-embed {
+        .embed-preview {
             background: var(--embed-bg);
             border-left: 4px solid var(--accent);
             border-radius: 4px;
             padding: 16px;
-            display: flex;
-            flex-direction: column;
             position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* Styles des zones cliquables */
-        .editable-zone { border: 1px solid transparent; transition: 0.2s; cursor: pointer; border-radius: 4px; }
-        .editable-zone:hover { border-color: rgba(237, 66, 69, 0.5); background: rgba(255,255,255,0.02); }
+        .edit-badge { position: absolute; right: 10px; top: 10px; font-size: 10px; background: var(--accent); padding: 3px 8px; border-radius: 10px; font-weight: 900; opacity: 0.7; }
 
-        .embed-author { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-        .author-icon { width: 24px; height: 24px; border-radius: 50%; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); }
-        .author-icon img { width: 100%; height: 100%; object-fit: cover; }
-        .author-name { font-size: 13px; font-weight: 700; color: #fff; }
+        .author-zone { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; cursor: pointer; }
+        .author-img { width: 24px; height: 24px; border-radius: 50%; background: #000; }
 
-        #p-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; display: block; padding: 5px; }
-        #p-desc { font-size: 14px; color: #dbdee1; line-height: 1.4; display: block; padding: 5px; }
+        #p-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; display: block; cursor: pointer; }
+        #p-desc { font-size: 14px; color: #dbdee1; line-height: 1.4; display: block; cursor: pointer; }
 
-        .embed-main-content { display: flex; justify-content: space-between; gap: 15px; }
+        .thumb-zone { width: 80px; height: 80px; background: #1e1f22; border-radius: 4px; flex-shrink: 0; cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         
-        /* Thumbnail (Miniature) */
-        .thumb-box { width: 80px; height: 80px; background: #1e1f22; border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
-        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+        .banner-zone { width: 100%; height: 200px; background: #1e1f22; margin-top: 15px; border-radius: 4px; cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px dashed #333; }
+        .banner-zone img, .thumb-zone img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Banner (Grande Image) */
-        .banner-box { width: 100%; height: 180px; background: #1e1f22; margin-top: 15px; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .banner-box img { width: 100%; height: 100%; object-fit: cover; }
+        .footer-zone { display: flex; align-items: center; gap: 8px; margin-top: 15px; cursor: pointer; }
+        .footer-img { width: 20px; height: 20px; border-radius: 50%; background: #000; }
+        #p-footer { font-size: 12px; color: var(--text-m); font-weight: 600; }
 
-        /* Footer */
-        .embed-footer { display: flex; align-items: center; gap: 8px; margin-top: 15px; }
-        .footer-icon { width: 20px; height: 20px; border-radius: 50%; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .footer-icon img { width: 100%; height: 100%; object-fit: cover; }
-        #p-footer { font-size: 12px; color: #949ba4; font-weight: 600; }
-
-        /* --- INPUTS DYNAMIQUES (HIDDEN) --- */
-        .edit-overlay { 
-            background: var(--input); border: 1px solid var(--accent); color: white; 
-            padding: 10px; border-radius: 6px; width: 100%; margin-top: 10px; font-size: 13px;
-            display: none;
-        }
-        .edit-overlay.active { display: block; }
-
-        /* BOUTON VALIDER */
-        .btn-valider { width: 100%; background: var(--accent); color: white; border: none; padding: 18px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; margin-top: 30px; letter-spacing: 1px; }
+        /* --- PANNEAU DE CONTRÔLE --- */
+        .control-panel { background: var(--card); border-radius: 12px; padding: 25px; border: 1px solid var(--border); }
+        .control-group { margin-bottom: 20px; }
+        label { font-size: 11px; font-weight: 800; color: var(--text-m); text-transform: uppercase; margin-bottom: 8px; display: block; }
         
-        select { width: 100%; background: var(--input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 6px; margin-top: 15px; }
+        input, textarea, select { width: 100%; background: #080808; border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; }
+        
+        .btn-save { width: 100%; background: var(--accent); color: white; border: none; padding: 16px; border-radius: 8px; font-weight: 900; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+        .btn-save:hover { filter: brightness(1.2); transform: translateY(-2px); }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
+    <aside id="sidebar">
+        <div class="sidebar-header">BAGBOT</div>
+        <div class="nav-item active"><i class="fas fa-door-open"></i> ACCUEIL</div>
+        <div class="nav-item"><i class="fas fa-shield-alt"></i> AUTO-MOD</div>
+        <div class="nav-item"><i class="fas fa-ticket-alt"></i> TICKETS</div>
+    </aside>
+
     <div class="viewport">
         <header>
-            <i class="fas fa-bars" style="color: var(--accent);"></i>
-            <div style="font-weight: 900; font-size: 14px;">ACCUEIL CONFIGURATION</div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-bars" style="color: var(--accent); cursor: pointer;"></i>
+                <span style="font-weight: 900; letter-spacing: 1px;">DASHBOARD MAÎTRE</span>
+            </div>
+            <div id="bot-status" style="font-size: 12px; font-weight: 800; color: #23a559;">● BOT EN LIGNE</div>
         </header>
 
-        <div class="content-scroll">
-            <div class="module-card">
-                <span class="module-label">Éditeur Visuel (Cliquez sur un élément)</span>
-                
-                <div class="discord-embed">
-                    <div class="embed-author editable-zone" onclick="toggleEdit('author')">
-                        <div class="author-icon" id="author-icon-box"><i class="fas fa-robot"></i></div>
-                        <span class="author-name">BagBot System</span>
+        <div class="content">
+            <div class="designer-container">
+                <div class="embed-preview">
+                    <div class="edit-badge">MODE ÉDITION</div>
+                    <div class="author-zone" onclick="focusField('author')">
+                        <img src="" id="p-author-img" class="author-img">
+                        <span class="author-name" id="p-author-name">BagBot System</span>
                     </div>
-                    <input type="text" id="edit-author-url" class="edit-overlay" placeholder="Lien URL du logo..." oninput="updateImage('author')">
 
-                    <div class="embed-main-content">
-                        <div style="flex:1">
-                            <div class="editable-zone" onclick="toggleEdit('title')">
-                                <span id="p-title">Bienvenue sur le serveur !</span>
-                            </div>
-                            <input type="text" id="edit-title" class="edit-overlay" value="Bienvenue sur le serveur !" oninput="syncText('title')">
-
-                            <div class="editable-zone" onclick="toggleEdit('desc')">
-                                <span id="p-desc">Ravi de te voir ici {user}. N'oublie pas de lire le règlement !</span>
-                            </div>
-                            <textarea id="edit-desc" class="edit-overlay" rows="3" oninput="syncText('desc')">Ravi de te voir ici {user}. N'oublie pas de lire le règlement !</textarea>
+                    <div style="display: flex; justify-content: space-between; gap: 15px;">
+                        <div style="flex: 1;">
+                            <span id="p-title" onclick="focusField('title')">Titre de l'accueil</span>
+                            <span id="p-desc" onclick="focusField('desc')">Bienvenue {user} ! Configure ton message ici...</span>
                         </div>
-
-                        <div class="thumb-box editable-zone" onclick="toggleEdit('thumb')" id="thumb-preview">
-                            <i class="fas fa-plus" style="color: #333;"></i>
+                        <div class="thumb-zone" onclick="focusField('thumb')" id="p-thumb-box">
+                            <i class="fas fa-plus"></i>
                         </div>
                     </div>
-                    <input type="text" id="edit-thumb-url" class="edit-overlay" placeholder="Lien URL miniature..." oninput="updateImage('thumb')">
 
-                    <div class="banner-box editable-zone" onclick="toggleEdit('banner')" id="banner-preview">
-                        <i class="fas fa-image" style="font-size: 30px; color: #333;"></i>
+                    <div class="banner-zone" onclick="focusField('banner')" id="p-banner-box">
+                        <i class="fas fa-image" style="font-size: 30px; color: #222;"></i>
                     </div>
-                    <input type="text" id="edit-banner-url" class="edit-overlay" placeholder="Lien URL grande image..." oninput="updateImage('banner')">
 
-                    <div class="embed-footer editable-zone" onclick="toggleEdit('footer')">
-                        <div class="footer-icon" id="footer-icon-box"><i class="fas fa-info-circle"></i></div>
+                    <div class="footer-zone" onclick="focusField('footer')">
+                        <img src="" id="p-footer-img" class="footer-img">
                         <span id="p-footer">ID: {user_id} • BagBot OS</span>
                     </div>
-                    <input type="text" id="edit-footer-text" class="edit-overlay" value="ID: {user_id} • BagBot OS" oninput="syncText('footer')">
-                    <input type="text" id="edit-footer-url" class="edit-overlay" placeholder="Lien URL icône footer..." oninput="updateImage('footer')">
                 </div>
 
-                <select id="chan-list">
-                    <option value="">Chargement des salons...</option>
-                </select>
+                <div class="control-panel">
+                    <div class="control-group">
+                        <label>Salon de destination</label>
+                        <select id="chan-list"></select>
+                    </div>
 
-                <button class="btn-valider" onclick="saveToBot()">Valider et Enregistrer</button>
+                    <div id="editor-fields">
+                        <label id="field-label">Cliquez sur un élément à gauche</label>
+                        <input type="text" id="main-input" class="hidden">
+                        <textarea id="main-textarea" class="hidden" rows="4"></textarea>
+                    </div>
+
+                    <button class="btn-save" onclick="saveData()">Sauvegarder</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Fonction pour afficher/cacher les champs d'édition
-        function toggleEdit(id) {
-            const el = document.querySelectorAll('.edit-overlay');
-            el.forEach(input => {
-                if(!input.id.includes(id)) input.style.display = 'none';
-            });
+        let currentField = '';
+
+        // Fonction pour focus un champ depuis l'embed
+        function focusField(type) {
+            const input = document.getElementById('main-input');
+            const area = document.getElementById('main-textarea');
+            const label = document.getElementById('field-label');
             
-            // Pour le footer on affiche les deux inputs (texte et icône)
-            if(id === 'footer') {
-                document.getElementById('edit-footer-text').style.display = 'block';
-                document.getElementById('edit-footer-url').style.display = 'block';
-            } else {
-                const target = document.getElementById('edit-' + id + (id.includes('url') ? '' : (id === 'thumb' || id === 'banner' || id === 'author' ? '-url' : '')));
-                target.style.display = target.style.display === 'block' ? 'none' : 'block';
+            input.classList.add('hidden');
+            area.classList.add('hidden');
+            currentField = type;
+
+            if(type === 'title') {
+                label.innerText = "Éditer le Titre";
+                input.classList.remove('hidden');
+                input.value = document.getElementById('p-title').innerText;
+            } else if(type === 'desc') {
+                label.innerText = "Éditer la Description";
+                area.classList.remove('hidden');
+                area.value = document.getElementById('p-desc').innerText;
+            } else if(type === 'banner' || type === 'thumb' || type === 'author' || type === 'footer') {
+                label.innerText = "URL de l'image (" + type + ")";
+                input.classList.remove('hidden');
+                input.placeholder = "https://...";
             }
         }
 
-        // Synchronisation du texte
-        function syncText(id) {
-            document.getElementById('p-' + id).innerText = document.getElementById('edit-' + id + (id === 'footer' ? '-text' : '')).value;
+        // Mise à jour en temps réel
+        document.getElementById('main-input').oninput = (e) => updatePreview(e.target.value);
+        document.getElementById('main-textarea').oninput = (e) => updatePreview(e.target.value);
+
+        function updatePreview(val) {
+            if(currentField === 'title') document.getElementById('p-title').innerText = val;
+            if(currentField === 'desc') document.getElementById('p-desc').innerText = val;
+            if(currentField === 'banner') document.getElementById('p-banner-box').innerHTML = `<img src="${val}">`;
+            if(currentField === 'thumb') document.getElementById('p-thumb-box').innerHTML = `<img src="${val}">`;
         }
 
-        // Mise à jour des images
-        function updateImage(type) {
-            const url = document.getElementById('edit-' + type + '-url').value;
-            const container = document.getElementById(type === 'author' ? 'author-icon-box' : type === 'footer' ? 'footer-icon-box' : type + '-preview');
-            
-            if(url.startsWith('http')) {
-                container.innerHTML = `<img src="${url}">`;
-            } else {
-                container.innerHTML = `<i class="fas fa-${type === 'author' ? 'robot' : type === 'footer' ? 'info-circle' : 'image'}"></i>`;
-            }
-        }
-
-        // SAUVEGARDE UNIVERSELLE VERS MAIN.PY
-        async function saveToBot() {
-            const data = {
-                category: "accueil",
-                settings: {
-                    title: document.getElementById('edit-title').value,
-                    description: document.getElementById('edit-desc').value,
-                    footer_text: document.getElementById('edit-footer-text').value,
-                    footer_icon: document.getElementById('edit-footer-url').value,
-                    thumbnail: document.getElementById('edit-thumb-url').value,
-                    banner: document.getElementById('edit-banner-url').value,
-                    author_icon: document.getElementById('edit-author-url').value,
-                    channel: document.getElementById('chan-list').value
-                }
+        async function saveData() {
+            const settings = {
+                title: document.getElementById('p-title').innerText,
+                description: document.getElementById('p-desc').innerText,
+                channel: document.getElementById('chan-list').value
             };
-
             const res = await fetch('/api/save_settings', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
+                body: JSON.stringify({category: "accueil", settings})
             });
-            
-            const result = await res.json();
-            alert(result.message);
+            const r = await res.json();
+            alert(r.message);
         }
 
-        // Récupérer les salons
         window.onload = async () => {
             const res = await fetch('/api/get_server_info');
             const data = await res.json();
             if(data.channels) {
                 document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                document.getElementById('p-author-img').src = data.bot.avatar;
+                document.getElementById('p-author-name').innerText = data.bot.name;
+                document.getElementById('p-footer-img').src = data.bot.avatar;
             }
         };
     </script>
