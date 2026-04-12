@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>BagBot Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -14,38 +14,44 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg-dark); color: white; display: flex; height: 100vh; overflow: hidden; }
 
-        /* Sidebar Fixée */
-        #sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; height: 100%; transition: 0.3s; z-index: 1001; }
-        .nav-item { padding: 15px 25px; display: flex; align-items: center; gap: 15px; color: var(--text-muted); cursor: pointer; font-weight: 700; }
+        /* Sidebar Fixe sur PC, Mobile rétractable */
+        #sidebar { 
+            width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border); 
+            position: fixed; height: 100%; z-index: 2000; 
+            transition: transform 0.3s ease; transform: translateX(0); 
+        }
+        #sidebar.closed { transform: translateX(-100%); }
+
+        .nav-item { padding: 18px 25px; display: flex; align-items: center; gap: 15px; color: var(--text-muted); cursor: pointer; font-weight: 700; }
         .nav-item.active { color: var(--accent); background: rgba(237, 66, 69, 0.05); border-right: 3px solid var(--accent); }
 
-        main { flex: 1; margin-left: 260px; display: flex; flex-direction: column; width: 100%; }
-        header { height: 70px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 15px; }
-        
-        .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; flex: 1; }
+        main { flex: 1; margin-left: 260px; display: flex; flex-direction: column; height: 100vh; transition: 0.3s; }
+        header { height: 60px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 15px; flex-shrink: 0; }
+        .burger { font-size: 22px; cursor: pointer; color: var(--accent); }
+
+        .content-section { 
+            display: none; flex-direction: column; align-items: center; 
+            padding: 20px; overflow-y: auto; flex: 1; padding-bottom: 80px; 
+        }
         .content-section.active { display: flex; }
 
-        /* Embed Design */
-        .discord-embed { width: 100%; max-width: 500px; background: var(--embed-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px; margin-bottom: 20px; position: relative; }
+        /* Design Embed */
+        .discord-embed { width: 100%; max-width: 480px; background: var(--embed-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px; margin-bottom: 20px; position: relative; }
         .thumb-preview { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: rgba(0,0,0,0.2); border: 1px dashed #444; border-radius: 4px; overflow: hidden; }
-        .banner-preview { width: 100%; height: 150px; margin-top: 10px; background: rgba(0,0,0,0.2); border: 1px dashed #444; border-radius: 4px; overflow: hidden; }
+        .banner-preview { width: 100%; height: 140px; margin-top: 10px; background: rgba(0,0,0,0.2); border: 1px dashed #444; border-radius: 4px; overflow: hidden; }
         .img-zone img { width: 100%; height: 100%; object-fit: cover; }
 
-        .config-card { width: 100%; max-width: 500px; background: var(--bg-panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
-        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .config-card { width: 100%; max-width: 480px; background: var(--bg-panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 30px; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
 
-        .var-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 15px; }
-        .var-item { font-size: 9px; background: #0a0a0a; border: 1px solid #222; padding: 5px; text-align: center; cursor: pointer; color: var(--accent); font-weight: bold; border-radius: 4px; }
+        .var-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; }
+        .var-item { font-size: 10px; background: #0a0a0a; border: 1px solid #222; padding: 8px; text-align: center; cursor: pointer; color: var(--accent); font-weight: bold; border-radius: 4px; }
 
         .btn { border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-top: 10px; }
         .btn-save { background: var(--accent); }
-        .btn-test { background: var(--discord-blue); }
+        .btn-test { background: var(--discord-blue); margin-bottom: 20px; }
 
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; width: 100%; }
-        .gallery-card { aspect-ratio: 1; position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
-        .gallery-card img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
-
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal.active { display: flex; }
 
         @media (max-width: 900px) {
@@ -58,23 +64,24 @@
 <body>
 
     <nav id="sidebar">
-        <div style="padding: 25px; font-size: 22px; font-weight: 900; color: var(--accent);">BAGBOT</div>
+        <div style="padding: 25px; font-size: 22px; font-weight: 900; color: var(--accent); display: flex; justify-content: space-between;">
+            BAGBOT <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer"></i>
+        </div>
         <div class="nav-item active" onclick="show('accueil', this)"><i class="fas fa-home"></i> Accueil</div>
         <div class="nav-item" onclick="show('images', this)"><i class="fas fa-images"></i> Images</div>
     </nav>
 
     <main>
         <header>
-            <i class="fas fa-bars" onclick="document.getElementById('sidebar').classList.toggle('open')"></i>
-            <span id="bot-name" style="flex:1">Bot</span>
-            <img id="bot-avatar" src="" style="width:35px; border-radius:50%">
+            <i class="fas fa-bars burger" onclick="toggleSidebar()"></i>
+            <span id="bot-name" style="font-weight: 800; flex:1">BagBot</span>
         </header>
 
         <section id="accueil" class="content-section active">
             <div class="discord-embed">
                 <div class="thumb-preview img-zone" onclick="openM('thumb')" id="box-thumb"></div>
-                <div style="font-weight: 700; margin-bottom: 5px;" id="p-title">Titre</div>
-                <div style="font-size: 14px; color: #dbdee1;" id="p-desc">Message</div>
+                <div style="font-weight: 700; margin-bottom: 5px;" id="p-title">Bienvenue {user}</div>
+                <div style="font-size: 13px; color: #dbdee1; line-height: 1.4;" id="p-desc">Configure ton message...</div>
                 <div class="banner-preview img-zone" onclick="openM('banner')" id="box-banner"></div>
             </div>
 
@@ -98,16 +105,16 @@
         </section>
 
         <section id="images" class="content-section">
-            <div class="gallery-grid" id="gallery"></div>
+            <div id="gallery" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%;"></div>
         </section>
     </main>
 
     <div id="modal" class="modal">
-        <div style="background: var(--bg-panel); padding: 20px; border-radius: 12px; width: 100%; max-width: 400px;">
-            <input type="text" id="url-in" placeholder="Lien HTTP ou upload...">
+        <div style="background: var(--bg-panel); padding: 25px; border-radius: 12px; width: 100%; max-width: 350px;">
+            <input type="text" id="url-in" placeholder="URL ou Upload">
             <input type="file" id="file-in" style="display:none" onchange="up()">
             <button class="btn" style="background:#222" onclick="document.getElementById('file-in').click()">TÉLÉVERSER</button>
-            <button class="btn btn-save" onclick="apply()">APPLIQUER</button>
+            <button class="btn btn-save" onclick="apply()">UTILISER</button>
             <button class="btn" style="background:transparent" onclick="document.getElementById('modal').classList.remove('active')">ANNULER</button>
         </div>
     </div>
@@ -116,17 +123,19 @@
         let target = '';
         const API = window.location.origin;
 
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
         function show(id, el) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
+            if(window.innerWidth < 900) toggleSidebar();
             if(id === 'images') loadG();
         }
 
         function sync() {
             document.getElementById('p-title').innerText = document.getElementById('in-title').value || "Titre";
-            document.getElementById('p-desc').innerHTML = (document.getElementById('in-desc').value || "Message...")
-                .replace(/{user}/g, '<span style="color:#5865F2">@Membre</span>')
-                .replace(/{server}/g, '<b>Serveur</b>');
+            document.getElementById('p-desc').innerHTML = (document.getElementById('in-desc').value || "Description...")
+                .replace(/{user}/g, '<span style="color:#5865F2">@Membre</span>').replace(/{server}/g, '<b>Serveur</b>');
         }
 
         function add(v) { document.getElementById('in-desc').value += v; sync(); }
@@ -144,6 +153,7 @@
             if(val) {
                 const src = val.startsWith('http') ? val : API + val;
                 document.getElementById('box-'+target).innerHTML = `<img src="${src}">`;
+                document.getElementById('box-'+target).dataset.path = val;
             }
             document.getElementById('modal').classList.remove('active');
         }
@@ -153,11 +163,11 @@
                 channel: document.getElementById('chan-list').value,
                 title: document.getElementById('in-title').value,
                 desc: document.getElementById('in-desc').value,
-                thumb: document.querySelector('#box-thumb img')?.src || null,
-                banner: document.querySelector('#box-banner img')?.src || null
+                thumb: document.getElementById('box-thumb').dataset.path || null,
+                banner: document.getElementById('box-banner').dataset.path || null
             };
             await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            alert("Enregistré !");
+            alert("Sauvegardé !");
         }
 
         async function test() {
@@ -165,19 +175,20 @@
                 channel: document.getElementById('chan-list').value,
                 title: document.getElementById('in-title').value,
                 desc: document.getElementById('in-desc').value,
-                thumb: document.querySelector('#box-thumb img')?.src || null,
-                banner: document.querySelector('#box-banner img')?.src || null
+                thumb: document.getElementById('box-thumb').dataset.path || null,
+                banner: document.getElementById('box-banner').dataset.path || null
             };
             const res = await fetch(`${API}/api/test_message`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            if(res.ok) alert("Test envoyé !");
-            else alert("Erreur d'envoi");
+            if(res.ok) alert("✅ Envoyé !");
         }
 
         async function loadG() {
             const res = await fetch(`${API}/api/images`);
             const data = await res.json();
             document.getElementById('gallery').innerHTML = data.images.map(u => `
-                <div class="gallery-card"><img src="${API+u}" onclick="document.getElementById('url-in').value='${u}'; apply();"></div>
+                <div style="aspect-ratio:1; border-radius:8px; overflow:hidden; border:1px solid #1e1e1e">
+                    <img src="${API+u}" style="width:100%; height:100%; object-fit:cover" onclick="document.getElementById('url-in').value='${u}'; apply();">
+                </div>
             `).join('');
         }
 
@@ -185,15 +196,13 @@
             const res = await fetch(`${API}/api/get_server_info`);
             const data = await res.json();
             document.getElementById('bot-name').innerText = data.bot.name;
-            document.getElementById('bot-avatar').src = data.bot.avatar;
             document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
             
             if(data.config) {
                 document.getElementById('in-title').value = data.config.title || "";
                 document.getElementById('in-desc').value = data.config.desc || "";
-                if(data.config.channel) document.getElementById('chan-list').value = data.config.channel;
-                if(data.config.thumb) document.getElementById('box-thumb').innerHTML = `<img src="${data.config.thumb}">`;
-                if(data.config.banner) document.getElementById('box-banner').innerHTML = `<img src="${data.config.banner}">`;
+                if(data.config.thumb) { document.getElementById('box-thumb').innerHTML = `<img src="${API+data.config.thumb}">`; document.getElementById('box-thumb').dataset.path = data.config.thumb; }
+                if(data.config.banner) { document.getElementById('box-banner').innerHTML = `<img src="${API+data.config.banner}">`; document.getElementById('box-banner').dataset.path = data.config.banner; }
                 sync();
             }
         }
