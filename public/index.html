@@ -2,143 +2,120 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>BagBot Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BagBot Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --embed: #2b2d31; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: white; height: 100vh; display: flex; overflow: hidden; }
+        body { background: var(--bg); color: white; display: flex; height: 100vh; }
 
-        /* Sidebar - Ne prend pas tout l'écran */
-        #sidebar { 
-            width: 260px; background: #000; border-right: 1px solid var(--border); 
-            position: fixed; height: 100%; z-index: 1000; transition: 0.3s;
-            transform: translateX(-100%); /* Caché par défaut sur mobile */
-        }
-        #sidebar.open { transform: translateX(0); }
+        /* Sidebar classique */
+        nav { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .nav-item { padding: 15px 25px; cursor: pointer; font-weight: bold; color: #949ba4; }
+        .nav-item.active { color: var(--accent); background: rgba(237, 66, 69, 0.05); }
+
+        main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        header { height: 60px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; font-weight: bold; }
         
-        /* Overlay pour fermer le menu en cliquant à côté */
-        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 900; }
-        #overlay.active { display: block; }
+        .container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
 
-        main { flex: 1; display: flex; flex-direction: column; height: 100vh; width: 100%; }
-        
-        header { 
-            height: 60px; background: var(--panel); border-bottom: 1px solid var(--border); 
-            display: flex; align-items: center; padding: 0 20px; flex-shrink: 0;
-            justify-content: space-between;
-        }
-
-        .scroll-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-
-        /* Discord Preview */
+        /* Preview Discord */
         .discord-embed { 
-            width: 100%; max-width: 400px; background: var(--embed); border-left: 4px solid var(--accent); 
-            border-radius: 4px; padding: 15px; position: relative; margin-bottom: 20px; flex-shrink: 0;
+            width: 100%; max-width: 480px; background: var(--embed); border-left: 4px solid var(--accent); 
+            border-radius: 4px; padding: 16px; position: relative; margin-bottom: 20px;
         }
-        .thumb-box { width: 60px; height: 60px; position: absolute; right: 15px; top: 15px; border-radius: 4px; border: 1px dashed #444; overflow: hidden; }
-        .banner-box { width: 100%; height: 130px; margin-top: 10px; border-radius: 4px; border: 1px dashed #444; overflow: hidden; }
+        .thumb-prev { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; border-radius: 4px; border: 1px dashed #444; overflow: hidden; }
+        .banner-prev { width: 100%; height: 140px; margin-top: 10px; border-radius: 4px; border: 1px dashed #444; overflow: hidden; }
         img { width: 100%; height: 100%; object-fit: cover; }
 
         /* Formulaire */
-        .config-card { width: 100%; max-width: 400px; background: var(--panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
-        input, textarea, select { 
-            width: 100%; background: #000; border: 1px solid var(--border); 
-            color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; 
-        }
+        .card { width: 100%; max-width: 480px; background: var(--panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
+        label { display: block; margin-bottom: 5px; font-size: 12px; color: #949ba4; text-transform: uppercase; font-weight: bold; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        
+        .vars { display: flex; gap: 5px; margin-bottom: 15px; }
+        .v-btn { flex: 1; background: #111; border: 1px solid #333; padding: 8px; text-align: center; color: var(--accent); font-size: 11px; border-radius: 4px; cursor: pointer; }
 
-        .var-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 15px; }
-        .var-btn { font-size: 11px; background: #111; border: 1px solid #333; padding: 8px; text-align: center; color: var(--accent); border-radius: 6px; font-weight: bold; }
+        .btn { border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-top: 10px; }
 
-        .btn { border: none; padding: 16px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-top: 10px; }
+        /* Espace de sécurité pour le footer mobile */
+        .footer-spacer { height: 100px; }
 
-        /* SECURITÉ BAS DE PAGE */
-        .bottom-spacer { height: 120px; flex-shrink: 0; }
-
-        @media (min-width: 900px) {
-            #sidebar { transform: translateX(0); position: relative; }
-            #overlay { display: none !important; }
-            header i { display: none; }
+        @media (max-width: 900px) {
+            nav { display: none; } /* On cache la sidebar sur mobile pour cette version */
         }
     </style>
 </head>
 <body>
-    <div id="overlay" onclick="toggleMenu()"></div>
-    
-    <nav id="sidebar">
-        <div style="padding: 25px; color: var(--accent); font-weight: 900; font-size: 22px; display: flex; justify-content: space-between;">
-            BAGBOT <i class="fas fa-times" onclick="toggleMenu()" style="cursor:pointer"></i>
-        </div>
-        <div style="padding: 15px 25px; color: #949ba4; font-weight: bold;"><i class="fas fa-home"></i> Accueil</div>
+
+    <nav>
+        <div style="padding: 25px; color: var(--accent); font-weight: 900; font-size: 20px;">BAGBOT</div>
+        <div class="nav-item active">ACCUEIL</div>
     </nav>
 
     <main>
-        <header>
-            <i class="fas fa-bars" onclick="toggleMenu()" style="color:var(--accent); font-size: 24px;"></i>
-            <span id="bot-name" style="font-weight: bold;">New bagbot</span>
-            <div style="width: 24px;"></div>
-        </header>
-
-        <div class="scroll-area">
+        <header>New bagbot</header>
+        <div class="container">
+            
             <div class="discord-embed">
-                <div class="thumb-box" onclick="openModal('thumb')" id="box-thumb"></div>
-                <div id="p-title" style="font-weight: bold; margin-bottom: 5px;">Bienvenue</div>
-                <div id="p-desc" style="font-size: 13px; color: #dcddde; line-height: 1.4;">Configure ton message ci-dessous...</div>
-                <div class="banner-box" onclick="openModal('banner')" id="box-banner"></div>
+                <div class="thumb-prev" onclick="openUp('thumb')" id="box-thumb"></div>
+                <div id="p-title" style="font-weight: bold;">Bienvenue</div>
+                <div id="p-desc" style="font-size: 13px; color: #dcddde; margin-top: 5px;">...</div>
+                <div class="banner-prev" onclick="openUp('banner')" id="box-banner"></div>
             </div>
 
-            <div class="config-card">
-                <input id="in-title" placeholder="Titre..." oninput="update()">
-                <textarea id="in-desc" rows="4" placeholder="Description..." oninput="update()"></textarea>
+            <div class="card">
+                <label>Titre</label>
+                <input id="in-title" placeholder="Bienvenue {user}" oninput="sync()">
                 
-                <div class="var-grid">
-                    <div class="var-btn" onclick="addVar('{user}')">{user}</div>
-                    <div class="var-btn" onclick="addVar('{server}')">{server}</div>
-                    <div class="var-btn" onclick="addVar('{count}')">{count}</div>
+                <label>Message</label>
+                <textarea id="in-desc" rows="4" oninput="sync()"></textarea>
+
+                <div class="vars">
+                    <div class="v-btn" onclick="add('{user}')">{user}</div>
+                    <div class="v-btn" onclick="add('{server}')">{server}</div>
+                    <div class="v-btn" onclick="add('{count}')">{count}</div>
                 </div>
 
+                <label>Salon</label>
                 <select id="chan-list"></select>
-                <button class="btn" style="background:var(--accent)" onclick="save()">ENREGISTRER</button>
+
+                <button class="btn" style="background:var(--accent)" onclick="test()">ENREGISTRER</button>
                 <button class="btn" style="background:#5865F2" onclick="test()">TESTER SUR DISCORD</button>
             </div>
 
-            <div class="bottom-spacer"></div>
+            <div class="footer-spacer"></div>
         </div>
     </main>
 
-    <div id="modal" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); display:none; align-items:center; justify-content:center; z-index:2000; padding:20px;">
-        <div style="background:var(--panel); padding:20px; border-radius:12px; width:100%; max-width:350px; border:1px solid var(--border);">
+    <div id="modal" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); display:none; align-items:center; justify-content:center; padding:20px; z-index:1000;">
+        <div style="background:var(--panel); padding:20px; border-radius:12px; width:100%; max-width:320px;">
             <input type="file" id="file-in" style="display:none" onchange="upload()">
-            <button class="btn" style="background:#222" onclick="document.getElementById('file-in').click()">CHOISIR UNE PHOTO</button>
+            <button class="btn" style="background:#333" onclick="document.getElementById('file-in').click()">CHOISIR IMAGE</button>
             <button class="btn" style="background:transparent" onclick="document.getElementById('modal').style.display='none'">ANNULER</button>
         </div>
     </div>
 
     <script>
-        let targetType = '';
+        let mode = '';
         const API = window.location.origin;
 
-        function toggleMenu() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('overlay').classList.toggle('active');
-        }
-
-        function update() {
+        function sync() {
             document.getElementById('p-title').innerText = document.getElementById('in-title').value || "Titre";
-            document.getElementById('p-desc').innerText = document.getElementById('in-desc').value || "Description...";
+            document.getElementById('p-desc').innerText = document.getElementById('in-desc').value || "Message...";
         }
 
-        function addVar(v) { document.getElementById('in-desc').value += v; update(); }
-        function openModal(t) { targetType = t; document.getElementById('modal').style.display = 'flex'; }
+        function add(v) { document.getElementById('in-desc').value += v; sync(); }
+        function openUp(m) { mode = m; document.getElementById('modal').style.display = 'flex'; }
 
         async function upload() {
             const fd = new FormData();
             fd.append('file', document.getElementById('file-in').files[0]);
             const res = await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
             const data = await res.json();
-            document.getElementById(`box-${targetType}`).innerHTML = `<img src="${API+data.url}">`;
-            document.getElementById(`box-${targetType}`).dataset.path = data.url;
+            document.getElementById(`box-${mode}`).innerHTML = `<img src="${API+data.url}">`;
+            document.getElementById(`box-${mode}`).dataset.path = data.url;
             document.getElementById('modal').style.display = 'none';
         }
 
@@ -147,22 +124,17 @@
                 channel: document.getElementById('chan-list').value,
                 title: document.getElementById('in-title').value,
                 desc: document.getElementById('in-desc').value,
-                thumb: document.getElementById('box-thumb').dataset.path || null,
-                banner: document.getElementById('box-banner').dataset.path || null
+                thumb: document.getElementById('box-thumb').dataset.path,
+                banner: document.getElementById('box-banner').dataset.path
             };
-            await fetch(`${API}/api/test_message`, { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify(payload) 
-            });
-            alert("✅ Message envoyé !");
+            await fetch(`${API}/api/test_message`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            alert("Envoyé !");
         }
 
         async function init() {
             const res = await fetch(`${API}/api/get_server_info`);
             const data = await res.json();
             document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            document.getElementById('bot-name').innerText = data.bot.name;
         }
         window.onload = init;
     </script>
