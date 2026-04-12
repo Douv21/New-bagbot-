@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>BagBot Panel v27</title>
+    <title>BagBot Panel v28</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord-bg: #2b2d31; --discord-text: #dbdee1; --placeholder: rgba(255,255,255,0.05); }
@@ -13,13 +13,13 @@
         /* SIDEBAR */
         #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 9999; transition: 0.3s; position: sticky; top: 0; height: 100vh; }
         .sidebar-header { padding: 30px 25px; font-size: 22px; font-weight: 900; color: var(--accent); display: flex; align-items: center; gap: 15px; }
-        .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; transition: 0.2s; }
+        .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 4px solid var(--accent); }
         @media (max-width: 900px) { #sidebar { position: fixed; transform: translateX(-100%); left: 0; } #sidebar.open { transform: translateX(0); } }
 
-        /* MAIN & HEADER DYNAMIQUE */
+        /* MAIN & HEADER */
         main { flex: 1; display: flex; flex-direction: column; position: relative; min-width: 0; }
-        header { height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding-left: 80px; font-weight: 900; position: sticky; top: 0; z-index: 100; text-transform: uppercase; letter-spacing: 1px; }
+        header { height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding-left: 80px; font-weight: 900; position: sticky; top: 0; z-index: 100; text-transform: uppercase; }
         .menu-toggle { position: fixed; left: 15px; top: 15px; font-size: 20px; color: var(--accent); cursor: pointer; z-index: 10001; background: #111; padding: 10px; border-radius: 8px; border: 1px solid var(--border); display: none; }
         @media (max-width: 900px) { .menu-toggle { display: block; } }
 
@@ -27,53 +27,49 @@
         .content-section.active { display: flex; }
 
         /* DISCORD EMBED */
-        .discord-embed { width: 100%; max-width: 500px; background: var(--discord-bg); border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .discord-embed { width: 100%; max-width: 500px; background: var(--discord-bg); border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; margin-bottom: 30px; }
         .embed-main { display: flex; justify-content: space-between; gap: 10px; }
         .embed-text { flex: 1; min-width: 0; }
         #p-title { font-weight: 600; font-size: 1rem; color: #fff; margin-bottom: 4px; }
-        #p-desc { font-size: 0.875rem; color: var(--discord-text); white-space: pre-wrap; line-height: 1.3; }
+        #p-desc { font-size: 0.875rem; color: var(--discord-text); white-space: pre-wrap; }
         
-        .img-click { cursor: pointer; border: 2px dashed rgba(255,255,255,0.1); background: var(--placeholder); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; transition: 0.2s; }
-        .img-click:hover { border-color: var(--accent); background: rgba(255,255,255,0.08); }
+        .img-click { cursor: pointer; border: 2px dashed rgba(255,255,255,0.1); background: var(--placeholder); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
         .img-click img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .img-click i { color: rgba(255,255,255,0.2); position: absolute; }
-        .p-thumb-box { width: 80px; height: 80px; border-radius: 4px; flex-shrink: 0; }
+        .p-thumb-box { width: 80px; height: 80px; border-radius: 4px; }
         .p-banner-box { width: 100%; height: 140px; border-radius: 8px; margin-top: 12px; }
 
-        /* FORMULAIRE */
+        /* CARDS & INPUTS */
         .card { width: 100%; max-width: 550px; background: var(--panel); border-radius: 12px; padding: 25px; border: 1px solid var(--border); margin-bottom: 30px; }
         h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; }
-        input, textarea, select { width: 100%; background: #000 !important; border: 1px solid var(--border); color: white; padding: 16px; border-radius: 10px; margin-bottom: 15px; font-size: 15px; outline: none; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 16px; border-radius: 10px; margin-bottom: 15px; font-size: 15px; outline: none; }
         
         .var-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #000; font-size: 13px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
         .var-table td { padding: 12px; border-bottom: 1px solid #111; }
-        .var-name { color: var(--accent); font-weight: 800; font-family: monospace; }
+        .var-name { color: var(--accent); font-weight: 800; }
 
-        /* MULTISELECT ROLES */
+        /* MULTISELECT */
         .multiselect { position: relative; margin-bottom: 20px; }
-        .select-box { background: #000; border: 1px solid var(--border); padding: 16px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
-        .dropdown-content { 
-            display: none; position: absolute; width: 100%; top: 100%; left: 0; 
-            background: #0d0d0d; border: 1px solid var(--border); z-index: 1000; 
-            max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        }
+        .select-box { background: #000; border: 1px solid var(--border); padding: 16px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; }
+        .dropdown-content { display: none; position: absolute; width: 100%; top: 100%; left: 0; background: #0d0d0d; border: 1px solid var(--border); z-index: 1000; max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px; }
         .dropdown-content.show { display: block; }
-        .option { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: 0.2s; }
+        .option { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
         .option:hover { background: #1a1a1a; }
-        .option input { width: auto; margin: 0; accent-color: var(--accent); }
 
-        .btn { border: none; padding: 18px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; text-transform: uppercase; transition: 0.3s; margin-top: 10px; }
-        .btn-save { background: var(--accent); box-shadow: 0 4px 15px rgba(237, 66, 69, 0.2); }
-        .btn-save:active { transform: scale(0.98); }
+        .btn { border: none; padding: 18px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; text-transform: uppercase; margin-top: 10px; transition: 0.2s; }
+        .btn-save { background: var(--accent); }
+        .btn-test { background: #5865F2; }
+        .btn-del { background: rgba(237,66,69,0.1); color: var(--accent); padding: 8px; font-size: 12px; margin-top: 5px; }
 
-        /* MODAL GALERIE */
-        #modal-gal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10002; padding: 20px; overflow-y: auto; backdrop-filter: blur(5px); }
-        .gal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; max-width: 500px; margin: 40px auto; }
-        .gal-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-        .gal-img:hover { border-color: var(--accent); transform: translateY(-3px); }
-        
-        footer { width: 100%; padding: 30px; text-align: center; color: #444; font-size: 11px; border-top: 1px solid var(--border); margin-top: auto; letter-spacing: 2px; }
+        /* MODAL GALERIE DYNAMIQUE */
+        #modal-gal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 10002; padding: 20px; overflow-y: auto; }
+        .modal-header { max-width: 500px; margin: 0 auto 20px; display: flex; flex-direction: column; gap: 10px; }
+        .gal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; max-width: 500px; margin: 0 auto; }
+        .gal-item { position: relative; }
+        .gal-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
+        .del-overlay { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; }
+
+        footer { width: 100%; padding: 30px; text-align: center; color: #444; font-size: 11px; border-top: 1px solid var(--border); margin-top: auto; }
     </style>
 </head>
 <body>
@@ -81,8 +77,15 @@
     <div class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
 
     <div id="modal-gal">
-        <span style="position:absolute;top:20px;right:25px;font-size:35px;cursor:pointer;color:white" onclick="closeGal()">&times;</span>
-        <h2 style="text-align:center; margin: 20px 0; font-weight:900;">CHOISIR UNE IMAGE</h2>
+        <span style="position:absolute;top:20px;right:25px;font-size:35px;cursor:pointer" onclick="closeGal()">&times;</span>
+        <div class="modal-header">
+            <h2 style="text-align:center;margin-bottom:10px">SOURCE DE L'IMAGE</h2>
+            <input type="text" id="img-url-input" placeholder="Coller un lien d'image (https://...)" style="margin-bottom:5px">
+            <button class="btn btn-test" onclick="selectImgByUrl()" style="padding:10px; font-size:12px">UTILISER LE LIEN</button>
+            <hr style="border:0; border-top:1px solid var(--border); margin:15px 0">
+            <button class="btn btn-save" onclick="document.getElementById('file-in').click()" style="padding:10px; font-size:12px">TÉLÉVERSER DEPUIS L'APPAREIL</button>
+            <h3 style="margin-top:20px; text-align:center">OU CHOISIR DANS LA GALERIE</h3>
+        </div>
         <div class="gal-grid" id="gal-container"></div>
     </div>
 
@@ -99,41 +102,29 @@
         <section id="section-BIENVENUE" class="content-section active">
             <div class="discord-embed">
                 <div class="embed-main">
-                    <div class="embed-text">
-                        <div id="p-title">Titre</div>
-                        <div id="p-desc">Description...</div>
-                    </div>
-                    <div class="img-click p-thumb-box" onclick="openGal('thumb')">
-                        <i class="fas fa-camera" id="icon-thumb"></i>
-                        <img src="" id="img-thumb">
-                    </div>
+                    <div class="embed-text"><div id="p-title">Titre</div><div id="p-desc">Description...</div></div>
+                    <div class="img-click p-thumb-box" onclick="openGal('thumb')"><i class="fas fa-camera" id="icon-thumb"></i><img src="" id="img-thumb"></div>
                 </div>
-                <div class="img-click p-banner-box" onclick="openGal('banner')">
-                    <i class="fas fa-plus" id="icon-banner"></i>
-                    <img src="" id="img-banner">
-                </div>
+                <div class="img-click p-banner-box" onclick="openGal('banner')"><i class="fas fa-plus" id="icon-banner"></i><img src="" id="img-banner"></div>
                 <div style="display:flex;align-items:center;gap:8px;margin-top:12px">
-                    <div class="img-click" style="width:20px;height:20px;border-radius:50%" onclick="openGal('footer')">
-                        <img src="" id="img-footer">
-                    </div>
+                    <div class="img-click" style="width:20px;height:20px;border-radius:50%" onclick="openGal('footer')"><img src="" id="img-footer"></div>
                     <span id="p-footer-text" style="font-size:0.75rem;opacity:0.8">BagBot • Aujourd'hui</span>
                 </div>
             </div>
 
             <div class="card">
                 <h3>Textes & Variables</h3>
-                <input type="text" id="w-title" placeholder="Titre du message..." oninput="sync()">
-                <textarea id="w-desc" rows="3" placeholder="Description du message..." oninput="sync()"></textarea>
-                <input type="text" id="w-footer" placeholder="Texte du footer..." oninput="sync()">
-                
+                <input type="text" id="w-title" placeholder="Titre..." oninput="sync()">
+                <textarea id="w-desc" rows="3" placeholder="Message..." oninput="sync()"></textarea>
+                <input type="text" id="w-footer" placeholder="Footer..." oninput="sync()">
                 <table class="var-table">
                     <tr><td class="var-name">{user}</td><td>Mention @Utilisateur</td></tr>
                     <tr><td class="var-name">{server}</td><td>Nom du serveur</td></tr>
+                    <tr><td class="var-name">{count}</td><td>Nombre de membres</td></tr>
                 </table>
 
                 <h3>Configuration Envoi</h3>
                 <select id="w-chan"></select>
-
                 <div class="multiselect">
                     <div class="select-box" onclick="document.getElementById('drop-roles').classList.toggle('show')">
                         Rôles de déclenchement <i class="fas fa-chevron-down"></i>
@@ -141,25 +132,23 @@
                     <div id="drop-roles" class="dropdown-content"></div>
                 </div>
 
-                <button class="btn btn-save" onclick="save()">SAUVEGARDER CONFIGURATION</button>
+                <button class="btn btn-save" onclick="save()">SAUVEGARDER</button>
+                <button class="btn btn-test" onclick="testMessage()">TESTER LE MESSAGE</button>
             </div>
         </section>
 
         <section id="section-ADMIN" class="content-section">
             <div class="card">
-                <h3>Accès au Panel</h3>
-                <p style="font-size:14px; color:#888; margin-bottom:20px;">Sélectionnez les rôles autorisés à modifier cette configuration.</p>
+                <h3>Accès Panel</h3>
                 <div id="admin-roles-list"></div>
-                <button class="btn btn-save" onclick="saveAdmin()">METTRE À JOUR LES ACCÈS</button>
+                <button class="btn btn-save" onclick="saveAdmin()">SAUVEGARDER ACCÈS</button>
             </div>
         </section>
 
         <section id="section-GALERIE" class="content-section">
             <input type="file" id="file-in" onchange="up()" style="display:none">
-            <button class="btn btn-save" style="max-width:300px; margin-bottom:30px;" onclick="document.getElementById('file-in').click()">
-                <i class="fas fa-cloud-upload-alt"></i> UPLOADER UNE IMAGE
-            </button>
-            <div id="gallery-admin" class="gal-grid"></div>
+            <button class="btn btn-save" style="max-width:300px" onclick="document.getElementById('file-in').click()">UPLOADER IMAGE</button>
+            <div id="gallery-admin" class="gal-grid" style="margin-top:30px"></div>
         </section>
         
         <footer>BAGBOT 2026</footer>
@@ -169,16 +158,12 @@
         let CONFIG = {}; let targetSlot = ''; const API = window.location.origin;
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-        
-        // Mise à jour du titre du header en fonction du menu
         function show(name, el) { 
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active')); 
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
-            
             document.getElementById('section-' + name).classList.add('active'); 
             el.classList.add('active');
-            document.getElementById('main-title').innerText = name; // Change le titre du Header
-            
+            document.getElementById('main-title').innerText = name;
             if(window.innerWidth <= 900) toggleSidebar(); 
             if(name === 'GALERIE') loadAdminG();
         }
@@ -186,17 +171,29 @@
         async function openGal(slot) {
             targetSlot = slot;
             const res = await fetch(`${API}/api/images`); const d = await res.json();
-            document.getElementById('gal-container').innerHTML = d.images.map(img => `<img src="${API+img}" class="gal-img" onclick="selectImg('${img}')">`).join('');
+            document.getElementById('gal-container').innerHTML = d.images.map(img => `
+                <div class="gal-item">
+                    <img src="${API+img}" class="gal-img" onclick="selectImg('${img}')">
+                </div>
+            `).join('');
             document.getElementById('modal-gal').style.display = 'block';
         }
         function closeGal() { document.getElementById('modal-gal').style.display = 'none'; }
 
         function selectImg(path) {
-            const img = document.getElementById(`img-${targetSlot}`);
-            const icon = document.getElementById(`icon-${targetSlot}`);
-            img.src = API + path; img.style.display = 'block'; img.dataset.path = path;
-            if(icon) icon.style.display = 'none';
+            const isFullUrl = path.startsWith('http');
+            const imgEl = document.getElementById(`img-${targetSlot}`);
+            const iconEl = document.getElementById(`icon-${targetSlot}`);
+            imgEl.src = isFullUrl ? path : API + path;
+            imgEl.style.display = 'block';
+            imgEl.dataset.path = path;
+            if(iconEl) iconEl.style.display = 'none';
             closeGal();
+        }
+
+        function selectImgByUrl() {
+            const url = document.getElementById('img-url-input').value;
+            if(url) { selectImg(url); document.getElementById('img-url-input').value = ''; }
         }
 
         function sync() {
@@ -217,35 +214,52 @@
                 trigger_roles: Array.from(document.querySelectorAll('#drop-roles input:checked')).map(i => i.value)
             };
             await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
-            alert("✅ Configuration de bienvenue enregistrée !");
+            alert("Sauvegardé !");
         }
 
-        async function saveAdmin() {
-            CONFIG.admin_roles = Array.from(document.querySelectorAll('#admin-roles-list input:checked')).map(i => i.value);
-            await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
-            alert("✅ Droits d'administration mis à jour !");
+        async function testMessage() { await save(); alert("🚀 Commande de test envoyée au bot !"); }
+
+        async function up() { 
+            const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]); 
+            await fetch(`${API}/api/upload`, { method: 'POST', body: fd }); 
+            if(document.getElementById('modal-gal').style.display === 'block') openGal(targetSlot);
+            loadAdminG(); 
         }
 
-        async function up() { const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]); await fetch(`${API}/api/upload`, { method: 'POST', body: fd }); loadAdminG(); }
-        async function loadAdminG() { const res = await fetch(`${API}/api/images`); const d = await res.json(); document.getElementById('gallery-admin').innerHTML = d.images.map(img => `<img src="${API+img}" class="gal-img">`).join(''); }
+        async function delImg(path) {
+            if(!confirm("Supprimer cette image ?")) return;
+            await fetch(`${API}/api/delete_image`, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({path: path}) 
+            });
+            loadAdminG();
+        }
+
+        async function loadAdminG() { 
+            const res = await fetch(`${API}/api/images`); const d = await res.json(); 
+            document.getElementById('gallery-admin').innerHTML = d.images.map(img => `
+                <div class="gal-item">
+                    <img src="${API+img}" class="gal-img">
+                    <div class="del-overlay" onclick="delImg('${img}')"><i class="fas fa-trash"></i></div>
+                </div>
+            `).join(''); 
+        }
 
         async function init() {
             const res = await fetch(`${API}/api/get_server_info`); const data = await res.json();
             CONFIG = data.config;
             document.getElementById('w-chan').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
             
-            const rolesHTML = data.all_roles.map(r => `
-                <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
-                    <span>${r}</span> <input type="checkbox" value="${r}" ${(CONFIG.welcome?.trigger_roles || []).includes(r)?'checked':''}>
-                </div>
-            `).join('');
-            document.getElementById('drop-roles').innerHTML = rolesHTML;
-
-            document.getElementById('admin-roles-list').innerHTML = data.all_roles.map(r => `
-                <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
-                    <span>${r}</span> <input type="checkbox" value="${r}" ${(CONFIG.admin_roles || []).includes(r)?'checked':''}>
-                </div>
-            `).join('');
+            const rolesHTML = (list, target) => {
+                document.getElementById(target).innerHTML = data.all_roles.map(r => `
+                    <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
+                        <span>${r}</span> <input type="checkbox" value="${r}" ${(list || []).includes(r)?'checked':''}>
+                    </div>
+                `).join('');
+            };
+            rolesHTML(CONFIG.welcome?.trigger_roles, 'drop-roles');
+            rolesHTML(CONFIG.admin_roles, 'admin-roles-list');
             
             if(CONFIG.welcome) {
                 document.getElementById('w-title').value = CONFIG.welcome.title || "";
