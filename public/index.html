@@ -8,10 +8,11 @@
     <style>
         :root {
             --accent: #ed4245;
-            --bg-dark: #0b0b0b;
-            --bg-side: #000000;
-            --bg-card: #1e1f22;
-            --bg-input: #111214;
+            --accent-h: #c03537;
+            --bg: #0b0b0b;
+            --sidebar: #000000;
+            --card: #1e1f22;
+            --input: #111214;
             --border: #2b2d31;
             --text: #f2f3f5;
             --text-m: #949ba4;
@@ -19,29 +20,55 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
-        body { background: var(--bg-dark); color: var(--text); font-family: 'Helvetica Neue', Arial, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+            display: flex; 
+            height: 100vh; 
+            width: 100vw;
+            overflow: hidden; 
+        }
 
-        /* --- SIDEBAR ENGINE --- */
+        /* --- SIDEBAR SYSTEM --- */
         #sidebar {
             width: var(--sidebar-w);
-            background: var(--bg-side);
+            background: var(--sidebar);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
             z-index: 1000;
         }
 
-        #sidebar.closed { transform: translateX(-100%); position: absolute; height: 100%; }
+        #sidebar.collapsed { margin-left: calc(-1 * var(--sidebar-w)); }
 
-        .brand { padding: 30px 24px; font-size: 24px; font-weight: 900; color: var(--accent); letter-spacing: 2px; display: flex; align-items: center; gap: 10px; }
-        
+        .brand { 
+            padding: 30px 24px; 
+            font-size: 24px; 
+            font-weight: 900; 
+            color: var(--accent); 
+            letter-spacing: 2px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+            text-transform: uppercase;
+        }
+
         .nav-scroll { flex: 1; overflow-y: auto; padding: 10px; }
-        .nav-label { font-size: 11px; font-weight: 800; color: #4e5058; text-transform: uppercase; padding: 20px 12px 8px; letter-spacing: 0.5px; }
+        .nav-label { 
+            font-size: 11px; 
+            font-weight: 800; 
+            color: #4e5058; 
+            text-transform: uppercase; 
+            padding: 20px 12px 8px; 
+            letter-spacing: 1px; 
+        }
         
         .nav-item {
             padding: 12px 16px;
-            border-radius: 5px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -53,11 +80,11 @@
         }
 
         .nav-item:hover, .nav-item.active { background: rgba(237, 66, 69, 0.1); color: #fff; }
-        .nav-item.active { color: var(--accent); border-left: 3px solid var(--accent); border-radius: 0 5px 5px 0; }
-        .nav-item i { width: 20px; text-align: center; }
+        .nav-item.active { color: var(--accent); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; }
+        .nav-item i { width: 20px; text-align: center; font-size: 18px; }
 
-        /* --- MAIN VIEWPORT --- */
-        .viewport { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
+        /* --- MAIN CONTENT --- */
+        .viewport { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg); position: relative; }
         
         header {
             height: 60px;
@@ -66,19 +93,32 @@
             display: flex;
             align-items: center;
             padding: 0 20px;
-            gap: 20px;
+            justify-content: space-between;
+            flex-shrink: 0;
         }
 
-        #hamburger { font-size: 20px; color: var(--accent); cursor: pointer; transition: 0.2s; }
-        #hamburger:hover { transform: scale(1.1); }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        #menu-toggle { font-size: 20px; color: var(--accent); cursor: pointer; transition: 0.2s; }
+        .page-title { font-weight: 900; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; }
 
-        .scroll-area { flex: 1; overflow-y: auto; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; }
+        .status-pill { 
+            font-size: 10px; 
+            background: #23a559; 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            font-weight: 900; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
 
-        /* --- EMBED BUILDER --- */
-        .embed-card {
+        .main-scroll { flex: 1; overflow-y: auto; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; }
+
+        /* --- DESIGNER CARD --- */
+        .designer-card {
             width: 100%;
             max-width: 520px;
-            background: var(--bg-card);
+            background: var(--card);
             border-radius: 4px;
             border-left: 4px solid var(--accent);
             padding: 20px;
@@ -87,131 +127,162 @@
         }
 
         .embed-header { display: flex; gap: 15px; margin-bottom: 10px; }
-        .title-in { background: transparent; border: none; color: #fff; font-size: 18px; font-weight: 700; width: 100%; }
-        .desc-in { background: transparent; border: none; color: #dbdee1; font-size: 14px; width: 100%; resize: none; min-height: 100px; line-height: 1.5; margin-top: 10px; }
+        .title-input { background: transparent; border: none; color: #fff; font-size: 18px; font-weight: 700; width: 100%; outline: none; }
+        .desc-input { background: transparent; border: none; color: #dbdee1; font-size: 14px; width: 100%; resize: none; min-height: 120px; line-height: 1.5; margin-top: 10px; outline: none; }
 
-        .thumb-zone {
+        .thumb-upload {
             width: 80px; height: 80px; background: rgba(0,0,0,0.2); border: 2px dashed #333;
             border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; color: var(--text-m); flex-shrink: 0;
+            cursor: pointer; color: var(--text-m); flex-shrink: 0; transition: 0.2s;
+        }
+        .thumb-upload:hover { border-color: var(--accent); color: #fff; }
+
+        .banner-preview {
+            width: 100%; height: 240px; background: #2b2d31; border-radius: 4px; margin-top: 20px;
+            display: flex; align-items: center; justify-content: center; border: 1px dashed #333; overflow: hidden; position: relative;
         }
 
-        .image-banner {
-            width: 100%; height: 220px; background: #2b2d31; border-radius: 4px; margin-top: 20px;
-            display: flex; align-items: center; justify-content: center; border: 1px dashed #333; overflow: hidden;
-        }
-
-        /* --- CONTROLS --- */
-        .panel { width: 100%; max-width: 520px; }
-        .panel-label { font-size: 11px; font-weight: 800; color: var(--text-m); text-transform: uppercase; margin-bottom: 10px; display: block; }
+        /* --- PANEL CONTROLS --- */
+        .control-panel { width: 100%; max-width: 520px; }
+        .section-label { font-size: 11px; font-weight: 800; color: var(--text-m); text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 0.5px; }
         
-        select {
-            width: 100%; background: var(--bg-input); border: 1px solid var(--border);
-            color: #fff; padding: 14px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;
+        .select-box {
+            width: 100%; background: var(--input); border: 1px solid var(--border);
+            color: #fff; padding: 14px; border-radius: 6px; cursor: pointer; margin-bottom: 25px; font-weight: 600;
         }
 
-        .grid-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
         .btn-action {
             background: #2b2d31; color: #fff; border: none; padding: 12px;
-            border-radius: 4px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+            border-radius: 4px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s;
         }
+        .btn-action:hover { background: #3f4147; }
 
         .btn-deploy {
             width: 100%; background: var(--accent); color: #fff; padding: 18px;
             border: none; border-radius: 6px; font-weight: 900; font-size: 16px;
-            text-transform: uppercase; cursor: pointer; margin-top: 30px;
-            box-shadow: 0 4px 15px rgba(237, 66, 69, 0.3);
+            text-transform: uppercase; cursor: pointer; margin-top: 40px;
+            box-shadow: 0 4px 15px rgba(237, 66, 69, 0.3); transition: 0.2s;
         }
+        .btn-deploy:hover { background: var(--accent-h); transform: translateY(-2px); }
+        .btn-deploy:active { transform: translateY(0); }
 
-        /* --- MOBILE ADAPT --- */
+        /* --- SCROLLBAR --- */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
         @media (max-width: 768px) {
-            #sidebar { position: absolute; left: 0; height: 100%; }
-            #sidebar.closed { transform: translateX(-100%); }
+            #sidebar { position: absolute; height: 100%; left: 0; }
+            #sidebar.collapsed { left: -260px; }
         }
     </style>
 </head>
 <body>
 
     <nav id="sidebar">
-        <div class="brand"><i class="fas fa-robot"></i> BAGBOT</div>
+        <div class="brand"><i class="fas fa-bolt"></i> BAGBOT</div>
         <div class="nav-scroll">
-            <div class="nav-label">Gestion Message</div>
-            <div class="nav-item active"><i class="fas fa-pen-nib"></i> Designer</div>
-            <div class="nav-item"><i class="fas fa-clock"></i> Planificateur</div>
-            <div class="nav-item"><i class="fas fa-history"></i> Historique</div>
+            <div class="nav-label">Édition</div>
+            <div class="nav-item active"><i class="fas fa-magic"></i> Designer</div>
+            <div class="nav-item"><i class="fas fa-calendar-alt"></i> Planning</div>
+            <div class="nav-item"><i class="fas fa-file-invoice"></i> Templates</div>
 
-            <div class="nav-label">Automatisations</div>
-            <div class="nav-item"><i class="fas fa-shield-alt"></i> Auto-Mod</div>
-            <div class="nav-item"><i class="fas fa-door-open"></i> Welcomer</div>
-            <div class="nav-item"><i class="fas fa-ticket-alt"></i> Tickets</div>
+            <div class="nav-label">Modération</div>
+            <div class="nav-item"><i class="fas fa-shield-virus"></i> Auto-Mod</div>
+            <div class="nav-item"><i class="fas fa-user-plus"></i> Welcomer</div>
+            <div class="nav-item"><i class="fas fa-ticket-alt"></i> Support</div>
 
-            <div class="nav-label">Système</div>
-            <div class="nav-item"><i class="fas fa-database"></i> Logs Serveur</div>
-            <div class="nav-item"><i class="fas fa-cog"></i> Configuration</div>
+            <div class="nav-label">Admin</div>
+            <div class="nav-item"><i class="fas fa-chart-line"></i> Statistiques</div>
+            <div class="nav-item"><i class="fas fa-terminal"></i> Commandes</div>
+            <div class="nav-item"><i class="fas fa-sliders-h"></i> Configuration</div>
         </div>
-        <div style="padding: 15px; font-size: 10px; text-align: center; color: #333;">BAGBOT OS v3.5.0</div>
+        <div style="padding: 20px; font-size: 10px; text-align: center; color: #444; font-weight: 800; border-top: 1px solid var(--border);">SYSTEM v4.0 PRO</div>
     </nav>
 
     <div class="viewport">
         <header>
-            <i class="fas fa-bars" id="hamburger"></i>
-            <div style="font-weight: 900; letter-spacing: 1px; font-size: 14px;">DASHBOARD</div>
+            <div class="header-left">
+                <i class="fas fa-bars" id="menu-toggle"></i>
+                <div class="page-title">Dashboard Designer</div>
+            </div>
+            <div class="status-pill"><i class="fas fa-circle" style="font-size: 8px;"></i> BOT CONNECTÉ</div>
         </header>
 
-        <div class="scroll-area">
-            <div class="embed-card">
+        <div class="main-scroll">
+            <div class="designer-card">
                 <div class="embed-header">
                     <div style="flex:1">
-                        <input type="text" class="title-in" value="Titre de l'annonce">
-                        <textarea class="desc-in" placeholder="Rédigez ici votre message..."></textarea>
+                        <input type="text" class="title-input" id="title-field" value="Nouveau Message">
+                        <textarea class="desc-input" id="desc-field" placeholder="Rédigez votre message ici..."></textarea>
                     </div>
-                    <div class="thumb-zone"><i class="fas fa-image"></i><span style="font-size:8px;margin-top:5px">IMAGE</span></div>
+                    <div class="thumb-upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span style="font-size: 8px; font-weight: 900; margin-top: 5px;">THUMBNAIL</span>
+                    </div>
                 </div>
-                <div class="image-banner"><i class="fas fa-cloud-upload-alt" style="font-size:30px;color:#333"></i></div>
+                <div class="banner-preview">
+                    <i class="fas fa-image" style="font-size: 40px; color: #333;"></i>
+                </div>
             </div>
 
-            <div class="panel">
-                <span class="panel-label">Salon de diffusion</span>
-                <select id="chan-list"><option>Chargement des salons...</option></select>
+            <div class="control-panel">
+                <span class="section-label">Sélection du salon</span>
+                <select class="select-box" id="chan-list">
+                    <option>Récupération des salons...</option>
+                </select>
 
-                <div class="grid-btns">
-                    <button class="btn-action"><i class="fas fa-smile"></i> Réaction</button>
+                <div class="action-grid">
+                    <button class="btn-action"><i class="fas fa-plus-circle"></i> Réaction</button>
                     <button class="btn-action"><i class="fas fa-thumbtack"></i> Épingler</button>
-                    <button class="btn-action"><i class="fas fa-at"></i> Mention @</button>
-                    <button class="btn-action"><i class="fas fa-trash"></i> Purge</button>
+                    <button class="btn-action"><i class="fas fa-at"></i> Mentionner</button>
+                    <button class="btn-action"><i class="fas fa-trash-alt"></i> Purger</button>
                 </div>
 
-                <button class="btn-deploy" id="deploy"><i class="fas fa-paper-plane" style="margin-right:10px"></i> Déployer le message</button>
+                <button class="btn-deploy" id="deploy-btn">
+                    <i class="fas fa-paper-plane" style="margin-right: 12px;"></i> Déployer le message
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // Menu Hamburger
-        const side = document.getElementById('sidebar');
-        const btn = document.getElementById('hamburger');
+        // Logique Sidebar
+        const sidebar = document.getElementById('sidebar');
+        const toggle = document.getElementById('menu-toggle');
         
-        btn.onclick = () => {
-            side.classList.toggle('closed');
+        toggle.onclick = () => {
+            sidebar.classList.toggle('collapsed');
         };
 
-        // API Fetch
-        async function load() {
+        // Liaison API Bot
+        async function syncBot() {
             try {
                 const res = await fetch('/api/get_server_info');
                 const data = await res.json();
                 if (data.channels) {
-                    document.getElementById('chan-list').innerHTML = data.channels.map(c => 
+                    const select = document.getElementById('chan-list');
+                    select.innerHTML = data.channels.map(c => 
                         `<option value="${c.id}"># ${c.name}</option>`
                     ).join('');
                 }
-            } catch(e) { console.error("Erreur API"); }
+            } catch (err) {
+                console.error("Erreur Sync");
+            }
         }
 
-        window.onload = load;
+        // Lancement au démarrage
+        window.onload = syncBot;
 
-        document.getElementById('deploy').onclick = () => {
-            alert("Envoi en cours...");
+        // Feedback bouton
+        document.getElementById('deploy-btn').onclick = () => {
+            const btn = document.getElementById('deploy-btn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ENVOI...';
+            setTimeout(() => {
+                alert("Message envoyé avec succès !");
+                btn.innerHTML = '<i class="fas fa-paper-plane" style="margin-right: 12px;"></i> Déployer le message';
+            }, 1000);
         };
     </script>
 </body>
