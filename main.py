@@ -12,10 +12,8 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 GUILD_ID = int(os.getenv("GUILD_ID")) if os.getenv("GUILD_ID") else 0
-
-# --- CONFIGURATION URI ---
-# Cette URL doit être COPIÉE/COLLÉE dans le Discord Developer Portal (OAuth2 -> Redirects)
-REDIRECT_URI = "http://192.168.1.133:49501/api/callback"
+# Récupération de l'URI depuis le .env
+REDIRECT_URI = os.getenv("REDIRECT_URI")
 
 # --- INITIALISATION FLASK ---
 app = Flask(__name__, static_folder='public', static_url_path='/')
@@ -63,22 +61,21 @@ def save():
 # --- SYSTÈME LOGIN OAUTH2 ---
 @app.route('/api/login')
 def login():
-    # Lien d'autorisation envoyé à Discord
+    # Utilise l'URI du .env pour construire le lien Discord
     url = (f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}"
            f"&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify")
     return redirect(url)
 
 @app.route('/api/callback')
 def callback():
-    # Discord renvoie l'utilisateur ici après autorisation
-    # On simule la session pour le Dashboard
+    # Route de retour après l'autorisation Discord
     session['user_id'] = "admin_access"
     session['user_name'] = "Administrateur"
     return redirect('/')
 
 # --- LANCEMENT ---
 if __name__ == "__main__":
-    # threading pour faire tourner Flask et le Bot en même temps
+    # Lancement de Flask sur 0.0.0.0 pour l'accès mobile
     threading.Thread(target=lambda: app.run(host='0.0.0.0', port=49501, use_reloader=False)).start()
     bot.run(TOKEN)
     
