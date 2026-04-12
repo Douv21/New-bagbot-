@@ -13,7 +13,6 @@ CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 GUILD_ID = int(os.getenv("GUILD_ID")) if os.getenv("GUILD_ID") else 0
 REDIRECT_URI = os.getenv("REDIRECT_URI")
 
-# Configuration Flask corrigée pour Termux
 app = Flask(__name__, static_folder='public', static_url_path='/')
 app.secret_key = os.urandom(24)
 
@@ -21,7 +20,10 @@ bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 def load_config():
     if not os.path.exists('config.json'):
-        return {"welcome": {"title": "", "desc": "", "footer": "", "channel": "", "banner": "", "thumbnail": ""}, "admin_roles": []}
+        return {
+            "welcome": {"title": "", "desc": "", "footer": "", "channel": "", "banner": "", "thumbnail": "", "trigger_roles": []},
+            "admin_roles": []
+        }
     with open('config.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
@@ -36,11 +38,12 @@ def get_data():
     if not guild: return jsonify({"error": "Serveur non trouvé"}), 404
     
     img_dir = 'public/uploads'
-    images = [f"/uploads/{f}" for f in os.listdir(img_dir)] if os.path.exists(img_dir) else []
+    if not os.path.exists(img_dir): os.makedirs(img_dir)
+    images = [f"/uploads/{f}" for f in os.listdir(img_dir)]
     
     return jsonify({
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
-        "roles": [r.name for r in guild.roles if r.name != "@everyone"],
+        "roles": [{"id": str(r.id), "name": r.name} for r in guild.roles if r.name != "@everyone"],
         "config": load_config(),
         "images": images,
         "user_name": session.get('user_name', 'Admin')
