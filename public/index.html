@@ -55,14 +55,14 @@
         .var-table td { padding: 12px 15px; border-bottom: 1px solid #111; }
         .var-name { color: var(--accent); font-weight: 800; }
 
-        /* MULTISELECT */
+        /* MULTISELECT / ROLES LARGES */
         .multiselect { position: relative; margin-bottom: 20px; }
         .select-box { background: #000; border: 1px solid var(--border); padding: 16px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .dropdown-content { display: none; position: absolute; width: 100%; top: 100%; left: 0; background: #0d0d0d; border: 1px solid var(--border); z-index: 2000; max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px; }
         .dropdown-content.show { display: block; }
         .option { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
         .option:hover { background: #1a1a1a; }
-        .option input { width: auto; margin: 0; }
+        .option input { width: auto; margin: 0; pointer-events: none; }
 
         .btn { border: none; padding: 18px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; text-transform: uppercase; margin-top: 10px; transition: 0.3s; }
         .btn-save { background: var(--accent); }
@@ -236,7 +236,9 @@
         }
 
         async function up() { 
-            const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]);
+            const file = document.getElementById('file-in').files[0];
+            if(!file) return;
+            const fd = new FormData(); fd.append('file', file);
             await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
             if(document.getElementById('modal-gal').style.display === 'block') openGal(targetSlot);
             loadAdminG();
@@ -266,7 +268,7 @@
         function sync() {
             document.getElementById('p-title').innerText = document.getElementById('w-title').value || "Titre";
             document.getElementById('p-desc').innerText = document.getElementById('w-desc').value || "Description...";
-            document.getElementById('p-footer-text').innerText = document.getElementById('w-footer').value || "BagBot • Aujourd'hui";
+            document.getElementById('p-footer-text').innerText = (document.getElementById('w-footer').value || "BagBot") + " • Aujourd'hui";
         }
 
         async function save() {
@@ -296,39 +298,45 @@
             if(res.ok) alert("🚀 Test envoyé !"); else alert("❌ Erreur serveur.");
         }
 
-        // INITIALISATION
+        // INITIALISATION AVEC SÉCURITÉ DE CHARGEMENT
         async function init() {
-            const res = await fetch(`${API}/api/get_server_info`); const data = await res.json();
-            CONFIG = data.config || {};
-            
-            document.getElementById('w-chan').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            
-            const makeRoles = (id, selected) => {
-                document.getElementById(id).innerHTML = data.all_roles.map(r => `
-                    <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
-                        <span>${r}</span> <input type="checkbox" value="${r}" ${(selected || []).includes(r)?'checked':''}>
-                    </div>
-                `).join('');
-            };
+            try {
+                const res = await fetch(`${API}/api/get_server_info`); 
+                const data = await res.json();
 
-            makeRoles('drop-roles', CONFIG.welcome?.trigger_roles);
-            makeRoles('drop-admin', CONFIG.admin_roles);
-            
-            if(CONFIG.welcome) {
-                document.getElementById('w-title').value = CONFIG.welcome.title || "";
-                document.getElementById('w-desc').value = CONFIG.welcome.desc || "";
-                document.getElementById('w-footer').value = CONFIG.welcome.footer || "";
-                document.getElementById('w-chan').value = CONFIG.welcome.channel || "";
-                if(CONFIG.welcome.thumb) { targetSlot='thumb'; selectImg(CONFIG.welcome.thumb); }
-                if(CONFIG.welcome.banner) { targetSlot='banner'; selectImg(CONFIG.welcome.banner); }
-                if(CONFIG.welcome.footer_icon) { targetSlot='footer_icon'; selectImg(CONFIG.welcome.footer_icon); }
-            }
-            sync();
-        }
+                if(data.status === "loading") {
+                    console.log("Données Discord en cours de chargement...");
+                    setTimeout(init, 2000);
+                    return;
+                }
 
-        window.onload = init;
-        // Fermer les menus si on clique ailleurs
-        window.onclick = function(e) { if (!e.target.closest('.multiselect')) { document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show')); } }
-    </script>
-</body>
-</html>
+                CONFIG = data.config || {};
+                
+                // Remplissage Salons
+                document.getElementById('w-chan').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                
+                // Remplissage Rôles
+                const makeRoles = (id, selected) => {
+                    document.getElementById(id).innerHTML = data.all_roles.map(r => `
+                        <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
+                            <span>${r}</span> <input type="checkbox" value="${r}" ${(selected || []).includes(r)?'checked':''}>
+                        </div>
+                    `).join('');
+                };
+
+                makeRoles('drop-roles', CONFIG.welcome?.trigger_roles);
+                makeRoles('drop-admin', CONFIG.admin_roles);
+                
+                // Remplissage des champs de texte
+                if(CONFIG.welcome) {
+                    document.getElementById('w-title').value = CONFIG.welcome.title || "";
+                    document.getElementById('w-desc').value = CONFIG.welcome.desc || "";
+                    document.getElementById('w-footer').value = CONFIG.welcome.footer || "";
+                    document.getElementById('w-chan').value = CONFIG.welcome.channel || "";
+                    if(CONFIG.welcome.thumb) { targetSlot='thumb'; selectImg(CONFIG.welcome.thumb); }
+                    if(CONFIG.welcome.banner) { targetSlot='banner'; selectImg(CONFIG.welcome.banner); }
+                    if(CONFIG.welcome.footer_icon) { targetSlot='footer_icon'; selectImg(CONFIG.welcome.footer_icon); }
+                }
+                sync();
+            } catch(e) {
+                conso
