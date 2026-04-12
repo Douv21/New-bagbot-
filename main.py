@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from flask import Flask, request, jsonify, send_from_directory, session, redirect, url_for
+from flask import Flask, request, jsonify, send_from_directory, session, redirect
 import requests
 import threading
 import json
@@ -11,14 +11,15 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 CLIENT_ID = "TON_CLIENT_ID"
 CLIENT_SECRET = "TON_CLIENT_SECRET"
-REDIRECT_URI = "http://localhost:49501/api/callback" # À adapter selon ton IP
+REDIRECT_URI = "http://192.168.1.133:49501/api/callback" 
+OWNER_ID = "TON_ID_DISCORD" # Accès permanent
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-
 UPLOAD_FOLDER = 'public/uploads'
 CONFIG_FILE = 'config.json'
-OWNER_ID = "TON_ID_DISCORD" # Ton ID pour l'accès permanent
+
+if not os.path.exists(UPLOAD_FOLDER): os.makedirs(UPLOAD_FOLDER)
 
 def load_config():
     if os.path.exists(CONFIG_FILE):
@@ -44,25 +45,21 @@ def callback():
     r = requests.post('https://discord.com/api/oauth2/token', data=data)
     token = r.json().get('access_token')
     user_data = requests.get('https://discord.com/api/users/@me', headers={'Authorization': f'Bearer {token}'}).json()
-    
     session['user_id'] = user_data['id']
     return redirect('/')
 
 def check_access():
     if 'user_id' not in session: return False
     if session['user_id'] == OWNER_ID: return True
-    
     config = load_config()
-    allowed_roles = config.get('admin_roles', [])
     guild = bot.guilds[0]
     member = guild.get_member(int(session['user_id']))
-    
     if member:
         member_roles = [r.name for r in member.roles]
-        return any(role in member_roles for role in allowed_roles)
+        return any(role in member_roles for role in config.get('admin_roles', []))
     return False
 
-# --- API ---
+# --- ROUTES API ---
 @app.route('/api/get_server_info')
 def get_server_info():
     if not check_access(): return jsonify({"status": "unauthorized"}), 401
@@ -79,7 +76,32 @@ def save_config():
         json.dump(request.json, f, indent=4)
     return jsonify({"status": "success"})
 
-# ... (Garder les routes images et test de la réponse précédente)
+@app.route('/api/images')
+def list_images():
+    files = os.listdir(UPLOAD_FOLDER)
+    return jsonify({"images": [f"/public/uploads/{f}" for f in files if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]})
+
+@app.route('/api/upload', methods=['POST'])
+def upload():
+    file = request.files['file']
+    filename = file.filename.replace(" ", "_")
+    file.save(os.path.join(UPLOAD_FOLDER, filename))
+    return jsonify({"status": "success", "path": f"/public/uploads/{filename}"})
+
+@app.route('/api/test_welcome', methods=['POST'])
+def test_welcome():
+    config = load_config().get('welcome', {})
+    channel = bot.get_channel(int(config.get('channel')))
+    embed = discord.Embed(title=config.get('title'), description=config.get('desc'), color=0xed4245)
+    if config.get('banner'): embed.set_image(url=f"http://{request.host}{config['banner']}")
+    bot.loop.create_task(channel.send(embed=embed))
+    return jsonify({"status": "success"})
+
+@app.route('/')
+def index(): return send_from_directory('public', 'index.html')
+
+@app.route('/public/<path:path>')
+def serve_public(path): return send_from_directory('public', path)
 
 if __name__ == '__main__':
     threading.Thread(target=lambda: app.run(host='0.0.0.0', port=49501), daemon=True).start()
