@@ -59,17 +59,18 @@ def test_welcome():
 
     embed = discord.Embed(title=parse_vars(config.get('title')), description=parse_vars(config.get('desc')), color=0xed4245)
     base_url = f"http://{request.host}"
+    
     if config.get('thumb'):
         embed.set_thumbnail(url=config['thumb'] if config['thumb'].startswith('http') else f"{base_url}{config['thumb']}")
     if config.get('banner'):
         embed.set_image(url=config['banner'] if config['banner'].startswith('http') else f"{base_url}{config['banner']}")
     
-    f_text = parse_vars(config.get('footer', 'BagBot'))
+    footer_text = parse_vars(config.get('footer', 'BagBot'))
     if config.get('footer_icon'):
         f_url = config['footer_icon'] if config['footer_icon'].startswith('http') else f"{base_url}{config['footer_icon']}"
-        embed.set_footer(text=f_text, icon_url=f_url)
+        embed.set_footer(text=footer_text, icon_url=f_url)
     else:
-        embed.set_footer(text=f_text)
+        embed.set_footer(text=footer_text)
 
     bot.loop.create_task(channel.send(embed=embed))
     return jsonify({"status": "success"})
@@ -83,7 +84,8 @@ def list_images():
 def upload():
     file = request.files['file']
     filename = file.filename.replace(" ", "_")
-    file.save(os.path.join(UPLOAD_FOLDER, filename))
+    path = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(path)
     return jsonify({"status": "success", "path": f"/public/uploads/{filename}"})
 
 @app.route('/api/delete_image', methods=['POST'])
