@@ -3,128 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BagBot | Control Panel</title>
+    <title>BagBot | Accueil & Welcomer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* CONFIGURATION DES COULEURS BAGBOT */
         :root {
-            --accent: #ed4245;       /* Rouge Discord/BagBot */
-            --bg-dark: #0b0b0b;      /* Noir profond */
-            --bg-sidebar: #000000;   /* Noir pur */
-            --border: #1e1f22;       /* Gris très sombre */
+            --accent: #ed4245;
+            --bg-dark: #0b0b0b;
+            --bg-sidebar: #000000;
+            --card: #1e1f22;
+            --input: #111214;
+            --border: #2b2d31;
             --text: #ffffff;
             --text-muted: #949ba4;
             --sidebar-w: 260px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
-
-        body {
-            background: var(--bg-dark);
-            color: var(--text);
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+        body { background: var(--bg-dark); color: var(--text); font-family: 'Helvetica Neue', Arial, sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
         /* --- SIDEBAR --- */
-        #sidebar {
-            width: var(--sidebar-w);
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }
+        #sidebar { width: var(--sidebar-w); background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; }
+        #sidebar.closed { transform: translateX(-100%); position: absolute; height: 100%; }
+        .sidebar-header { padding: 30px 24px; font-size: 24px; font-weight: 900; color: var(--accent); letter-spacing: 2px; }
+        .nav-list { flex: 1; padding: 10px; }
+        .nav-item { padding: 14px 18px; display: flex; align-items: center; gap: 12px; color: var(--text-muted); cursor: pointer; border-radius: 8px; margin-bottom: 5px; font-weight: 600; }
+        .nav-item.active { background: rgba(237, 66, 69, 0.1); color: var(--accent); }
 
-        /* État quand la sidebar est cachée */
-        #sidebar.closed {
-            transform: translateX(-100%);
-            position: absolute;
-            height: 100%;
-        }
+        /* --- MAIN CONTENT --- */
+        .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        header { height: 60px; background: #050505; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 20px; }
+        #burger { font-size: 22px; color: var(--accent); cursor: pointer; }
 
-        .sidebar-header {
-            padding: 30px 24px;
-            font-size: 24px;
-            font-weight: 900;
-            color: var(--accent);
-            letter-spacing: 2px;
-        }
+        .content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
 
-        .nav-list {
-            flex: 1;
-            padding: 10px;
-        }
+        /* --- SYSTÈME D'ACCUEIL --- */
+        .module-card { width: 100%; max-width: 600px; background: var(--card); border-radius: 12px; padding: 25px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .module-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; color: var(--accent); }
+        
+        .toggle-group { display: flex; background: var(--input); padding: 5px; border-radius: 8px; margin-bottom: 20px; }
+        .toggle-btn { flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-radius: 6px; font-weight: bold; transition: 0.2s; }
+        .toggle-btn.active { background: var(--accent); color: white; }
 
-        .nav-item {
-            padding: 14px 18px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--text-muted);
-            cursor: pointer;
-            border-radius: 8px;
-            transition: 0.2s;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
+        label { display: block; font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+        
+        textarea, input, select { width: 100%; background: var(--input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-family: inherit; }
+        
+        .preview-box { width: 100%; padding: 15px; background: #2b2d31; border-radius: 6px; border-left: 4px solid var(--accent); margin-top: 10px; display: none; }
+        .preview-box.show { display: block; }
 
-        .nav-item:hover, .nav-item.active {
-            background: rgba(237, 66, 69, 0.1);
-            color: white;
-        }
-
-        .nav-item.active {
-            color: var(--accent);
-        }
-
-        /* --- CONTENU --- */
-        .main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-        }
-
-        header {
-            height: 60px;
-            background: #050505;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            gap: 20px;
-        }
-
-        #burger {
-            font-size: 22px;
-            color: var(--accent);
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .content {
-            flex: 1;
-            padding: 40px 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* Message temporaire pour le centre */
-        .placeholder {
-            color: var(--text-muted);
-            text-align: center;
-            margin-top: 50px;
-        }
+        .btn-save { width: 100%; background: var(--accent); color: white; border: none; padding: 16px; border-radius: 8px; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .btn-save:hover { filter: brightness(1.2); }
     </style>
 </head>
 <body>
@@ -132,8 +60,8 @@
     <nav id="sidebar">
         <div class="sidebar-header">BAGBOT</div>
         <div class="nav-list">
-            <div class="nav-item active"><i class="fas fa-home"></i> Dashboard</div>
-            <div class="nav-item"><i class="fas fa-envelope"></i> Messages</div>
+            <div class="nav-item active"><i class="fas fa-door-open"></i> Accueil</div>
+            <div class="nav-item"><i class="fas fa-paper-plane"></i> Messages</div>
             <div class="nav-item"><i class="fas fa-cog"></i> Paramètres</div>
         </div>
     </nav>
@@ -141,13 +69,44 @@
     <div class="main">
         <header>
             <div id="burger"><i class="fas fa-bars"></i></div>
-            <div style="font-weight: 900; letter-spacing: 1px; font-size: 14px;">CONTROLE</div>
+            <div style="font-weight: 900; letter-spacing: 1px;">ACCUEIL & WELCOMER</div>
         </header>
 
         <div class="content">
-            <div class="placeholder">
-                <h2>Bienvenue sur BagBot</h2>
-                <p>La structure est prête. Prêt à ajouter tes modules.</p>
+            <div class="module-card">
+                <div class="module-title"><i class="fas fa-user-plus"></i> Arrivée des Membres</div>
+                
+                <label>Type de message</label>
+                <div class="toggle-group">
+                    <button class="toggle-btn active" onclick="setType('welcome', 'simple')">Simple</button>
+                    <button class="toggle-btn" onclick="setType('welcome', 'embed')">Embed</button>
+                </div>
+
+                <label>Salon d'accueil</label>
+                <select id="welcome-chan"><option>Chargement des salons...</option></select>
+
+                <div id="welcome-simple-fields">
+                    <label>Message de texte</label>
+                    <textarea placeholder="Bienvenue {user} sur le serveur !"></textarea>
+                </div>
+
+                <div id="welcome-embed-fields" style="display: none;">
+                    <label>Titre de l'Embed</label>
+                    <input type="text" placeholder="Nouveau Membre !">
+                    <label>Description</label>
+                    <textarea placeholder="Bienvenue parmi nous {user}..."></textarea>
+                    <label>Couleur (Hex)</label>
+                    <input type="color" value="#ed4245" style="height: 50px;">
+                </div>
+
+                <button class="btn-save">Enregistrer la configuration</button>
+            </div>
+
+            <div class="module-card">
+                <div class="module-title"><i class="fas fa-user-minus"></i> Départ des Membres</div>
+                <label>Message de départ</label>
+                <textarea placeholder="{user} a quitté le serveur."></textarea>
+                <button class="btn-save">Enregistrer</button>
             </div>
         </div>
     </div>
@@ -156,15 +115,40 @@
         const sidebar = document.getElementById('sidebar');
         const burger = document.getElementById('burger');
 
-        // Fonction pour ouvrir/fermer au clic
-        burger.onclick = () => {
-            sidebar.classList.toggle('closed');
-        };
+        burger.onclick = () => sidebar.classList.toggle('closed');
 
-        // Sur mobile, on ferme la sidebar par défaut au chargement
-        if (window.innerWidth < 768) {
-            sidebar.classList.add('closed');
+        function setType(module, type) {
+            const btns = document.querySelectorAll('.toggle-btn');
+            const simpleFields = document.getElementById(module + '-simple-fields');
+            const embedFields = document.getElementById(module + '-embed-fields');
+
+            if (type === 'embed') {
+                btns[0].classList.remove('active');
+                btns[1].classList.add('active');
+                simpleFields.style.display = 'none';
+                embedFields.style.display = 'block';
+            } else {
+                btns[1].classList.remove('active');
+                btns[0].classList.add('active');
+                simpleFields.style.display = 'block';
+                embedFields.style.display = 'none';
+            }
         }
+
+        // Simuler le chargement des salons
+        async function loadChans() {
+            try {
+                const res = await fetch('/api/get_server_info');
+                const data = await res.json();
+                if (data.channels) {
+                    document.getElementById('welcome-chan').innerHTML = data.channels.map(c => 
+                        `<option value="${c.id}"># ${c.name}</option>`
+                    ).join('');
+                }
+            } catch(e) { console.log("Erreur API"); }
+        }
+        window.onload = loadChans;
     </script>
 </body>
 </html>
+
