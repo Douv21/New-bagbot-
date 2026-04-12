@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Ultimate Panel</title>
+    <title>BagBot Panel - Version Complète</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord-bg: #2b2d31; --discord-text: #dbdee1; }
@@ -20,37 +20,37 @@
         .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 4px solid var(--accent); }
 
-        /* MAIN CONTENT */
+        /* MAIN */
         main { flex: 1; display: flex; flex-direction: column; width: 100%; }
-        header { height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding-left: 75px; font-weight: 900; font-size: 18px; }
+        header { height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding-left: 75px; font-weight: 900; }
         .menu-toggle { position: fixed; left: 15px; top: 15px; font-size: 20px; color: var(--accent); cursor: pointer; z-index: 10001; background: #111; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
 
         .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; width: 100%; }
         .content-section.active { display: flex; }
 
-        /* PREVIEW DISCORD */
+        /* PREVIEW EMBED */
         .discord-embed { width: 100%; max-width: 500px; background: var(--discord-bg); border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; margin-bottom: 25px; }
         .embed-main { display: flex; justify-content: space-between; gap: 10px; }
         #p-title { font-weight: 600; color: #fff; margin-bottom: 4px; }
         #p-desc { font-size: 0.875rem; color: var(--discord-text); white-space: pre-wrap; }
         
-        .img-click { cursor: pointer; border: 2px dashed rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .img-click { cursor: pointer; border: 2px dashed rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
         .p-thumb { width: 80px; height: 80px; border-radius: 4px; flex-shrink: 0; }
         .p-banner { width: 100%; height: 140px; margin-top: 12px; border-radius: 8px; }
-        .img-click img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .img-click img { width: 100%; height: 100%; object-fit: cover; display: none; position: absolute; inset: 0; }
 
-        /* CARDS & INPUTS */
+        /* CARDS */
         .card { width: 100%; max-width: 550px; background: var(--panel); border-radius: 12px; padding: 25px; border: 1px solid var(--border); margin-bottom: 25px; }
         h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 16px; border-radius: 10px; margin-bottom: 15px; outline: none; }
         
-        /* AFFICHAGE LARGE DES ROLES */
-        .roles-list-large { background: #000; border: 1px solid var(--border); border-radius: 10px; max-height: 250px; overflow-y: auto; margin-bottom: 15px; }
-        .role-row { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #111; cursor: pointer; }
-        .role-row:hover { background: #111; }
-        .role-row input { width: auto; margin: 0; }
+        /* LISTE DE ROLES LARGE */
+        .roles-list-container { background: #000; border: 1px solid var(--border); border-radius: 10px; max-height: 250px; overflow-y: auto; margin-bottom: 15px; }
+        .role-item { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #111; cursor: pointer; }
+        .role-item:hover { background: #111; }
+        .role-item input { width: auto; margin: 0; pointer-events: none; }
 
-        .btn { border: none; padding: 18px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; text-transform: uppercase; margin-top: 10px; }
+        .btn { border: none; padding: 18px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; text-transform: uppercase; margin-top: 10px; transition: 0.3s; }
         .btn-save { background: var(--accent); }
         .btn-test { background: #5865f2; }
 
@@ -58,7 +58,7 @@
         .gal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; }
         .gal-item { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 16/9; }
         .gal-img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
-        .btn-del { position: absolute; top: 8px; right: 8px; background: var(--accent); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; }
+        .btn-del { position: absolute; top: 8px; right: 8px; background: var(--accent); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         #modal-gal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 20000; padding: 20px; }
         .modal-inner { max-width: 500px; margin: 50px auto; background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid var(--border); }
@@ -82,8 +82,8 @@
             <div class="discord-embed">
                 <div class="embed-main">
                     <div style="flex:1">
-                        <div id="p-title">Titre</div>
-                        <div id="p-desc">Description...</div>
+                        <div id="p-title">Titre de bienvenue</div>
+                        <div id="p-desc">Description du message...</div>
                     </div>
                     <div class="img-click p-thumb" onclick="openGal('thumb')">
                         <i class="fas fa-camera" id="icon-thumb"></i>
@@ -100,29 +100,29 @@
                 <h3>Textes (Variables: {user})</h3>
                 <input type="text" id="w-title" placeholder="Titre..." oninput="sync()">
                 <textarea id="w-desc" rows="4" placeholder="Description..." oninput="sync()"></textarea>
-                <input type="text" id="w-footer" placeholder="Footer..." oninput="sync()">
+                <input type="text" id="w-footer" placeholder="Footer (bas de page)..." oninput="sync()">
                 
-                <h3>Salon d'envoi</h3>
-                <select id="w-chan"><option value="">Chargement des salons...</option></select>
+                <h3>Destination</h3>
+                <select id="w-chan"><option value="">Chargement...</option></select>
                 
-                <h3>Rôles à attribuer</h3>
-                <div id="list-roles-welcome" class="roles-list-large"></div>
+                <h3>Rôles autorisés</h3>
+                <div id="list-roles-welcome" class="roles-list-container"></div>
 
-                <button class="btn btn-save" onclick="save()">Sauvegarder</button>
+                <button class="btn btn-save" onclick="save()">Sauvegarder la config</button>
                 <button class="btn btn-test" onclick="testMsg()">Tester sur Discord</button>
             </div>
         </section>
 
         <section id="section-ADMIN" class="content-section">
             <div class="card">
-                <h3>Rôles ayant accès au Panel</h3>
-                <div id="list-roles-admin" class="roles-list-large"></div>
-                <button class="btn btn-save" onclick="saveAdmin()">Enregistrer les accès</button>
+                <h3>Accès au Panel (Rôles)</h3>
+                <div id="list-roles-admin" class="roles-list-container"></div>
+                <button class="btn btn-save" onclick="saveAdmin()">Mettre à jour les accès</button>
             </div>
         </section>
 
         <section id="section-GALERIE" class="content-section">
-            <button class="btn btn-save" onclick="document.getElementById('file-in').click()" style="margin-bottom:20px; max-width:300px">Ajouter une image</button>
+            <button class="btn btn-save" onclick="document.getElementById('file-in').click()" style="margin-bottom:20px; max-width:300px">Importer une image</button>
             <input type="file" id="file-in" onchange="up()" style="display:none">
             <div id="admin-gal" class="gal-grid"></div>
         </section>
@@ -131,7 +131,7 @@
     <div id="modal-gal">
         <div class="modal-inner">
             <span style="float:right; cursor:pointer" onclick="closeGal()">&times; Fermer</span>
-            <h2 style="margin-bottom:20px">Choisir une image</h2>
+            <h2 style="margin-bottom:20px">Mes Images</h2>
             <div id="modal-gal-list" class="gal-grid"></div>
         </div>
     </div>
@@ -159,22 +159,21 @@
                 const res = await fetch(`${API}/api/get_server_info`);
                 const data = await res.json();
                 
-                if(data.status === "error") {
-                    console.log("Bot pas prêt, nouvelle tentative...");
-                    setTimeout(init, 2000);
+                if(data.status === "loading") {
+                    setTimeout(init, 2000); // On réessaye si le bot n'est pas prêt
                     return;
                 }
 
                 CONFIG = data.config || {};
 
-                // Salons
+                // Remplissage Salons
                 const chanSel = document.getElementById('w-chan');
                 chanSel.innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
 
-                // Rôles (Format Large)
-                const renderRoles = (id, selected) => {
-                    document.getElementById(id).innerHTML = data.all_roles.map(r => `
-                        <div class="role-row" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked;">
+                // Remplissage Rôles (Format Large Original)
+                const renderRoles = (containerId, selected) => {
+                    document.getElementById(containerId).innerHTML = data.all_roles.map(r => `
+                        <div class="role-item" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked;">
                             <span>${r}</span> <input type="checkbox" value="${r}" ${(selected || []).includes(r)?'checked':''}>
                         </div>
                     `).join('');
@@ -183,7 +182,7 @@
                 renderRoles('list-roles-welcome', CONFIG.welcome?.trigger_roles);
                 renderRoles('list-roles-admin', CONFIG.admin_roles);
 
-                // Load Config
+                // Application de la config existante
                 if(CONFIG.welcome) {
                     document.getElementById('w-title').value = CONFIG.welcome.title || "";
                     document.getElementById('w-desc').value = CONFIG.welcome.desc || "";
@@ -193,12 +192,12 @@
                     if(CONFIG.welcome.banner) setImg('banner', CONFIG.welcome.banner);
                 }
                 sync();
-            } catch(e) { setTimeout(init, 2000); }
+            } catch(e) { console.error(e); setTimeout(init, 2000); }
         }
 
         function sync() {
-            document.getElementById('p-title').innerText = document.getElementById('w-title').value || "Titre";
-            document.getElementById('p-desc').innerText = document.getElementById('w-desc').value || "Description...";
+            document.getElementById('p-title').innerText = document.getElementById('w-title').value || "Titre de bienvenue";
+            document.getElementById('p-desc').innerText = document.getElementById('w-desc').value || "Description du message...";
         }
 
         function openGal(slot) {
@@ -230,31 +229,31 @@
                 trigger_roles: Array.from(document.querySelectorAll('#list-roles-welcome input:checked')).map(i => i.value)
             };
             await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
-            alert("✅ Configuration sauvegardée !");
+            alert("✅ Configuration sauvegardée avec succès !");
         }
 
         async function saveAdmin() {
             CONFIG.admin_roles = Array.from(document.querySelectorAll('#list-roles-admin input:checked')).map(i => i.value);
             await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
-            alert("✅ Accès admin mis à jour !");
+            alert("✅ Rôles admin mis à jour !");
         }
 
         async function testMsg() {
             const res = await fetch(`${API}/api/test_welcome`, { method: 'POST' });
-            if(res.ok) alert("🚀 Test envoyé !"); else {
-                const err = await res.json();
-                alert("❌ Erreur : " + err.message);
-            }
+            if(res.ok) alert("🚀 Message envoyé sur Discord !");
+            else alert("❌ Erreur lors de l'envoi.");
         }
 
         async function up() {
-            const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]);
+            const fileIn = document.getElementById('file-in');
+            if(!fileIn.files[0]) return;
+            const fd = new FormData(); fd.append('file', fileIn.files[0]);
             await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
             loadAdminGal();
         }
 
         async function delImg(path) {
-            if(!confirm("Supprimer cette image ?")) return;
+            if(!confirm("Supprimer définitivement cette image ?")) return;
             await fetch(`${API}/api/delete_image`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({image: path}) });
             loadAdminGal();
         }
@@ -265,7 +264,7 @@
             document.getElementById('admin-gal').innerHTML = d.images.map(img => `
                 <div class="gal-item">
                     <img src="${API+img}" class="gal-img">
-                    <button class="btn-del" onclick="delImg('${img}')">&times;</button>
+                    <button class="btn-del" onclick="delImg('${img}')"><i class="fas fa-trash"></i></button>
                 </div>
             `).join('');
         }
