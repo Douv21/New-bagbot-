@@ -19,7 +19,6 @@
             position: fixed; height: 100%; z-index: 2000; 
             transition: transform 0.3s ease; transform: translateX(0); 
         }
-        #sidebar.closed { transform: translateX(-100%); }
 
         .nav-item { padding: 18px 25px; display: flex; align-items: center; gap: 15px; color: var(--text-muted); cursor: pointer; font-weight: 700; }
         .nav-item.active { color: var(--accent); background: rgba(237, 66, 69, 0.05); border-right: 3px solid var(--accent); }
@@ -28,10 +27,7 @@
         header { height: 60px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 15px; flex-shrink: 0; }
         .burger { font-size: 22px; cursor: pointer; color: var(--accent); }
 
-        .content-section { 
-            display: none; flex-direction: column; align-items: center; 
-            padding: 20px; overflow-y: auto; flex: 1; padding-bottom: 120px; 
-        }
+        .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; flex: 1; padding-bottom: 120px; }
         .content-section.active { display: flex; }
 
         .discord-embed { width: 100%; max-width: 480px; background: var(--embed-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px; margin-bottom: 20px; position: relative; }
@@ -41,7 +37,7 @@
 
         .gallery-card { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: #000; }
         .gallery-card img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
-        .del-btn { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; font-size: 12px; z-index: 10; }
+        .del-btn { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; }
 
         .config-card { width: 100%; max-width: 480px; background: var(--bg-panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 30px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
@@ -68,6 +64,7 @@
         </div>
         <div class="nav-item active" onclick="show('accueil', this)"><i class="fas fa-home"></i> Accueil</div>
         <div class="nav-item" onclick="show('images', this)"><i class="fas fa-images"></i> Images</div>
+        <div class="nav-item" onclick="show('admin', this)"><i class="fas fa-user-shield"></i> Admin</div>
     </nav>
 
     <main>
@@ -83,7 +80,6 @@
                 <div style="font-size: 13px; color: #dbdee1; line-height: 1.4;" id="p-desc">Configure ton message...</div>
                 <div class="banner-preview img-zone" onclick="openM('banner')" id="box-banner"></div>
             </div>
-
             <div class="config-card">
                 <input type="text" id="in-title" placeholder="Titre..." oninput="sync()">
                 <textarea id="in-desc" rows="4" placeholder="Message..." oninput="sync()"></textarea>
@@ -95,6 +91,14 @@
 
         <section id="images" class="content-section">
             <div id="gallery" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; max-width: 480px;"></div>
+        </section>
+
+        <section id="admin" class="content-section">
+            <div class="config-card">
+                <h3 style="margin-bottom:15px">Rôles autorisés</h3>
+                <input type="text" id="role-list" placeholder="Admin, Fondateur (séparés par virgule)">
+                <button class="btn btn-save" onclick="saveRoles()">SAUVEGARDER LES RÔLES</button>
+            </div>
         </section>
     </main>
 
@@ -159,13 +163,15 @@
         }
 
         async function deleteImg(path) {
-            if(!confirm("Supprimer cette image ?")) return;
-            await fetch(`${API}/api/delete_image`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({path})
-            });
+            if(!confirm("Supprimer ?")) return;
+            await fetch(`${API}/api/delete_image`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({path}) });
             loadG();
+        }
+
+        async function saveRoles() {
+            const roles = document.getElementById('role-list').value.split(',').map(r => r.trim());
+            await fetch(`${API}/api/save_roles`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({roles}) });
+            alert("Rôles mis à jour !");
         }
 
         async function test() {
@@ -182,12 +188,14 @@
 
         async function init() {
             const res = await fetch(`${API}/api/get_server_info`);
+            if(res.status === 401) window.location.href = "/login";
             const data = await res.json();
             document.getElementById('bot-name').innerText = data.bot.name;
             document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
             if(data.config) {
                 document.getElementById('in-title').value = data.config.title || "";
                 document.getElementById('in-desc').value = data.config.desc || "";
+                document.getElementById('role-list').value = data.config.admin_roles.join(', ');
                 if(data.config.thumb) { document.getElementById('box-thumb').innerHTML = `<img src="${API+data.config.thumb}">`; document.getElementById('box-thumb').dataset.path = data.config.thumb; }
                 if(data.config.banner) { document.getElementById('box-banner').innerHTML = `<img src="${API+data.config.banner}">`; document.getElementById('box-banner').dataset.path = data.config.banner; }
                 sync();
