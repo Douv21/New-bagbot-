@@ -3,109 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Elite Mobile</title>
+    <title>BagBot | Elite Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #050505; --side: #000; --card: #0f0f0f; --accent: #ed4245; --border: #1a1a1a; --d-bg: #2b2d31; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: row; height: 100vh; overflow: hidden; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
 
-        /* RESPONSIVE SIDEBAR */
-        #sidebar { width: 260px; background: var(--side); border-right: 1px solid var(--border); flex-shrink: 0; transition: 0.3s; }
-        .brand { padding: 25px; font-size: 20px; font-weight: 900; color: var(--accent); text-align: center; border-bottom: 1px solid var(--border); }
-        .nav-item { padding: 15px 25px; display: flex; align-items: center; gap: 12px; color: #666; cursor: pointer; font-weight: bold; }
+        /* --- SIDEBAR RESPONSIVE --- */
+        #sidebar { width: 280px; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; transition: all 0.3s; }
+        .brand { padding: 30px; font-size: 24px; font-weight: 900; color: var(--accent); text-align: center; border-bottom: 1px solid var(--border); letter-spacing: 2px; }
+        .nav-item { padding: 20px 30px; display: flex; align-items: center; gap: 15px; color: #666; cursor: pointer; transition: 0.3s; font-weight: bold; text-decoration: none; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.02); }
         .nav-item.active { color: var(--accent); background: rgba(237, 66, 69, 0.05); border-right: 4px solid var(--accent); }
 
-        main { flex-grow: 1; padding: 20px; overflow-y: auto; width: 100%; }
-        .section { display: none; max-width: 800px; margin: 0 auto; }
+        /* --- CONTENT AREA --- */
+        main { flex-grow: 1; padding: 40px; overflow-y: auto; scroll-behavior: smooth; }
+        .section { display: none; max-width: 900px; margin: 0 auto; animation: fadeIn 0.4s ease; }
         .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* DISCORD PREVIEW */
-        .discord-ui { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 12px; margin-bottom: 20px; }
-        .embed-header { display: flex; justify-content: space-between; gap: 10px; }
-        .embed-title { color: #00a8fc; font-weight: bold; font-size: 15px; }
-        .embed-thumb { width: 60px; height: 60px; border-radius: 6px; background: #1e1f22; border: 1px dashed #444; overflow: hidden; }
-        .embed-banner { width: 100%; height: 140px; border-radius: 6px; background: #1e1f22; margin-top: 10px; border: 1px dashed #444; overflow: hidden; }
+        /* --- DISCORD UI PREVIEW --- */
+        .discord-preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .embed-header { display: flex; justify-content: space-between; gap: 15px; }
+        .embed-title { color: #00a8fc; font-weight: 600; font-size: 16px; margin-bottom: 8px; }
+        .embed-desc { color: #dbdee1; font-size: 14px; line-height: 1.4; white-space: pre-wrap; }
+        .embed-thumb { width: 80px; height: 80px; border-radius: 8px; background: #1e1f22; border: 1px dashed #444; flex-shrink: 0; cursor: pointer; overflow: hidden; }
+        .embed-banner { width: 100%; height: 180px; border-radius: 8px; background: #1e1f22; margin-top: 15px; border: 1px dashed #444; cursor: pointer; overflow: hidden; }
         .embed-thumb img, .embed-banner img { width: 100%; height: 100%; object-fit: cover; }
+        .embed-footer { margin-top: 12px; color: #949ba4; font-size: 12px; }
 
-        /* CARDS */
-        .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-        label { display: block; margin: 15px 0 5px; color: #555; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; box-sizing: border-box; }
+        /* --- CARDS & FORMS --- */
+        .card { background: var(--card); border: 1px solid var(--border); padding: 30px; border-radius: 20px; margin-bottom: 25px; }
+        label { display: block; margin: 20px 0 8px; color: #555; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; font-size: 14px; box-sizing: border-box; }
+        input:focus, textarea:focus { border-color: var(--accent); outline: none; }
         
-        /* SELECTEUR MULTIPLE */
-        select[multiple] { height: 100px; padding: 5px; }
-        .hint { font-size: 11px; color: #444; margin-top: 4px; }
+        /* MULTI-SELECT STYLE */
+        select[multiple] { height: 120px; padding: 10px; }
+        .hint { font-size: 12px; color: #444; margin-top: 8px; font-style: italic; }
 
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-main { background: var(--accent); color: white; }
+        .btn { padding: 16px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; }
+        .btn-main { background: var(--accent); color: white; margin-top: 20px; }
+        .btn-main:hover { background: #ff4d4d; transform: translateY(-2px); }
 
-        /* GALLERY MAIN PAGE */
-        .gallery-main { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-        .img-card { background: #111; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
-        .img-card img { width: 100%; height: 100px; object-fit: cover; }
+        /* --- GALLERY GRID --- */
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .img-item { background: #111; border-radius: 15px; overflow: hidden; border: 1px solid var(--border); transition: 0.3s; position: relative; }
+        .img-item:hover { border-color: var(--accent); transform: scale(1.02); }
+        .img-item img { width: 100%; height: 150px; object-fit: cover; }
+        .img-item .info { padding: 12px; font-size: 12px; color: #666; text-align: center; }
 
-        /* MOBILE OPTIMIZATION */
+        /* --- MOBILE ADAPTATION --- */
         @media (max-width: 768px) {
             body { flex-direction: column; }
             #sidebar { width: 100%; height: auto; flex-direction: row; border-right: none; border-bottom: 1px solid var(--border); }
-            .brand { padding: 15px; border-bottom: none; border-right: 1px solid var(--border); }
-            .nav-item { padding: 15px; font-size: 12px; flex: 1; justify-content: center; }
-            .nav-item span { display: none; } /* Cache le texte pour laisser que les icônes sur petit tel */
-            .nav-item.active { border-right: none; border-bottom: 3px solid var(--accent); }
-            main { padding: 15px; }
+            .brand { padding: 15px; border-bottom: none; border-right: 1px solid var(--border); font-size: 18px; }
+            .nav-item { padding: 15px; flex: 1; justify-content: center; font-size: 0; }
+            .nav-item i { font-size: 20px; margin: 0; }
+            .nav-item.active { border-right: none; border-bottom: 4px solid var(--accent); }
+            main { padding: 20px; }
+            .embed-banner { height: 120px; }
         }
 
-        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-box { background: var(--card); width: 90%; max-width: 500px; padding: 20px; border-radius: 15px; }
+        /* --- MODAL --- */
+        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-box { background: var(--card); width: 90%; max-width: 600px; padding: 30px; border-radius: 25px; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
     <nav id="sidebar">
-        <div class="brand">BAG</div>
-        <div class="nav-item active" onclick="tab('welcome', this)"><i class="fas fa-home"></i> <span>BIENVENUE</span></div>
-        <div class="nav-item" onclick="tab('gallery', this)"><i class="fas fa-images"></i> <span>GALERIE</span></div>
-        <div class="nav-item" onclick="tab('admin', this)"><i class="fas fa-lock"></i> <span>ADMIN</span></div>
+        <div class="brand">BAGBOT</div>
+        <div class="nav-item active" onclick="showTab('welcome', this)"><i class="fas fa-magic"></i> <span>Bienvenue</span></div>
+        <div class="nav-item" onclick="showTab('gallery', this)"><i class="fas fa-images"></i> <span>Galerie</span></div>
+        <div class="nav-item" onclick="showTab('admin', this)"><i class="fas fa-user-lock"></i> <span>Accès</span></div>
     </nav>
 
     <main>
         <div id="welcome" class="section active">
-            <div class="discord-ui">
+            <div class="discord-preview">
                 <div class="embed-header">
-                    <div style="flex-grow:1">
-                        <div id="pv-title" class="embed-title">Titre</div>
-                        <div id="pv-desc" style="font-size:13px; color:#aaa;">Description...</div>
+                    <div style="flex-grow: 1;">
+                        <div id="pv-title" class="embed-title">Titre de l'Embed</div>
+                        <div id="pv-desc" class="embed-desc">Aperçu de votre message...</div>
                     </div>
-                    <div class="embed-thumb" onclick="openPicker('thumb')"><img id="pv-thumb-img" style="display:none"></div>
+                    <div class="embed-thumb" onclick="openPicker('thumbnail')">
+                        <img id="pv-thumb-img" style="display:none">
+                        <div id="thumb-none" style="height:100%; display:flex; align-items:center; justify-content:center; color:#444;"><i class="fas fa-plus"></i></div>
+                    </div>
                 </div>
-                <div class="embed-banner" onclick="openPicker('banner')"><img id="pv-banner-img" style="display:none"></div>
+                <div class="embed-banner" onclick="openPicker('banner')">
+                    <img id="pv-banner-img" style="display:none">
+                    <div id="banner-none" style="height:100%; display:flex; align-items:center; justify-content:center; color:#444;"><i class="fas fa-image"></i> Ajouter une bannière</div>
+                </div>
+                <div id="pv-footer" class="embed-footer">Bas de page</div>
             </div>
 
             <div class="card">
-                <label>Titre & Description</label>
-                <input type="text" id="w-title" oninput="sync()" placeholder="Titre">
-                <textarea id="w-desc" rows="3" oninput="sync()" placeholder="Message..." style="margin-top:8px;"></textarea>
+                <label>Titre de l'embed</label>
+                <input type="text" id="w-title" oninput="syncPreview()" placeholder="Bienvenue {user} !">
                 
-                <label>Rôles de déclenchement</label>
-                <select id="trigger-roles" multiple></select>
-                <div class="hint">Maintenez Ctrl (ou appui long sur tel) pour en choisir plusieurs.</div>
+                <label>Message de bienvenue</label>
+                <textarea id="w-desc" rows="5" oninput="syncPreview()" placeholder="Content de te voir sur {guild}..."></textarea>
+                
+                <label>Bas de page (Footer)</label>
+                <input type="text" id="w-footer-in" oninput="syncPreview()" placeholder="Membre n°{count}">
+
+                <label>Rôles recevant le message (Multiple)</label>
+                <select id="w-roles" multiple></select>
+                <div class="hint">Appui long (mobile) ou Ctrl (PC) pour en choisir plusieurs.</div>
 
                 <label>Salon d'envoi</label>
-                <select id="w-chan"></select>
+                <select id="w-channel"></select>
 
-                <button class="btn btn-main" onclick="save()">ENREGISTRER</button>
+                <button class="btn btn-main" onclick="saveData()"><i class="fas fa-save"></i> SAUVEGARDER TOUT</button>
             </div>
         </div>
 
         <div id="gallery" class="section">
-            <div id="main-gallery" class="gallery-main"></div>
+            <h2 style="margin-bottom:25px;">Bibliothèque d'images</h2>
+            <div id="gallery-main-grid" class="gallery-grid"></div>
         </div>
 
         <div id="admin" class="section">
             <div class="card">
-                <label>Rôles accès Panel</label>
+                <h2>Rôles autorisés sur le Panel</h2>
                 <select id="admin-roles" multiple></select>
-                <button class="btn btn-main" onclick="save()" style="margin-top:20px;">VALIDER LES DROITS</button>
+                <button class="btn btn-main" onclick="saveData()"><i class="fas fa-check-circle"></i> APPLIQUER LES DROITS</button>
             </div>
         </div>
     </main>
@@ -113,88 +137,114 @@
     <div id="modal">
         <div class="modal-box">
             <h3>Choisir une image</h3>
-            <div id="picker-grid" class="gallery-main" style="max-height:300px; overflow-y:auto;"></div>
-            <button class="btn" onclick="closePicker()" style="background:#222; color:white;">FERMER</button>
+            <div id="modal-grid" class="gallery-grid" style="max-height: 400px; overflow-y: auto; padding: 10px;"></div>
+            <button class="btn btn-main" style="background:#222;" onclick="closePicker()">ANNULER</button>
         </div>
     </div>
 
     <script>
-        let server = { config: { welcome: {}, admin_roles: [] }, images: [], roles: [] };
-        let currentTarget = '';
+        let appData = { config: {}, images: [], roles: [], channels: [] };
+        let activePicker = '';
 
         async function init() {
             const res = await fetch('/api/get_data');
-            server = await res.json();
+            appData = await res.json();
 
-            // Remplir sélecteurs (Salons & Rôles)
-            document.getElementById('w-chan').innerHTML = server.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            
-            const roleOpts = server.roles.map(r => `<option value="${r}">${r}</option>`).join('');
-            document.getElementById('trigger-roles').innerHTML = roleOpts;
+            // Remplissage salons
+            document.getElementById('w-channel').innerHTML = appData.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+
+            // Remplissage rôles (Bienvenue + Admin)
+            const roleOpts = appData.roles.map(r => `<option value="${r}">${r}</option>`).join('');
+            document.getElementById('w-roles').innerHTML = roleOpts;
             document.getElementById('admin-roles').innerHTML = roleOpts;
 
-            // Galerie
-            document.getElementById('main-gallery').innerHTML = server.images.map(img => `
-                <div class="img-card"><img src="${img}"></div>
-            `).join('');
-
-            // Charger config
-            const w = server.config.welcome;
+            // Chargement Config
+            const w = appData.config.welcome || {};
             document.getElementById('w-title').value = w.title || "";
             document.getElementById('w-desc').value = w.desc || "";
-            
-            // Sélectionner les rôles déjà sauvegardés
-            if(w.trigger_roles) Array.from(document.getElementById('trigger-roles').options).forEach(opt => {
+            document.getElementById('w-footer-in').value = w.footer || "";
+            document.getElementById('w-channel').value = w.channel || "";
+
+            // Sélection des rôles sauvegardés
+            if(w.trigger_roles) Array.from(document.getElementById('w-roles').options).forEach(opt => {
                 if(w.trigger_roles.includes(opt.value)) opt.selected = true;
             });
-            if(server.config.admin_roles) Array.from(document.getElementById('admin-roles').options).forEach(opt => {
-                if(server.config.admin_roles.includes(opt.value)) opt.selected = true;
+            if(appData.config.admin_roles) Array.from(document.getElementById('admin-roles').options).forEach(opt => {
+                if(appData.config.admin_roles.includes(opt.value)) opt.selected = true;
             });
 
-            if(w.banner) setImg('banner', w.banner);
-            if(w.thumb) setImg('thumb', w.thumb);
-            sync();
+            if(w.banner) updateImage('banner', w.banner);
+            if(w.thumbnail) updateImage('thumbnail', w.thumbnail);
+
+            // Galerie principale
+            document.getElementById('gallery-main-grid').innerHTML = appData.images.map(img => `
+                <div class="img-item"><img src="${img}"><div class="info">${img.split('/').pop()}</div></div>
+            `).join('');
+
+            syncPreview();
         }
 
-        function tab(id, el) {
+        function showTab(id, el) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(id).classList.add('active'); el.classList.add('active');
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
         }
 
-        function sync() {
-            document.getElementById('pv-title').innerText = document.getElementById('w-title').value || "Titre";
-            document.getElementById('pv-desc').innerText = document.getElementById('w-desc').value || "Description...";
+        function syncPreview() {
+            const t = document.getElementById('w-title').value || "Titre de l'Embed";
+            const d = document.getElementById('w-desc').value || "Aperçu de votre message de bienvenue...";
+            const f = document.getElementById('w-footer-in').value || "Bas de page";
+            
+            document.getElementById('pv-title').innerText = t.replace(/{user}/g, "Utilisateur");
+            document.getElementById('pv-desc').innerText = d.replace(/{guild}/g, "Serveur").replace(/{user}/g, "Utilisateur");
+            document.getElementById('pv-footer').innerText = f.replace(/{count}/g, "123");
         }
 
         function openPicker(type) {
-            currentTarget = type;
-            document.getElementById('picker-grid').innerHTML = server.images.map(img => `
-                <img src="${img}" onclick="selectImg('${img}')" style="cursor:pointer; border-radius:5px;">
+            activePicker = type;
+            document.getElementById('modal-grid').innerHTML = appData.images.map(img => `
+                <img src="${img}" onclick="selectImg('${img}')" style="width:100%; height:100px; object-fit:cover; border-radius:10px; cursor:pointer;">
             `).join('');
             document.getElementById('modal').style.display = 'flex';
         }
-        function closePicker() { document.getElementById('modal').style.display = 'none'; }
-        function selectImg(url) { setImg(currentTarget, url); closePicker(); }
-        function setImg(t, url) {
-            const img = document.getElementById(`pv-${t}-img`);
-            img.src = url; img.style.display = 'block'; img.dataset.url = url;
+
+        function selectImg(url) {
+            updateImage(activePicker, url);
+            closePicker();
         }
 
-        async function save() {
-            const config = {
+        function updateImage(type, url) {
+            const imgEl = document.getElementById(`pv-${type}-img`);
+            const noneEl = document.getElementById(`${type}-none`);
+            imgEl.src = url;
+            imgEl.style.display = 'block';
+            imgEl.dataset.url = url;
+            noneEl.style.display = 'none';
+        }
+
+        function closePicker() { document.getElementById('modal').style.display = 'none'; }
+
+        async function saveData() {
+            const payload = {
                 welcome: {
                     title: document.getElementById('w-title').value,
                     desc: document.getElementById('w-desc').value,
-                    channel: document.getElementById('w-chan').value,
+                    footer: document.getElementById('w-footer-in').value,
+                    channel: document.getElementById('w-channel').value,
                     banner: document.getElementById('pv-banner-img').dataset.url || "",
-                    thumb: document.getElementById('pv-thumb-img').dataset.url || "",
-                    trigger_roles: Array.from(document.getElementById('trigger-roles').selectedOptions).map(o => o.value)
+                    thumbnail: document.getElementById('pv-thumb-img').dataset.url || "",
+                    trigger_roles: Array.from(document.getElementById('w-roles').selectedOptions).map(o => o.value)
                 },
                 admin_roles: Array.from(document.getElementById('admin-roles').selectedOptions).map(o => o.value)
             };
-            await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config) });
-            alert("Sauvegardé !");
+
+            const res = await fetch('/api/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if(res.ok) alert("✨ Configuration sauvegardée !");
         }
 
         window.onload = init;
