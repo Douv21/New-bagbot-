@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Ultimate Panel</title>
+    <title>BagBot Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord-bg: #2b2d31; }
@@ -11,12 +11,12 @@
         
         body { background: var(--bg); color: white; display: flex; min-height: 100vh; }
 
-        /* ESPACE DÉDIÉ SIDEBAR */
+        /* SIDEBAR DÉDIÉE */
         #sidebar { 
             width: 260px; min-width: 260px; background: #000; border-right: 1px solid var(--border); 
             height: 100vh; position: sticky; top: 0; z-index: 1000;
         }
-        main { flex: 1; display: flex; flex-direction: column; background: var(--bg); }
+        main { flex: 1; display: flex; flex-direction: column; }
 
         @media (max-width: 900px) {
             #sidebar { position: fixed; left: -260px; transition: 0.3s; }
@@ -30,7 +30,6 @@
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 3px solid var(--accent); }
 
         header { height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding-left: 20px; font-weight: bold; }
-
         .content-section { display: none; padding: 25px; flex-direction: column; align-items: center; width: 100%; }
         .content-section.active { display: flex; }
 
@@ -41,17 +40,19 @@
         .p-banner-box { width: 100%; height: 120px; margin-top: 10px; border-radius: 8px; }
         .img-click img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* FORM */
+        /* CARDS */
         .card { width: 100%; max-width: 550px; background: var(--panel); padding: 25px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
         h3 { font-size: 13px; color: var(--accent); text-transform: uppercase; margin-bottom: 15px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 14px; border-radius: 8px; margin-bottom: 15px; }
         
-        /* ROLES ALIGNMENT */
+        /* ALIGNEMENT RÔLES */
         .select-box { background: #000; border: 1px solid var(--border); padding: 14px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .dropdown-content { display: none; background: #0d0d0d; border: 1px solid var(--border); max-height: 200px; overflow-y: auto; border-radius: 8px; }
+        .dropdown-content { display: none; background: #0d0d0d; border: 1px solid var(--border); max-height: 250px; overflow-y: auto; border-radius: 8px; }
         .dropdown-content.show { display: block; }
         .option { padding: 12px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
-        .option input { width: 18px; height: 18px; margin: 0; }
+        .option:hover { background: #1a1a1a; }
+        .option input { width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer; }
+        .option span { font-size: 14px; flex: 1; }
 
         .btn { padding: 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; width: 100%; color: white; text-transform: uppercase; }
         .btn-save { background: var(--accent); margin-bottom: 10px; }
@@ -62,7 +63,7 @@
         .gal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; }
         .gal-item { position: relative; aspect-ratio: 16/9; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
         .gal-item img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
-        .del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); border: none; color: white; padding: 5px; border-radius: 4px; cursor: pointer; }
+        .del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; padding: 5px; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -82,8 +83,8 @@
                 <div class="img-click p-thumb-box" onclick="openGal('thumb')">
                     <img id="img-thumb" style="display:none"><i class="fas fa-camera" id="icon-thumb"></i>
                 </div>
-                <div id="p-title" style="font-weight:bold">Titre</div>
-                <div id="p-desc" style="font-size:14px; color:#ccc; margin-top:5px; white-space: pre-wrap;">Description...</div>
+                <div id="p-title" style="font-weight:bold">Bienvenue {user}</div>
+                <div id="p-desc" style="font-size:14px; color:#ccc; margin-top:5px; white-space: pre-wrap;">Bienvenue sur {server} !</div>
                 <div class="img-click p-banner-box" onclick="openGal('banner')">
                     <img id="img-banner" style="display:none"><i class="fas fa-plus" id="icon-banner"></i>
                 </div>
@@ -96,10 +97,10 @@
             </div>
 
             <div class="card">
-                <h3>Message & Variables</h3>
-                <input type="text" id="w-title" placeholder="Titre (ex: Bienvenue {user})" oninput="sync()">
-                <textarea id="w-desc" placeholder="Description..." rows="4" oninput="sync()"></textarea>
-                <input type="text" id="w-footer" placeholder="Footer" oninput="sync()">
+                <h3>Message</h3>
+                <input type="text" id="w-title" placeholder="Titre" oninput="sync()">
+                <textarea id="w-desc" placeholder="Description" rows="4" oninput="sync()"></textarea>
+                <input type="text" id="w-footer" placeholder="Footer text" oninput="sync()">
 
                 <h3>Salon & Rôles</h3>
                 <select id="w-chan"></select>
@@ -115,7 +116,7 @@
 
         <section id="section-GALERIE" class="content-section">
             <input type="file" id="file-in-admin" onchange="uploadFile('admin')" style="display:none">
-            <button class="btn btn-save" onclick="document.getElementById('file-in-admin').click()">Uploade Image</button>
+            <button class="btn btn-save" onclick="document.getElementById('file-in-admin').click()">Uploader Image</button>
             <div id="admin-gal" class="gal-grid" style="width:100%; max-width:600px"></div>
         </section>
     </main>
@@ -123,16 +124,11 @@
     <div id="modal-gal">
         <div style="background:var(--panel); max-width:500px; margin:40px auto; padding:25px; border-radius:15px; position:relative">
             <span onclick="closeGal()" style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:24px">&times;</span>
-            <h3>Galerie / Téléverser</h3>
+            <h3>Ma Galerie / Téléverser</h3>
             
             <input type="file" id="file-in-modal" onchange="uploadFile('modal')" style="display:none">
-            <button class="btn btn-test" onclick="document.getElementById('file-in-modal').click()" style="margin-top:15px">Téléverser nouveau fichier</button>
+            <button class="btn btn-test" onclick="document.getElementById('file-in-modal').click()" style="margin-top:15px">Téléverser une image</button>
             
-            <div style="margin: 15px 0;">
-                <input type="text" id="url-direct" placeholder="Ou URL directe (http...)" style="margin-bottom:5px">
-                <button class="btn btn-save" onclick="useUrlDirect()" style="padding:10px">Utiliser URL</button>
-            </div>
-
             <div id="gal-container" class="gal-grid"></div>
         </div>
     </div>
@@ -176,11 +172,6 @@
             closeGal();
         }
 
-        function useUrlDirect() {
-            const url = document.getElementById('url-direct').value;
-            if(url) selectImg(url);
-        }
-
         function closeGal() { document.getElementById('modal-gal').style.display = 'none'; }
 
         async function uploadFile(source) {
@@ -189,27 +180,20 @@
             fd.append('file', document.getElementById(inputId).files[0]);
             const res = await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
             const data = await res.json();
-            
-            if(source === 'modal') {
-                selectImg(data.path);
-            } else {
-                loadAdminGal();
-            }
+            if(source === 'modal') selectImg(data.path);
+            else loadAdminGal();
         }
 
         async function loadAdminGal() {
             const res = await fetch(`${API}/api/images`);
             const data = await res.json();
             document.getElementById('admin-gal').innerHTML = data.images.map(img => `
-                <div class="gal-item">
-                    <img src="${API}${img}">
-                    <button class="del-img" onclick="deleteImg('${img}')"><i class="fas fa-trash"></i></button>
-                </div>
+                <div class="gal-item"><img src="${API}${img}"><button class="del-img" onclick="deleteImg('${img}')">Suppr</button></div>
             `).join('');
         }
 
         async function deleteImg(path) {
-            if(confirm("Supprimer ?")) {
+            if(confirm("Supprimer l'image ?")) {
                 await fetch(`${API}/api/delete_image`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({image: path}) });
                 loadAdminGal();
             }
@@ -234,8 +218,8 @@
 
         async function testMessage() {
             await save();
-            const res = await fetch(`${API}/api/test_welcome`, { method: 'POST' });
-            if(res.ok) alert("Test envoyé !");
+            await fetch(`${API}/api/test_welcome`, { method: 'POST' });
+            alert("Test envoyé !");
         }
 
         async function init() {
@@ -244,6 +228,8 @@
             if(data.status === "loading") return setTimeout(init, 2000);
 
             document.getElementById('w-chan').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            
+            // CODE POUR ALIGNER LES RÔLES PROPREMENT
             document.getElementById('drop-roles').innerHTML = data.all_roles.map(r => `
                 <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
                     <input type="checkbox" value="${r}" onclick="event.stopPropagation();">
@@ -260,12 +246,10 @@
                 if(w.thumb) { targetSlot='thumb'; selectImg(w.thumb); }
                 if(w.banner) { targetSlot='banner'; selectImg(w.banner); }
                 if(w.footer_icon) { targetSlot='footer_icon'; selectImg(w.footer_icon); }
-                if(w.roles) {
-                    w.roles.forEach(role => {
-                        const ck = document.querySelector(`#drop-roles input[value="${role}"]`);
-                        if(ck) ck.checked = true;
-                    });
-                }
+                if(w.roles) w.roles.forEach(role => {
+                    const ck = document.querySelector(`#drop-roles input[value="${role}"]`);
+                    if(ck) ck.checked = true;
+                });
             }
             sync();
         }
