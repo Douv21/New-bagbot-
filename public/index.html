@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BagBot OS | Master Dashboard</title>
+    <title>BagBot OS | Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -27,7 +27,6 @@
         .nav-list { flex: 1; padding: 10px; }
         .nav-item { padding: 14px 20px; display: flex; align-items: center; gap: 12px; color: var(--text-m); cursor: pointer; transition: 0.2s; font-weight: 600; border-radius: 8px; margin-bottom: 5px; }
         .nav-item.active { background: rgba(237, 66, 69, 0.1); color: var(--accent); }
-        .nav-item i { width: 20px; text-align: center; }
 
         /* --- MAIN VIEWPORT --- */
         .viewport { flex: 1; display: flex; flex-direction: column; min-width: 0; }
@@ -39,15 +38,18 @@
         /* --- EMBED MASTER --- */
         .designer-card { width: 100%; max-width: 600px; background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
         
-        .embed-preview { background: var(--embed-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px; position: relative; margin-bottom: 20px; }
+        .embed-preview { background: var(--embed-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px; position: relative; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         
-        .author-zone { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; cursor: pointer; }
-        .author-img { width: 24px; height: 24px; border-radius: 50%; background: #000; border: 1px solid #444; }
+        .author-zone { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; cursor: pointer; border: 1px solid transparent; border-radius: 4px; }
+        .author-zone:hover { border-color: var(--accent); }
+        .author-img { width: 24px; height: 24px; border-radius: 50%; background: #000; }
         .author-name { font-size: 13px; font-weight: 700; color: #fff; }
 
         .main-body { display: flex; justify-content: space-between; gap: 15px; }
-        #p-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; display: block; cursor: pointer; }
-        #p-desc { font-size: 14px; color: #dbdee1; line-height: 1.4; display: block; cursor: pointer; }
+        #p-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px; display: block; cursor: pointer; border: 1px solid transparent; }
+        #p-title:hover { border-color: var(--accent); }
+        #p-desc { font-size: 14px; color: #dbdee1; line-height: 1.4; display: block; cursor: pointer; border: 1px solid transparent; }
+        #p-desc:hover { border-color: var(--accent); }
         
         .thumb-zone { width: 80px; height: 80px; background: #1e1f22; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; border: 1px dashed #444; flex-shrink: 0; }
         .thumb-zone img { width: 100%; height: 100%; object-fit: cover; }
@@ -55,7 +57,8 @@
         .banner-zone { width: 100%; height: 160px; background: #1e1f22; margin-top: 15px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; border: 1px dashed #444; }
         .banner-zone img { width: 100%; height: 100%; object-fit: cover; }
 
-        .footer-zone { display: flex; align-items: center; gap: 8px; margin-top: 15px; cursor: pointer; }
+        .footer-zone { display: flex; align-items: center; gap: 8px; margin-top: 15px; cursor: pointer; border: 1px solid transparent; }
+        .footer-zone:hover { border-color: var(--accent); }
         .footer-img { width: 20px; height: 20px; border-radius: 50%; background: #000; }
         #p-footer { font-size: 12px; color: var(--text-m); font-weight: 600; }
 
@@ -65,7 +68,6 @@
         input, textarea, select { width: 100%; background: #111; border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 6px; margin-bottom: 10px; font-size: 13px; }
         
         .btn-deploy { width: 100%; background: var(--accent); color: white; border: none; padding: 16px; border-radius: 8px; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-        .btn-deploy:hover { filter: brightness(1.2); }
 
         .hidden { display: none; }
     </style>
@@ -90,30 +92,29 @@
 
         <div class="content">
             <div class="designer-card">
-                <span style="font-size: 10px; font-weight: 800; color: var(--text-m); margin-bottom: 15px; display: block;">ÉDITEUR VISUEL (CLIQUEZ POUR MODIFIER)</span>
                 
                 <div class="embed-preview">
-                    <div class="author-zone" onclick="openEdit('author', 'URL de l\'icône auteur')">
-                        <img src="" id="p-author-img" class="author-img">
-                        <span class="author-name" id="p-author-name">Chargement...</span>
+                    <div class="author-zone" onclick="openEdit('author', 'URL de l\'image de l\'auteur')">
+                        <img src="" id="p-author-img" class="author-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4712/4712035.png'">
+                        <span class="author-name" id="p-author-name">BagBot System</span>
                     </div>
 
                     <div class="main-body">
                         <div style="flex: 1;">
-                            <span id="p-title" onclick="openEdit('title', 'Titre de l\'Embed')">Titre de l'accueil</span>
-                            <span id="p-desc" onclick="openEdit('desc', 'Description du message')">Bienvenue {user} sur notre serveur !</span>
+                            <span id="p-title" onclick="openEdit('title', 'Titre de l\'Embed')">Bienvenue sur le serveur !</span>
+                            <span id="p-desc" onclick="openEdit('desc', 'Description du message')">Nous sommes ravis de te voir ici {user}.</span>
                         </div>
-                        <div class="thumb-zone" id="p-thumb-box" onclick="openEdit('thumb', 'URL de la Miniature (carré)')">
-                            <i class="fas fa-plus" style="color:#333"></i>
+                        <div class="thumb-zone" id="p-thumb-box" onclick="openEdit('thumb', 'URL de la Miniature (carrée)')">
+                            <i class="fas fa-image" style="color:#444"></i>
                         </div>
                     </div>
 
-                    <div class="banner-zone" id="p-banner-box" onclick="openEdit('banner', 'URL de la Bannière (grande image)')">
-                        <i class="fas fa-image" style="font-size: 24px; color:#222"></i>
+                    <div class="banner-zone" id="p-banner-box" onclick="openEdit('banner', 'URL de la Bannière (image large)')">
+                        <i class="fas fa-plus-circle" style="font-size: 24px; color:#222"></i>
                     </div>
 
                     <div class="footer-zone" onclick="openEdit('footer', 'Texte du Footer')">
-                        <img src="" id="p-footer-img" class="footer-img">
+                        <img src="" id="p-footer-img" class="footer-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4712/4712035.png'">
                         <span id="p-footer">ID: {user_id} • BagBot OS</span>
                     </div>
                 </div>
@@ -123,9 +124,9 @@
                     <select id="chan-list"></select>
 
                     <div id="edit-form" class="hidden">
-                        <label id="edit-label">Modification</label>
-                        <input type="text" id="edit-input" class="hidden">
-                        <textarea id="edit-area" class="hidden" rows="3"></textarea>
+                        <label id="edit-label" style="color: var(--accent);">Modification</label>
+                        <input type="text" id="edit-input" class="hidden" placeholder="Entrez la valeur...">
+                        <textarea id="edit-area" class="hidden" rows="3" placeholder="Entrez le texte..."></textarea>
                     </div>
 
                     <button class="btn-deploy" onclick="saveData()">Déployer le message</button>
@@ -136,8 +137,8 @@
 
     <script>
         let currentField = '';
-        const burger = document.getElementById('burger');
         const sidebar = document.getElementById('sidebar');
+        const burger = document.getElementById('burger');
 
         burger.onclick = () => sidebar.classList.toggle('closed');
 
@@ -157,7 +158,9 @@
                 area.value = document.getElementById('p-desc').innerText;
             } else {
                 input.classList.remove('hidden');
-                input.value = (type === 'title') ? document.getElementById('p-title').innerText : (type === 'footer') ? document.getElementById('p-footer').innerText : "";
+                if(type === 'title') input.value = document.getElementById('p-title').innerText;
+                else if(type === 'footer') input.value = document.getElementById('p-footer').innerText;
+                else input.value = ""; 
             }
         }
 
@@ -168,8 +171,8 @@
             if(currentField === 'title') document.getElementById('p-title').innerText = val;
             if(currentField === 'desc') document.getElementById('p-desc').innerText = val;
             if(currentField === 'footer') document.getElementById('p-footer').innerText = val;
-            if(currentField === 'thumb') document.getElementById('p-thumb-box').innerHTML = `<img src="${val}">`;
-            if(currentField === 'banner') document.getElementById('p-banner-box').innerHTML = `<img src="${val}">`;
+            if(currentField === 'thumb') document.getElementById('p-thumb-box').innerHTML = val ? `<img src="${val}">` : `<i class="fas fa-image" style="color:#444"></i>`;
+            if(currentField === 'banner') document.getElementById('p-banner-box').innerHTML = val ? `<img src="${val}">` : `<i class="fas fa-plus-circle" style="font-size: 24px; color:#222"></i>`;
             if(currentField === 'author') document.getElementById('p-author-img').src = val;
         }
 
@@ -178,6 +181,7 @@
                 title: document.getElementById('p-title').innerText,
                 description: document.getElementById('p-desc').innerText,
                 footer: document.getElementById('p-footer').innerText,
+                author_img: document.getElementById('p-author-img').src,
                 channel: document.getElementById('chan-list').value
             };
             const res = await fetch('/api/save_settings', {
@@ -196,10 +200,10 @@
                 if(data.channels) {
                     document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
                     document.getElementById('p-author-img').src = data.bot.avatar;
-                    document.getElementById('p-author-name').innerText = data.bot.name;
                     document.getElementById('p-footer-img').src = data.bot.avatar;
+                    document.getElementById('p-author-name').innerText = data.bot.name;
                 }
-            } catch(e) { console.log("Erreur de liaison bot"); }
+            } catch(e) {}
         };
     </script>
 </body>
