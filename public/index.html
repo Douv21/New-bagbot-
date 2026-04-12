@@ -3,311 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BagBot OS | Next-Gen Dashboard</title>
+    <title>BagBot | Control Panel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- SYSTÈME DE VARIABLES (ÉVOLUTIF) --- */
+        /* CONFIGURATION DES COULEURS BAGBOT */
         :root {
-            --accent: #ed4245;
-            --bg-dark: #0b0b0b;
-            --bg-sidebar: #000000;
-            --bg-card: #1e1f22;
-            --bg-input: #111214;
-            --border: #2b2d31;
-            --text-primary: #f2f3f5;
+            --accent: #ed4245;       /* Rouge Discord/BagBot */
+            --bg-dark: #0b0b0b;      /* Noir profond */
+            --bg-sidebar: #000000;   /* Noir pur */
+            --border: #1e1f22;       /* Gris très sombre */
+            --text: #ffffff;
             --text-muted: #949ba4;
-            --sidebar-width: 260px;
-            --header-h: 60px;
-            --anim-speed: 0.3s;
+            --sidebar-w: 260px;
         }
 
-        /* --- BASE RESET --- */
-        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { 
-            background: var(--bg-dark); 
-            color: var(--text-primary); 
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
-            display: flex; 
-            height: 100vh; 
-            width: 100vw;
-            overflow: hidden; 
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* --- SIDEBAR DYNAMIQUE --- */
+        /* --- SIDEBAR --- */
         #sidebar {
-            width: var(--sidebar-width);
+            width: var(--sidebar-w);
             background: var(--bg-sidebar);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            transition: all var(--anim-speed) cubic-bezier(0.4, 0, 0.2, 1);
-            flex-shrink: 0;
-            z-index: 1001;
-            height: 100%;
+            transition: transform 0.3s ease;
+            z-index: 1000;
         }
 
-        /* État Fermé */
+        /* État quand la sidebar est cachée */
         #sidebar.closed {
-            margin-left: calc(-1 * var(--sidebar-width));
+            transform: translateX(-100%);
+            position: absolute;
+            height: 100%;
         }
 
         .sidebar-header {
             padding: 30px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 900;
             color: var(--accent);
             letter-spacing: 2px;
         }
 
-        .nav-container {
+        .nav-list {
             flex: 1;
-            overflow-y: auto;
             padding: 10px;
         }
 
-        .nav-section-label {
-            font-size: 11px;
-            font-weight: 800;
-            color: #4e5058;
-            text-transform: uppercase;
-            padding: 20px 12px 8px;
-            letter-spacing: 1px;
-        }
-
-        .nav-link {
-            padding: 12px 16px;
-            border-radius: 6px;
+        .nav-item {
+            padding: 14px 18px;
             display: flex;
             align-items: center;
             gap: 12px;
             color: var(--text-muted);
-            text-decoration: none;
             cursor: pointer;
+            border-radius: 8px;
             transition: 0.2s;
-            margin-bottom: 2px;
+            margin-bottom: 5px;
             font-weight: 600;
         }
 
-        .nav-link:hover, .nav-link.active {
+        .nav-item:hover, .nav-item.active {
             background: rgba(237, 66, 69, 0.1);
-            color: #fff;
+            color: white;
         }
 
-        .nav-link.active {
+        .nav-item.active {
             color: var(--accent);
-            border-left: 3px solid var(--accent);
-            border-radius: 0 6px 6px 0;
         }
 
-        .nav-link i { width: 20px; text-align: center; font-size: 18px; }
-
-        /* --- CONTENU PRINCIPAL --- */
-        .main-viewport {
+        /* --- CONTENU --- */
+        .main {
             flex: 1;
             display: flex;
             flex-direction: column;
             min-width: 0;
-            position: relative;
         }
 
         header {
-            height: var(--header-h);
-            background: rgba(5, 5, 5, 0.9);
-            backdrop-filter: blur(10px);
+            height: 60px;
+            background: #050505;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             padding: 0 20px;
-            justify-content: space-between;
-            z-index: 100;
+            gap: 20px;
         }
 
-        .header-left { display: flex; align-items: center; gap: 15px; }
-
-        /* BOUTON HAMBURGER */
-        .burger-btn {
-            background: transparent;
-            border: none;
-            color: var(--accent);
+        #burger {
             font-size: 22px;
+            color: var(--accent);
             cursor: pointer;
             width: 40px;
             height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: 0.2s;
         }
-        .burger-btn:hover { background: rgba(255,255,255,0.05); border-radius: 50%; }
 
-        .view-info { font-weight: 800; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; }
-
-        .content-scroll {
+        .content {
             flex: 1;
-            overflow-y: auto;
             padding: 40px 20px;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* --- ÉLÉMENTS ÉVOLUTIFS (EMBED DESIGNER) --- */
-        .module-card {
-            width: 100%;
-            max-width: 550px;
-            background: var(--bg-card);
-            border-radius: 8px;
-            padding: 24px;
-            border-left: 4px solid var(--accent);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .input-title {
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-size: 20px;
-            font-weight: 700;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .input-area {
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 15px;
-            color: var(--text-primary);
-            width: 100%;
-            min-height: 150px;
-            resize: none;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .btn-send {
-            width: 100%;
-            background: var(--accent);
-            color: #fff;
-            padding: 18px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 900;
-            font-size: 16px;
-            text-transform: uppercase;
-            cursor: pointer;
-            margin-top: 30px;
-            transition: 0.2s;
-        }
-        .btn-send:hover { filter: brightness(1.1); transform: translateY(-2px); }
-
-        /* --- OVERLAY MOBILE --- */
-        #overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-        }
-
-        @media (max-width: 768px) {
-            #sidebar { position: fixed; left: 0; }
-            #sidebar.closed { left: calc(-1 * var(--sidebar-width)); }
-            #overlay.active { display: block; }
+        /* Message temporaire pour le centre */
+        .placeholder {
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 50px;
         }
     </style>
 </head>
 <body>
 
-    <div id="overlay"></div>
-
-    <aside id="sidebar">
-        <div class="sidebar-header">
-            <span>BAGBOT</span>
-            </div>
-        
-        <div class="nav-container">
-            <div class="nav-section-label">Messages</div>
-            <div class="nav-link active"><i class="fas fa-magic"></i> Designer</div>
-            <div class="nav-link"><i class="fas fa-calendar-alt"></i> Planning</div>
-            
-            <div class="nav-section-label">Sécurité</div>
-            <div class="nav-link"><i class="fas fa-shield-alt"></i> Auto-Mod</div>
-            <div class="nav-link"><i class="fas fa-user-shield"></i> Administration</div>
-
-            <div class="nav-section-label">Outils</div>
-            <div class="nav-link"><i class="fas fa-chart-bar"></i> Statistiques</div>
-            <div class="nav-link"><i class="fas fa-cog"></i> Réglages</div>
+    <nav id="sidebar">
+        <div class="sidebar-header">BAGBOT</div>
+        <div class="nav-list">
+            <div class="nav-item active"><i class="fas fa-home"></i> Dashboard</div>
+            <div class="nav-item"><i class="fas fa-envelope"></i> Messages</div>
+            <div class="nav-item"><i class="fas fa-cog"></i> Paramètres</div>
         </div>
+    </nav>
 
-        <div style="padding: 20px; border-top: 1px solid var(--border); font-size: 10px; color: #333; text-align: center; font-weight: bold;">
-            SYSTEM CORE v5.0
-        </div>
-    </aside>
-
-    <main class="main-viewport">
+    <div class="main">
         <header>
-            <div class="header-left">
-                <button class="burger-btn" id="master-burger">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="view-info">Dashboard Designer</div>
-            </div>
-            <div style="font-size: 11px; font-weight: 900; color: #23a559;">
-                <i class="fas fa-circle" style="font-size: 8px;"></i> LIVE
-            </div>
+            <div id="burger"><i class="fas fa-bars"></i></div>
+            <div style="font-weight: 900; letter-spacing: 1px; font-size: 14px;">CONTROLE</div>
         </header>
 
-        <div class="content-scroll">
-            <div class="module-card">
-                <input type="text" class="input-title" value="Titre de l'Embed">
-                <textarea class="input-area" placeholder="Écrivez le contenu de votre message ici..."></textarea>
-                
-                <div style="margin-top: 20px;">
-                    <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Salon de destination</label>
-                    <select id="chan-list" style="width:100%; background:var(--bg-input); border:1px solid var(--border); color:#fff; padding:12px; border-radius:6px; margin-top:8px;">
-                        <option>Chargement...</option>
-                    </select>
-                </div>
-
-                <button class="btn-send" id="deploy-btn">Déployer le message</button>
+        <div class="content">
+            <div class="placeholder">
+                <h2>Bienvenue sur BagBot</h2>
+                <p>La structure est prête. Prêt à ajouter tes modules.</p>
             </div>
         </div>
-    </main>
+    </div>
 
     <script>
         const sidebar = document.getElementById('sidebar');
-        const burger = document.getElementById('master-burger');
-        const overlay = document.getElementById('overlay');
+        const burger = document.getElementById('burger');
 
-        // FONCTION UNIQUE POUR OUVRIR / FERMER
-        function toggleSidebar() {
+        // Fonction pour ouvrir/fermer au clic
+        burger.onclick = () => {
             sidebar.classList.toggle('closed');
-            if (window.innerWidth <= 768) {
-                overlay.classList.toggle('active');
-            }
+        };
+
+        // Sur mobile, on ferme la sidebar par défaut au chargement
+        if (window.innerWidth < 768) {
+            sidebar.classList.add('closed');
         }
-
-        burger.addEventListener('click', toggleSidebar);
-        overlay.addEventListener('click', toggleSidebar);
-
-        // LIAISON API FLASK
-        async function fetchInfo() {
-            try {
-                const res = await fetch('/api/get_server_info');
-                const data = await res.json();
-                if (data.channels) {
-                    document.getElementById('chan-list').innerHTML = data.channels.map(c => 
-                        `<option value="${c.id}"># ${c.name}</option>`
-                    ).join('');
-                }
-            } catch(e) { console.log("Erreur API"); }
-        }
-
-        window.onload = fetchInfo;
     </script>
 </body>
 </html>
