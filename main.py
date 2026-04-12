@@ -22,7 +22,7 @@ def get_info():
     try:
         guild = bot.get_guild(int(GUILD_ID))
         channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
-        return jsonify({"channels": channels, "bot": {"name": bot.user.name, "avatar": str(bot.user.display_avatar.url)}})
+        return jsonify({"channels": channels, "bot": {"name": bot.user.name}, "config": {}})
     except: return jsonify({"error": "Erreur"}), 500
 
 @app.route('/api/test_message', methods=['POST'])
@@ -40,11 +40,10 @@ def test_message():
                 fname = val.split('/')[-1]
                 path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
                 if os.path.exists(path):
-                    # On crée le fichier mais on ne l'envoie QUE via l'embed
                     files.append(discord.File(path, filename=fname))
                     if key == 'thumb': embed.set_thumbnail(url=f"attachment://{fname}")
                     else: embed.set_image(url=f"attachment://{fname}")
-        
+        # Envoi unique : l'image est liée à l'embed via attachment://
         await channel.send(embed=embed, files=files)
 
     asyncio.run_coroutine_threadsafe(send_task(), bot.loop)
