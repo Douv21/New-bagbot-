@@ -3,177 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BagBot | Accueil Pro</title>
+    <title>BagBot | Accueil Maître</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --accent: #ed4245;
             --bg-dark: #0b0b0b;
-            --bg-sidebar: #000000;
             --card: #1e1f22;
+            --embed-bg: #2b2d31;
             --input: #111214;
-            --border: #2b2d31;
+            --border: #383a40;
             --text: #ffffff;
-            --text-muted: #949ba4;
-            --sidebar-w: 260px;
+            --text-m: #949ba4;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
-        body { background: var(--bg-dark); color: var(--text); font-family: 'Helvetica Neue', Arial, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        body { background: var(--bg-dark); color: var(--text); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* --- SIDEBAR --- */
-        #sidebar { width: var(--sidebar-w); background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; }
-        #sidebar.closed { transform: translateX(-100%); position: absolute; height: 100%; }
-        .sidebar-header { padding: 30px 24px; font-size: 24px; font-weight: 900; color: var(--accent); letter-spacing: 2px; }
-        .nav-list { flex: 1; padding: 10px; }
-        .nav-item { padding: 14px 18px; display: flex; align-items: center; gap: 12px; color: var(--text-muted); cursor: pointer; border-radius: 8px; margin-bottom: 5px; font-weight: 600; }
-        .nav-item.active { background: rgba(237, 66, 69, 0.1); color: var(--accent); }
+        /* --- CONTENEUR --- */
+        .viewport { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        header { height: 60px; background: #050505; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 10px; flex-shrink: 0; }
+        .page-title { font-weight: 900; font-size: 14px; letter-spacing: 1px; color: #fff; }
 
-        /* --- MAIN --- */
-        .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        header { height: 60px; background: #050505; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 20px; }
-        #burger { font-size: 22px; color: var(--accent); cursor: pointer; }
+        .content-scroll { flex: 1; overflow-y: auto; padding: 30px 15px; display: flex; flex-direction: column; align-items: center; scrollbar-width: thin; scrollbar-color: #000 #111; }
 
-        .content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
-
-        .module-card { width: 100%; max-width: 600px; background: var(--card); border-radius: 12px; padding: 25px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .module-card { width: 100%; max-width: 580px; background: var(--card); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .module-label { font-size: 11px; font-weight: 800; color: var(--text-m); text-transform: uppercase; margin-bottom: 15px; display: block; }
         
-        /* --- APERÇU INTERACTIF (STYLE DISCORD) --- */
-        .preview-label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; display: block; }
-        
-        .embed-preview {
-            background: #2b2d31;
+        /* --- ARCHITECTURE EMBED DISCORD COMPLET --- */
+        .discord-embed {
+            background: var(--embed-bg);
             border-left: 4px solid var(--accent);
             border-radius: 4px;
-            padding: 15px;
+            padding: 16px;
             margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
             cursor: pointer;
             transition: 0.2s;
         }
-        .embed-preview:hover { background: #313338; }
-        
-        #preview-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; display: block; }
-        #preview-desc { font-size: 14px; color: #dbdee1; line-height: 1.4; display: block; }
-        
-        /* --- FORMULAIRE --- */
-        .hidden-inputs { display: none; }
-        input, select, textarea { 
-            width: 100%; background: var(--input); border: 1px solid var(--border); 
-            color: white; padding: 12px; border-radius: 6px; margin-bottom: 15px; 
-        }
+        .discord-embed:hover { background: #313338; }
 
-        .btn-save { 
-            width: 100%; background: var(--accent); color: white; border: none; 
-            padding: 16px; border-radius: 8px; font-weight: 900; cursor: pointer; 
-            text-transform: uppercase; margin-top: 10px;
-        }
+        /* Auteur (Logo du Bot) */
+        .embed-author { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .author-icon { width: 24px; height: 24px; border-radius: 50%; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .author-icon i { font-size: 14px; color: var(--accent); }
+        .author-name { font-size: 13px; font-weight: 700; color: #fff; }
 
-        /* Notification de succès */
-        #toast {
-            position: fixed; bottom: 20px; right: 20px; background: #23a559;
-            color: white; padding: 12px 25px; border-radius: 5px; font-weight: bold;
-            display: none; z-index: 2000;
-        }
+        /* Contenu Principal et Miniature */
+        .embed-main-content { display: flex; justify-content: space-between; gap: 15px; }
+        .embed-text-fields { flex: 1; }
+        
+        #p-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; display: block; }
+        #p-desc { font-size: 14px; color: #dbdee1; line-height: 1.4; display: block; }
+        
+        .thumb-upload { width: 80px; height: 80px; background: rgba(0,0,0,0.2); border: 2px dashed #444; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #444; }
+
+        /* Image Principale */
+        .embed-image-box { width: 100%; height: 200px; background: #2b2d31; margin-top: 15px; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px dashed #444; }
+
+        /* Footer */
+        .embed-footer { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+        .footer-icon { width: 20px; height: 20px; border-radius: 50%; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .footer-icon i { font-size: 11px; color: #333; }
+        #p-footer { font-size: 12px; color: #949ba4; font-weight: 600; }
+
+        /* --- ZONE ÉDITION INTERACTIVE --- */
+        #edit-zone.hidden { display: none; }
+        .edit-group { margin-bottom: 20px; border-top: 1px solid var(--border); padding-top: 20px; }
+        
+        label { display: block; font-size: 11px; font-weight: 800; color: var(--text-m); text-transform: uppercase; margin-bottom: 8px; }
+        input, select, textarea { width: 100%; background: var(--input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 6px; margin-bottom: 12px; }
+        textarea { resize: none; }
+        
+        .image-input-stack { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .btn-main { width: 100%; background: var(--accent); color: white; border: none; padding: 16px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 14px; transition: 0.2s; }
+        .btn-main:hover { filter: brightness(1.1); }
     </style>
 </head>
 <body>
 
-    <div id="toast">✅ Configuration enregistrée !</div>
-
-    <nav id="sidebar">
-        <div class="sidebar-header">BAGBOT</div>
-        <div class="nav-list">
-            <div class="nav-item active"><i class="fas fa-door-open"></i> Accueil</div>
-            <div class="nav-item"><i class="fas fa-cog"></i> Paramètres</div>
-        </div>
-    </nav>
-
-    <div class="main">
+    <div class="viewport">
         <header>
-            <div id="burger"><i class="fas fa-bars"></i></div>
-            <div style="font-weight: 900; letter-spacing: 1px;">CONFIGURATION ACCUEIL</div>
+            <i class="fas fa-bars" style="color: var(--accent);"></i>
+            <div class="page-title">CONFIGURATION ACCUEIL</div>
         </header>
 
-        <div class="content">
+        <div class="content-scroll">
             <div class="module-card">
-                <span class="preview-label">Aperçu en direct (Cliquez pour éditer)</span>
+                <span class="module-label">Aperçu Complet (Cliquez pour éditer)</span>
                 
-                <div class="embed-preview" id="embed-trigger">
-                    <span id="preview-title">Bienvenue sur le serveur !</span>
-                    <span id="preview-desc">Nous sommes ravis de te voir ici {user}. N'oublie pas de lire le règlement !</span>
-                </div>
-
-                <div id="edit-zone" class="hidden-inputs">
-                    <label>Titre de l'Embed</label>
-                    <input type="text" id="input-title" value="Bienvenue sur le serveur !">
+                <div class="discord-embed" id="embed-trigger">
+                    <div class="embed-author">
+                        <div class="author-icon"><i class="fas fa-robot"></i></div>
+                        <span class="author-name">BagBot System</span>
+                    </div>
                     
-                    <label>Description du message</label>
-                    <textarea id="input-desc" rows="4">Nous sommes ravis de te voir ici {user}. N'oublie pas de lire le règlement !</textarea>
+                    <div class="embed-main-content">
+                        <div class="embed-text-fields">
+                            <span id="p-title">Bienvenue sur le serveur !</span>
+                            <span id="p-desc">Nous sommes ravis de te voir ici {user}. N'oublie pas de lire le règlement !</span>
+                        </div>
+                        <div class="thumb-upload"><i class="fas fa-plus"></i></div>
+                    </div>
+                    
+                    <div class="embed-image-box">
+                        <i class="fas fa-image" style="font-size: 30px; color: #333;"></i>
+                    </div>
+                    
+                    <div class="embed-footer">
+                        <div class="footer-icon"><i class="fas fa-info-circle"></i></div>
+                        <span id="p-footer">ID: {user_id} • BagBot OS</span>
+                    </div>
                 </div>
 
-                <label>Salon de bienvenue</label>
-                <select id="welcome-chan">
-                    <option value="">Sélectionner un salon...</option>
-                </select>
+                <div id="edit-zone" class="hidden">
+                    <div class="edit-group">
+                        <label>Texte Principal</label>
+                        <input type="text" id="in-title" placeholder="Titre..." value="Bienvenue sur le serveur !">
+                        <textarea id="in-desc" rows="4" placeholder="Description...">Nous sommes ravis de te voir ici {user}. N'oublie pas de lire le règlement !</textarea>
+                    </div>
 
-                <button class="btn-save" onclick="saveConfig()">Valider et Enregistrer</button>
+                    <div class="edit-group">
+                        <label>Texte de Footer</label>
+                        <input type="text" id="in-footer" placeholder="Footer..." value="ID: {user_id} • BagBot OS">
+                    </div>
+
+                    <div class="edit-group image-input-stack">
+                        <div>
+                            <label>URL Miniature</label>
+                            <input type="text" id="in-thumb" placeholder="https://...">
+                        </div>
+                        <div>
+                            <label>URL Image Principale</label>
+                            <input type="text" id="in-image" placeholder="https://...">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <label>Salon de diffusion</label>
+                    <select id="welcome-chan">
+                        <option value="123"># bagbot-install</option>
+                    </select>
+                </div>
+
+                <button class="btn-main">Valider et Enregistrer</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Toggle Sidebar
-        document.getElementById('burger').onclick = () => document.getElementById('sidebar').classList.toggle('closed');
-
-        // Système d'édition par clic
+        // Système d'édition interactive
         const trigger = document.getElementById('embed-trigger');
         const editZone = document.getElementById('edit-zone');
-        const pTitle = document.getElementById('preview-title');
-        const pDesc = document.getElementById('preview-desc');
-        const iTitle = document.getElementById('input-title');
-        const iDesc = document.getElementById('input-desc');
 
-        trigger.onclick = () => {
-            editZone.classList.toggle('hidden-inputs');
-        };
+        const pTitle = document.getElementById('p-title');
+        const pDesc = document.getElementById('p-desc');
+        const pFooter = document.getElementById('p-footer');
+        
+        const inTitle = document.getElementById('in-title');
+        const inDesc = document.getElementById('in-desc');
+        const inFooter = document.getElementById('in-footer');
+
+        // Afficher/Cacher les champs
+        trigger.onclick = () => editZone.classList.toggle('hidden');
 
         // Mise à jour de l'aperçu en temps réel
-        iTitle.oninput = () => pTitle.innerText = iTitle.value || "Titre vide";
-        iDesc.oninput = () => pDesc.innerText = iDesc.value || "Description vide";
-
-        // Sauvegarde et Validation
-        async function saveConfig() {
-            const data = {
-                title: iTitle.value,
-                description: iDesc.value,
-                channel: document.getElementById('welcome-chan').value
-            };
-
-            console.log("Envoi des données :", data);
-
-            // Simulation d'envoi API
-            const toast = document.getElementById('toast');
-            toast.style.display = 'block';
-            
-            setTimeout(() => {
-                toast.style.display = 'none';
-                editZone.classList.add('hidden-inputs'); // Referme la zone d'édition
-            }, 3000);
-        }
+        inTitle.oninput = () => pTitle.innerText = inTitle.value || "Titre de l'annonce";
+        inDesc.oninput = () => pDesc.innerText = inDesc.value || "Décrivez votre annonce ici...";
+        inFooter.oninput = () => pFooter.innerText = inFooter.value || "BagBot OS";
 
         // Chargement des salons depuis le bot
-        async function loadChans() {
+        async function fetchChans() {
             try {
                 const res = await fetch('/api/get_server_info');
                 const data = await res.json();
                 if (data.channels) {
-                    document.getElementById('welcome-chan').innerHTML += data.channels.map(c => 
+                    const sel = document.getElementById('welcome-chan');
+                    sel.innerHTML = data.channels.map(c => 
                         `<option value="${c.id}"># ${c.name}</option>`
                     ).join('');
                 }
-            } catch(e) { console.log("Liaison bot indisponible"); }
+            } catch(e) { console.log("Bot Link Error"); }
         }
-        window.onload = loadChans;
+        window.onload = fetchChans;
     </script>
 </body>
 </html>
