@@ -3,116 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot OS</title>
+    <title>BagBot Dashboard v2</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --accent: #ed4245; --bg: #050505; --embed-bg: #2b2d31; }
+        :root { --accent: #ed4245; --bg: #050505; --card: #111214; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: var(--bg); color: white; font-family: sans-serif; display: flex; height: 100vh; }
         
-        /* SIDEBAR */
-        #sidebar { width: 250px; background: #000; border-right: 1px solid #2b2d31; padding-top: 20px; }
-        .nav-item { padding: 15px 25px; display: flex; align-items: center; gap: 10px; color: #949ba4; font-weight: bold; cursor: pointer; }
+        /* SIDEBAR CORRIGÉE */
+        #sidebar { width: 250px; background: #000; border-right: 1px solid #2b2d31; }
+        .nav-item { padding: 15px 20px; display: flex; align-items: center; gap: 10px; color: #949ba4; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: rgba(237, 66, 69, 0.1); }
 
-        /* CONTENT */
-        .content { flex: 1; padding: 20px; overflow-y: auto; }
-        .card { background: #111214; border-radius: 8px; padding: 20px; border: 1px solid #2b2d31; max-width: 600px; margin: 0 auto; }
-
-        /* REAL DISCORD EMBED */
-        .discord-embed { background: var(--embed-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px; margin-bottom: 20px; }
-        .embed-author { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; font-weight: bold; }
-        .embed-author img { width: 22px; height: 22px; border-radius: 50%; }
+        .main { flex: 1; padding: 20px; overflow-y: auto; }
+        .embed { background: #2b2d31; border-left: 4px solid var(--accent); padding: 15px; border-radius: 4px; margin-bottom: 20px; }
         
-        .embed-title { font-size: 16px; font-weight: bold; margin-bottom: 8px; }
-        .embed-desc { font-size: 14px; color: #dbdee1; margin-bottom: 10px; }
+        /* ZONES D'IMAGES */
+        .img-zone { border: 1px dashed #444; background: #1e1f22; display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 10px 0; overflow: hidden; }
+        .banner { width: 100%; height: 120px; }
+        .thumb { width: 60px; height: 60px; float: right; }
         
-        .embed-image { width: 100%; height: 150px; background: #1e1f22; border-radius: 4px; border: 1px dashed #444; margin-top: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .embed-image img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .embed-footer { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 12px; color: #949ba4; }
-        .embed-footer img { width: 18px; height: 18px; border-radius: 50%; }
-
-        /* INPUTS */
-        .input-box { margin-top: 15px; }
-        input, textarea, select { width: 100%; background: #080808; border: 1px solid #2b2d31; color: white; padding: 12px; border-radius: 6px; margin-bottom: 10px; }
-        .btn { width: 100%; background: var(--accent); color: white; border: none; padding: 15px; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        input, textarea, select { width: 100%; background: #080808; border: 1px solid #2b2d31; color: white; padding: 12px; margin-bottom: 10px; border-radius: 6px; }
+        .btn { width: 100%; background: var(--accent); color: white; border: none; padding: 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div id="sidebar">
-        <div style="padding: 0 25px 20px; color: var(--accent); font-weight: 900; font-size: 22px;">BAGBOT</div>
+    <nav id="sidebar">
+        <div style="padding: 25px; color: var(--accent); font-weight: 900; font-size: 20px;">BAGBOT</div>
         <div class="nav-item active"><i class="fas fa-home"></i> ACCUEIL</div>
         <div class="nav-item"><i class="fas fa-shield-alt"></i> AUTO-MOD</div>
-    </div>
+    </nav>
+    <div class="main">
+        <div class="embed">
+            <div id="p-thumb" class="img-zone thumb" onclick="edit('thumb')"><i class="fas fa-plus"></i></div>
+            <div id="p-title" style="font-weight:bold; font-size:18px;" onclick="edit('title')">Titre de l'accueil</div>
+            <div id="p-desc" style="color:#dbdee1;" onclick="edit('desc')">Cliquez ici pour changer la description...</div>
+            <div id="p-banner" class="img-zone banner" onclick="edit('banner')"><i class="fas fa-image"></i></div>
+            <div id="p-footer" style="font-size:12px; color:#949ba4; margin-top:10px;" onclick="edit('footer')">Footer • BagBot</div>
+        </div>
 
-    <div class="content">
-        <div class="card">
-            <div class="discord-embed">
-                <div class="embed-author">
-                    <img id="prev-auth" src="">
-                    <span id="prev-auth-name">Bot Name</span>
-                </div>
-                <div class="embed-title" id="prev-title">Titre de l'Embed</div>
-                <div class="embed-desc" id="prev-desc">Contenu du message d'accueil...</div>
-                <div class="embed-image" id="prev-img-container">
-                    <i class="fas fa-image" style="color: #333; font-size: 30px;"></i>
-                </div>
-                <div class="embed-footer">
-                    <img id="prev-foot" src="">
-                    <span id="prev-foot-text">ID: {user_id} • BagBot</span>
-                </div>
-            </div>
-
-            <div class="input-box">
-                <label style="font-size: 11px; color:#949ba4">TITRE</label>
-                <input type="text" id="in-title" placeholder="Bienvenue !" oninput="document.getElementById('prev-title').innerText=this.value">
-                
-                <label style="font-size: 11px; color:#949ba4">DESCRIPTION</label>
-                <textarea id="in-desc" rows="3" oninput="document.getElementById('prev-desc').innerText=this.value"></textarea>
-                
-                <label style="font-size: 11px; color:#949ba4">URL IMAGE (BANNIÈRE)</label>
-                <input type="text" id="in-img" placeholder="https://..." oninput="updateImg(this.value)">
-
-                <label style="font-size: 11px; color:#949ba4">SALON</label>
-                <select id="chan-list"></select>
-
-                <button class="btn" onclick="save()">Enregistrer et Déployer</button>
-            </div>
+        <div style="background: var(--card); padding: 15px; border-radius: 8px;">
+            <label id="edit-label" style="font-size:12px; color:var(--accent)">MODE ÉDITION : Sélectionnez un élément</label>
+            <input type="text" id="main-input" placeholder="Entrez la valeur ici...">
+            <select id="chan-list"></select>
+            <button class="btn" onclick="save()">VALIDER ET DÉPLOYER</button>
         </div>
     </div>
 
     <script>
-        function updateImg(url) {
-            const container = document.getElementById('prev-img-container');
-            if(url.includes('http')) container.innerHTML = `<img src="${url}">`;
-            else container.innerHTML = `<i class="fas fa-image" style="color: #333; font-size: 30px;"></i>`;
+        let current = '';
+        function edit(type) {
+            current = type;
+            document.getElementById('edit-label').innerText = "MODIFIER : " + type.toUpperCase();
         }
 
-        async function load() {
-            const res = await fetch('/api/get_server_info');
-            const data = await res.json();
-            document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            document.getElementById('prev-auth').src = data.bot.avatar;
-            document.getElementById('prev-foot').src = data.bot.avatar;
-            document.getElementById('prev-auth-name').innerText = data.bot.name;
+        document.getElementById('main-input').oninput = (e) => {
+            const val = e.target.value;
+            if(current === 'title') document.getElementById('p-title').innerText = val;
+            if(current === 'desc') document.getElementById('p-desc').innerText = val;
+            if(current === 'footer') document.getElementById('p-footer').innerText = val;
+            if(current === 'banner') document.getElementById('p-banner').innerHTML = `<img src="${val}" style="width:100%">`;
+            if(current === 'thumb') document.getElementById('p-thumb').innerHTML = `<img src="${val}" style="width:100%">`;
         }
 
         async function save() {
-            const settings = {
-                title: document.getElementById('prev-title').innerText,
-                description: document.getElementById('prev-desc').innerText,
-                image: document.getElementById('in-img').value,
-                channel: document.getElementById('chan-list').value
+            const data = {
+                category: "accueil",
+                settings: {
+                    title: document.getElementById('p-title').innerText,
+                    description: document.getElementById('p-desc').innerText,
+                    channel: document.getElementById('chan-list').value
+                }
             };
             await fetch('/api/save_settings', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({category: 'accueil', settings})
+                body: JSON.stringify(data)
             });
-            alert("Configuration sauvegardée !");
+            alert("Sauvegardé avec succès !");
         }
-        window.onload = load;
+
+        window.onload = async () => {
+            const res = await fetch('/api/get_server_info');
+            const data = await res.json();
+            document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+        }
     </script>
 </body>
 </html>
