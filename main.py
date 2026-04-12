@@ -6,7 +6,6 @@ from discord.ext import commands
 from flask import Flask, session, request, jsonify, redirect
 from dotenv import load_dotenv
 
-# --- CONFIGURATION ---
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 CLIENT_ID = os.getenv("CLIENT_ID")
@@ -14,7 +13,7 @@ CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 GUILD_ID = int(os.getenv("GUILD_ID")) if os.getenv("GUILD_ID") else 0
 REDIRECT_URI = os.getenv("REDIRECT_URI")
 
-# --- INITIALISATION ---
+# Configuration Flask corrigée pour Termux
 app = Flask(__name__, static_folder='public', static_url_path='/')
 app.secret_key = os.urandom(24)
 
@@ -22,11 +21,10 @@ bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 def load_config():
     if not os.path.exists('config.json'):
-        return {"welcome": {}, "admin_roles": []}
+        return {"welcome": {"title": "", "desc": "", "footer": "", "channel": "", "banner": "", "thumbnail": ""}, "admin_roles": []}
     with open('config.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
-# --- ROUTES ---
 @app.route('/')
 def index():
     return app.send_static_file('index.html')
@@ -52,22 +50,23 @@ def get_data():
 def save():
     if 'user_id' not in session: return jsonify({"error": "Auth"}), 401
     with open('config.json', 'w', encoding='utf-8') as f:
-        json.dump(request.json, f, indent=4)
+        json.dump(request.json, f, indent=4, ensure_ascii=False)
     return jsonify({"status": "ok"})
 
 @app.route('/api/test_welcome', methods=['POST'])
 def test_welcome():
-    config = load_config().get('welcome', {})
-    channel = bot.get_channel(int(config.get('channel', 0)))
+    if 'user_id' not in session: return jsonify({"error": "Auth"}), 401
+    cfg = load_config().get('welcome', {})
+    channel = bot.get_channel(int(cfg.get('channel', 0)))
     if not channel: return jsonify({"error": "Salon invalide"}), 400
     
     u, g, c = session.get('user_name', 'User'), channel.guild.name, str(channel.guild.member_count)
     def rep(t): return t.replace('{user}', u).replace('{guild}', g).replace('{count}', c) if t else ""
 
-    embed = discord.Embed(title=rep(config.get('title')), description=rep(config.get('desc')), color=0xed4245)
-    if config.get('banner'): embed.set_image(url=config.get('banner'))
-    if config.get('thumbnail'): embed.set_thumbnail(url=config.get('thumbnail'))
-    if config.get('footer'): embed.set_footer(text=rep(config.get('footer')))
+    embed = discord.Embed(title=rep(cfg.get('title')), description=rep(cfg.get('desc')), color=0xed4245)
+    if cfg.get('banner'): embed.set_image(url=cfg.get('banner'))
+    if cfg.get('thumbnail'): embed.set_thumbnail(url=cfg.get('thumbnail'))
+    if cfg.get('footer'): embed.set_footer(text=rep(cfg.get('footer')))
 
     bot.loop.create_task(channel.send(embed=embed))
     return jsonify({"status": "ok"})
@@ -79,7 +78,8 @@ def login():
 
 @app.route('/api/callback')
 def callback():
-    session['user_id'], session['user_name'] = "admin", "Administrateur"
+    session['user_id'] = "admin"
+    session['user_name'] = "Administrateur"
     return redirect('/')
 
 if __name__ == "__main__":
