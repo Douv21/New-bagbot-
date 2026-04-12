@@ -6,73 +6,46 @@
     <title>BagBot Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg-dark: #050505; --bg-panel: #0f0f0f; --sidebar-bg: #000000;
-            --accent: #ed4245; --embed-bg: #2b2d31; --text-muted: #949ba4; 
-            --border: #1e1e1e; --discord-blue: #5865F2;
-        }
+        :root { --bg-dark: #050505; --bg-panel: #0f0f0f; --sidebar-bg: #000000; --accent: #ed4245; --embed-bg: #2b2d31; --text-muted: #949ba4; --border: #1e1e1e; --discord-blue: #5865F2; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg-dark); color: white; display: flex; height: 100vh; overflow: hidden; }
-
-        #sidebar { 
-            width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border); 
-            position: fixed; height: 100%; z-index: 2000; 
-            transition: transform 0.3s ease; transform: translateX(0); 
-        }
-
+        #sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; height: 100%; z-index: 2000; transition: transform 0.3s ease; }
         .nav-item { padding: 18px 25px; display: flex; align-items: center; gap: 15px; color: var(--text-muted); cursor: pointer; font-weight: 700; }
         .nav-item.active { color: var(--accent); background: rgba(237, 66, 69, 0.05); border-right: 3px solid var(--accent); }
-
         main { flex: 1; margin-left: 260px; display: flex; flex-direction: column; height: 100vh; transition: 0.3s; }
         header { height: 60px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 15px; flex-shrink: 0; }
-        .burger { font-size: 22px; cursor: pointer; color: var(--accent); }
-
         .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; flex: 1; padding-bottom: 120px; }
         .content-section.active { display: flex; }
-
         .discord-embed { width: 100%; max-width: 480px; background: var(--embed-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px; margin-bottom: 20px; position: relative; }
-        .thumb-preview { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: rgba(0,0,0,0.2); border: 1px dashed #444; border-radius: 4px; overflow: hidden; }
-        .banner-preview { width: 100%; height: 140px; margin-top: 10px; background: rgba(0,0,0,0.2); border: 1px dashed #444; border-radius: 4px; overflow: hidden; }
+        .thumb-preview { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: rgba(0,0,0,0.2); border: 1px dashed #444; overflow: hidden; }
+        .banner-preview { width: 100%; height: 140px; margin-top: 10px; background: rgba(0,0,0,0.2); border: 1px dashed #444; overflow: hidden; }
         .img-zone img { width: 100%; height: 100%; object-fit: cover; }
-
-        .gallery-card { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: #000; }
-        .gallery-card img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
-        .del-btn { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; }
-
         .config-card { width: 100%; max-width: 480px; background: var(--bg-panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 30px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
-
         .btn { border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-top: 10px; }
         .btn-save { background: var(--accent); }
         .btn-test { background: var(--discord-blue); }
-
+        .gallery-card { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #000; border: 1px solid var(--border); }
+        .gallery-card img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+        .del-btn { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; z-index: 10; }
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal.active { display: flex; }
-
-        @media (max-width: 900px) {
-            main { margin-left: 0; }
-            #sidebar { transform: translateX(-100%); }
-            #sidebar.open { transform: translateX(0); }
-        }
+        @media (max-width: 900px) { main { margin-left: 0; } #sidebar { transform: translateX(-100%); } #sidebar.open { transform: translateX(0); } }
     </style>
 </head>
 <body>
-
     <nav id="sidebar">
         <div style="padding: 25px; font-size: 22px; font-weight: 900; color: var(--accent); display: flex; justify-content: space-between;">
             BAGBOT <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer"></i>
         </div>
         <div class="nav-item active" onclick="show('accueil', this)"><i class="fas fa-home"></i> Accueil</div>
         <div class="nav-item" onclick="show('images', this)"><i class="fas fa-images"></i> Images</div>
-        <div class="nav-item" onclick="show('admin', this)"><i class="fas fa-user-shield"></i> Admin</div>
+        <div id="nav-admin" class="nav-item" style="display:none" onclick="show('admin', this)"><i class="fas fa-user-shield"></i> Admin</div>
     </nav>
 
     <main>
-        <header>
-            <i class="fas fa-bars burger" onclick="toggleSidebar()"></i>
-            <span id="bot-name" style="font-weight: 800; flex:1">BagBot</span>
-        </header>
-
+        <header><i class="fas fa-bars burger" onclick="toggleSidebar()" style="cursor:pointer; color:var(--accent); font-size:22px"></i> <span id="bot-name" style="font-weight: 800; flex:1">BagBot</span></header>
+        
         <section id="accueil" class="content-section active">
             <div class="discord-embed">
                 <div class="thumb-preview img-zone" onclick="openM('thumb')" id="box-thumb"></div>
@@ -95,8 +68,9 @@
 
         <section id="admin" class="content-section">
             <div class="config-card">
-                <h3 style="margin-bottom:15px">Rôles autorisés</h3>
-                <input type="text" id="role-list" placeholder="Admin, Fondateur (séparés par virgule)">
+                <h3 style="margin-bottom:15px">Accès Dashboard</h3>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom:10px">Sélectionnez les rôles autorisés :</p>
+                <select id="role-selector" multiple style="height: 180px;"></select>
                 <button class="btn btn-save" onclick="saveRoles()">SAUVEGARDER LES RÔLES</button>
             </div>
         </section>
@@ -113,91 +87,66 @@
     </div>
 
     <script>
-        let target = '';
-        const API = window.location.origin;
-
+        let target = ''; const API = window.location.origin;
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
         function show(id, el) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            el.classList.add('active');
+            document.getElementById(id).classList.add('active'); el.classList.add('active');
             if(id === 'images') loadG();
             if(window.innerWidth < 900) toggleSidebar();
         }
-
         function sync() {
             document.getElementById('p-title').innerText = document.getElementById('in-title').value || "Titre";
             document.getElementById('p-desc').innerText = document.getElementById('in-desc').value || "Description...";
         }
-
         function openM(t) { target = t; document.getElementById('modal').classList.add('active'); }
-
         async function up() {
             const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]);
             const res = await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
-            const data = await res.json();
-            document.getElementById('url-in').value = data.url;
-            apply();
+            const data = await res.json(); document.getElementById('url-in').value = data.url; apply();
         }
-
         function apply() {
-            const val = document.getElementById('url-in').value;
-            if(val) {
-                const src = val.startsWith('http') ? val : API + val;
-                document.getElementById('box-'+target).innerHTML = `<img src="${src}">`;
-                document.getElementById('box-'+target).dataset.path = val;
+            const v = document.getElementById('url-in').value;
+            if(v) {
+                const s = v.startsWith('http') ? v : API + v;
+                document.getElementById('box-'+target).innerHTML = `<img src="${s}">`;
+                document.getElementById('box-'+target).dataset.path = v;
             }
             document.getElementById('modal').classList.remove('active');
         }
-
         async function loadG() {
             const res = await fetch(`${API}/api/images`);
             const data = await res.json();
-            document.getElementById('gallery').innerHTML = data.images.map(u => `
-                <div class="gallery-card">
-                    <button class="del-btn" onclick="deleteImg('${u}')"><i class="fas fa-trash"></i></button>
-                    <img src="${API+u}" onclick="document.getElementById('url-in').value='${u}'; apply();">
-                </div>
-            `).join('');
+            document.getElementById('gallery').innerHTML = data.images.map(u => `<div class="gallery-card"><button class="del-btn" onclick="deleteImg('${u}')"><i class="fas fa-trash"></i></button><img src="${API+u}" onclick="document.getElementById('url-in').value='${u}'; apply();"></div>`).join('');
         }
-
-        async function deleteImg(path) {
-            if(!confirm("Supprimer ?")) return;
-            await fetch(`${API}/api/delete_image`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({path}) });
-            loadG();
-        }
-
+        async function deleteImg(p) { if(confirm("Supprimer ?")) { await fetch(`${API}/api/delete_image`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({path:p}) }); loadG(); } }
         async function saveRoles() {
-            const roles = document.getElementById('role-list').value.split(',').map(r => r.trim());
+            const roles = Array.from(document.getElementById('role-selector').selectedOptions).map(o => o.value);
             await fetch(`${API}/api/save_roles`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({roles}) });
             alert("Rôles mis à jour !");
         }
-
         async function test() {
-            const payload = {
-                channel: document.getElementById('chan-list').value,
-                title: document.getElementById('in-title').value,
-                desc: document.getElementById('in-desc').value,
-                thumb: document.getElementById('box-thumb').dataset.path || null,
-                banner: document.getElementById('box-banner').dataset.path || null
-            };
-            await fetch(`${API}/api/test_message`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            alert("🚀 Envoyé !");
+            const p = { channel: document.getElementById('chan-list').value, title: document.getElementById('in-title').value, desc: document.getElementById('in-desc').value, thumb: document.getElementById('box-thumb').dataset.path || null, banner: document.getElementById('box-banner').dataset.path || null };
+            await fetch(`${API}/api/test_message`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(p) }); alert("🚀 Envoyé !");
         }
-
+        async function save() {
+            const p = { title: document.getElementById('in-title').value, desc: document.getElementById('in-desc').value, thumb: document.getElementById('box-thumb').dataset.path || null, banner: document.getElementById('box-banner').dataset.path || null };
+            await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(p) }); alert("✅ Sauvegardé !");
+        }
         async function init() {
             const res = await fetch(`${API}/api/get_server_info`);
             if(res.status === 401) window.location.href = "/login";
-            const data = await res.json();
-            document.getElementById('bot-name').innerText = data.bot.name;
-            document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            if(data.config) {
-                document.getElementById('in-title').value = data.config.title || "";
-                document.getElementById('in-desc').value = data.config.desc || "";
-                document.getElementById('role-list').value = data.config.admin_roles.join(', ');
-                if(data.config.thumb) { document.getElementById('box-thumb').innerHTML = `<img src="${API+data.config.thumb}">`; document.getElementById('box-thumb').dataset.path = data.config.thumb; }
-                if(data.config.banner) { document.getElementById('box-banner').innerHTML = `<img src="${API+data.config.banner}">`; document.getElementById('box-banner').dataset.path = data.config.banner; }
+            const d = await res.json();
+            if(d.is_owner) document.getElementById('nav-admin').style.display = 'flex';
+            document.getElementById('bot-name').innerText = d.bot.name;
+            document.getElementById('chan-list').innerHTML = d.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            document.getElementById('role-selector').innerHTML = d.all_roles.map(r => `<option value="${r}" ${d.config.admin_roles.includes(r)?'selected':''}>${r}</option>`).join('');
+            if(d.config) {
+                document.getElementById('in-title').value = d.config.title || "";
+                document.getElementById('in-desc').value = d.config.desc || "";
+                if(d.config.thumb) { document.getElementById('box-thumb').innerHTML = `<img src="${API+d.config.thumb}">`; document.getElementById('box-thumb').dataset.path = d.config.thumb; }
+                if(d.config.banner) { document.getElementById('box-banner').innerHTML = `<img src="${API+d.config.banner}">`; document.getElementById('box-banner').dataset.path = d.config.banner; }
                 sync();
             }
         }
