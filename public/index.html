@@ -2,60 +2,70 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BagBot Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord: #2b2d31; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: white; display: flex; height: 100vh; overflow: hidden; width: 100vw; }
+        body { background: var(--bg); color: white; display: flex; height: 100vh; width: 100vw; overflow: hidden; }
         
-        /* SIDEBAR PC */
+        /* SIDEBAR */
         #sidebar { 
             width: 260px; background: #000; border-right: 1px solid var(--border); 
-            display: flex; flex-direction: column; flex-shrink: 0; z-index: 2000;
-            transition: transform 0.3s ease;
+            display: flex; flex-direction: column; flex-shrink: 0; z-index: 3000;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 4px solid var(--accent); }
 
-        /* OVERLAY MOBILE */
-        #overlay { 
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; 
-        }
+        /* OVERLAY */
+        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2500; }
 
-        /* RESPONSIVE MOBILE */
         @media (max-width: 900px) {
-            #sidebar { position: fixed; transform: translateX(-100%); left: 0; top: 0; bottom: 0; }
-            #sidebar.open { transform: translateX(0); }
+            #sidebar { position: fixed; left: -260px; top: 0; bottom: 0; }
+            #sidebar.open { left: 0; }
             #overlay.show { display: block; }
         }
 
         main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; position: relative; }
         
+        /* HEADER AVEC BOUTON FIXÉ */
         header { 
             height: 60px; background: var(--panel); border-bottom: 1px solid var(--border); 
-            display: flex; align-items: center; padding: 0 20px; font-weight: 900; 
-            position: sticky; top: 0; z-index: 100;
+            display: flex; align-items: center; padding: 0 60px; /* Espace pour le bouton à gauche */
+            font-weight: 900; position: sticky; top: 0; z-index: 100;
         }
 
-        /* BOUTON HAMBURGER FORCÉ ET VISIBLE */
         .menu-toggle { 
-            display: none; 
-            font-size: 26px; 
-            cursor: pointer; 
-            color: var(--accent); 
-            margin-right: 15px;
-            padding: 5px;
-            z-index: 1001;
+            display: none; position: absolute; left: 15px; top: 15px;
+            font-size: 28px; color: var(--accent); cursor: pointer; z-index: 200;
         }
 
-        @media (max-width: 900px) { 
-            .menu-toggle { display: block; } 
-            header span { margin-left: 5px; } /* Décale le titre pour laisser place au bouton */
-        }
+        @media (max-width: 900px) { .menu-toggle { display: block; } }
 
-        /* RESTE DU STYLE (Identique pour les cartes et rôles) */
+        /* MULTISELECT CORRIGÉ (POUR TES CAPTURES) */
+        .multiselect { position: relative; margin-bottom: 15px; width: 100%; }
+        .select-box { background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        
+        .dropdown-content { 
+            display: none; position: absolute; top: 100%; left: 0; right: 0; 
+            background: #0d0d0d; border: 1px solid var(--border); border-radius: 8px; 
+            max-height: 250px; overflow-y: auto; z-index: 5000; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+        .dropdown-content.show { display: block; }
+        
+        .option { 
+            display: flex; align-items: center; justify-content: flex-start;
+            padding: 12px 15px; gap: 15px; border-bottom: 1px solid #1a1a1a; 
+            cursor: pointer; width: 100%; 
+        }
+        .option:hover { background: #1a1a1a; }
+        .option input { width: 20px; height: 20px; accent-color: var(--accent); flex-shrink: 0; }
+        .option span { font-size: 14px; color: #eee; flex: 1; text-align: left; }
+
+        /* DISCORD EMBED & CARDS */
         .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; width: 100%; }
         .content-section.active { display: flex; }
         .discord-embed { width: 100%; max-width: 480px; background: var(--discord); border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; position: relative; margin-bottom: 25px; }
@@ -65,20 +75,15 @@
         .card { width: 100%; max-width: 480px; background: var(--panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
         h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
-        .multiselect { position: relative; margin-bottom: 15px; }
-        .select-box { background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0a0a0a; border: 1px solid var(--border); border-radius: 8px; max-height: 250px; overflow-y: auto; z-index: 2000; }
-        .dropdown-content.show { display: block; }
-        .option { display: flex; align-items: center; padding: 12px 15px; gap: 15px; border-bottom: 1px solid #111; cursor: pointer; width: 100%; }
-        .option input { width: 20px; height: 20px; accent-color: var(--accent); flex-shrink: 0; }
-        .option span { font-size: 14px; color: #eee; }
         .btn { border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-bottom: 10px; text-transform: uppercase; }
         .btn-save { background: var(--accent); }
         .btn-test { background: #5865F2; }
+
+        /* GALLERY */
         #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; width: 100%; max-width: 480px; }
         .gallery-card { aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; position: relative; }
         .gallery-card img { width: 100%; height: 100%; object-fit: cover; }
-        .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.8); color: white; border: none; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; }
+        .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.8); color: white; border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
@@ -93,9 +98,7 @@
 
     <main>
         <header>
-            <div class="menu-toggle" onclick="toggleSidebar()">
-                <i class="fas fa-bars"></i>
-            </div>
+            <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
             <span id="bot-name">DASHBOARD</span>
         </header>
 
@@ -145,8 +148,10 @@
         let targetImg = '';
 
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('overlay').classList.toggle('show');
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('overlay');
+            sb.classList.toggle('open');
+            ov.classList.toggle('show');
         }
 
         function show(id, el) {
@@ -182,8 +187,9 @@
             const res = await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
             const data = await res.json();
             if(targetImg !== 'gallery') {
-                document.getElementById('box-'+targetImg).innerHTML = `<img src="${API+data.url}">`;
-                document.getElementById('box-'+targetImg).parentElement.dataset.path = data.url;
+                const box = document.getElementById('box-'+targetImg);
+                box.innerHTML = `<img src="${API+data.url}">`;
+                box.parentElement.dataset.path = data.url;
             } else loadG();
         }
 
@@ -198,15 +204,16 @@
         }
 
         async function deleteImg(path) {
-            if(!confirm("Supprimer ?")) return;
+            if(!confirm("Supprimer cette image ?")) return;
             await fetch(`${API}/api/delete_image`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({path}) });
             loadG();
         }
 
         function setBanner(path) {
-            const target = (targetImg === 'thumb') ? 'thumb' : 'banner';
-            document.getElementById('box-'+target).innerHTML = `<img src="${API+path}">`;
-            document.getElementById('box-'+target).parentElement.dataset.path = path;
+            const t = (targetImg === 'thumb') ? 'thumb' : 'banner';
+            const box = document.getElementById('box-'+t);
+            box.innerHTML = `<img src="${API+path}">`;
+            box.parentElement.dataset.path = path;
             show('accueil', document.querySelector('.nav-item'));
         }
 
@@ -244,7 +251,8 @@
             document.getElementById('chan-list').innerHTML = d.channels.map(c => `<option value="${c.id}" ${d.config.target_channel == c.id ? 'selected':''}># ${c.name}</option>`).join('');
             
             const createRoles = (boxId, saved) => {
-                document.getElementById(boxId).innerHTML = d.all_roles.map(r => `
+                const box = document.getElementById(boxId);
+                box.innerHTML = d.all_roles.map(r => `
                     <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
                         <input type="checkbox" value="${r}" ${saved.includes(r) ? 'checked' : ''} onclick="event.stopPropagation()">
                         <span>${r}</span>
