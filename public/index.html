@@ -3,76 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Panel</title>
+    <title>BagBot Panel v3</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord-bg: #2b2d31; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         
-        body { background: var(--bg); color: white; display: flex; min-height: 100vh; }
+        body { background: var(--bg); color: white; display: flex; min-height: 100vh; overflow-x: hidden; }
 
-        /* SIDEBAR DÉDIÉE */
+        /* SIDEBAR ESPACE DÉDIÉ */
         #sidebar { 
             width: 260px; min-width: 260px; background: #000; border-right: 1px solid var(--border); 
             height: 100vh; position: sticky; top: 0; z-index: 1000;
         }
-        main { flex: 1; display: flex; flex-direction: column; }
+        main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
         @media (max-width: 900px) {
             #sidebar { position: fixed; left: -260px; transition: 0.3s; }
             #sidebar.open { left: 0; }
             .menu-toggle { display: block !important; }
+            main { width: 100%; }
         }
 
-        .menu-toggle { position: fixed; top: 15px; left: 15px; z-index: 1100; display: none; background: var(--accent); padding: 10px; border-radius: 5px; cursor: pointer; }
+        .menu-toggle { position: fixed; top: 15px; left: 15px; z-index: 1100; display: none; background: var(--accent); color:white; padding: 10px; border-radius: 5px; cursor: pointer; border:none; }
         .sidebar-header { padding: 30px; font-weight: 900; color: var(--accent); font-size: 20px; border-bottom: 1px solid var(--border); }
         .nav-item { padding: 18px 30px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 3px solid var(--accent); }
 
-        header { height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding-left: 20px; font-weight: bold; }
+        header { height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding-left: 20px; font-weight: bold; text-transform: uppercase; }
+
         .content-section { display: none; padding: 25px; flex-direction: column; align-items: center; width: 100%; }
         .content-section.active { display: flex; }
 
         /* EMBED PREVIEW */
         .discord-embed { width: 100%; max-width: 500px; background: var(--discord-bg); border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; margin-bottom: 25px; }
-        .img-click { cursor: pointer; border: 1px dashed #444; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .p-thumb-box { width: 80px; height: 80px; float: right; }
-        .p-banner-box { width: 100%; height: 120px; margin-top: 10px; border-radius: 8px; }
+        .img-click { cursor: pointer; border: 1px dashed #444; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        .p-thumb-box { width: 80px; height: 80px; float: right; border-radius: 4px; }
+        .p-banner-box { width: 100%; height: 130px; margin-top: 10px; border-radius: 8px; }
         .img-click img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* CARDS */
+        /* FORM */
         .card { width: 100%; max-width: 550px; background: var(--panel); padding: 25px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
         h3 { font-size: 13px; color: var(--accent); text-transform: uppercase; margin-bottom: 15px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 14px; border-radius: 8px; margin-bottom: 15px; }
         
-        /* ALIGNEMENT RÔLES */
+        /* ROLES DROPDOWN CORRIGÉ */
         .select-box { background: #000; border: 1px solid var(--border); padding: 14px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .dropdown-content { display: none; background: #0d0d0d; border: 1px solid var(--border); max-height: 250px; overflow-y: auto; border-radius: 8px; }
+        .dropdown-content { display: none; background: #0d0d0d; border: 1px solid var(--border); max-height: 200px; overflow-y: auto; border-radius: 8px; margin-top: 5px; }
         .dropdown-content.show { display: block; }
-        .option { padding: 12px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
+        .option { padding: 12px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: 0.2s; }
         .option:hover { background: #1a1a1a; }
-        .option input { width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer; }
-        .option span { font-size: 14px; flex: 1; }
+        .option input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; margin: 0; }
+        .option span { font-size: 14px; }
 
-        .btn { padding: 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; width: 100%; color: white; text-transform: uppercase; }
+        .btn { padding: 16px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; width: 100%; color: white; text-transform: uppercase; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
         .btn-save { background: var(--accent); margin-bottom: 10px; }
         .btn-test { background: #5865f2; }
 
         /* MODAL GALERIE */
         #modal-gal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; padding: 20px; }
-        .gal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; }
-        .gal-item { position: relative; aspect-ratio: 16/9; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-        .gal-item img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
-        .del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; padding: 5px; border-radius: 4px; cursor: pointer; }
+        .modal-inner { background: var(--panel); max-width: 550px; margin: 40px auto; padding: 25px; border-radius: 15px; position: relative; border: 1px solid var(--border); }
+        .gal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; max-height: 350px; overflow-y: auto; padding: 5px; }
+        .gal-item { position: relative; aspect-ratio: 16/9; border: 2px solid transparent; border-radius: 8px; overflow: hidden; cursor: pointer; }
+        .gal-item:hover { border-color: var(--accent); }
+        .gal-item img { width: 100%; height: 100%; object-fit: cover; }
+        .del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); border: none; color: white; padding: 5px 8px; border-radius: 4px; cursor: pointer; z-index: 10; }
     </style>
 </head>
 <body>
-    <div class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+    <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
     
     <nav id="sidebar">
         <div class="sidebar-header">BAGBOT</div>
         <div class="nav-item active" onclick="show('BIENVENUE', this)">BIENVENUE</div>
-        <div class="nav-item" onclick="show('GALERIE', this)">GALERIE</div>
+        <div class="nav-item" onclick="show('GALERIE', this)">ADMIN GALERIE</div>
     </nav>
 
     <main>
@@ -81,61 +86,69 @@
         <section id="section-BIENVENUE" class="content-section active">
             <div class="discord-embed">
                 <div class="img-click p-thumb-box" onclick="openGal('thumb')">
-                    <img id="img-thumb" style="display:none"><i class="fas fa-camera" id="icon-thumb"></i>
+                    <img id="img-thumb" style="display:none">
+                    <i class="fas fa-camera" id="icon-thumb"></i>
                 </div>
-                <div id="p-title" style="font-weight:bold">Bienvenue {user}</div>
-                <div id="p-desc" style="font-size:14px; color:#ccc; margin-top:5px; white-space: pre-wrap;">Bienvenue sur {server} !</div>
+                <div id="p-title" style="font-weight:bold; font-size: 16px;">Titre</div>
+                <div id="p-desc" style="font-size:14px; color:#ccc; margin-top:5px; white-space: pre-wrap;">Description...</div>
                 <div class="img-click p-banner-box" onclick="openGal('banner')">
-                    <img id="img-banner" style="display:none"><i class="fas fa-plus" id="icon-banner"></i>
+                    <img id="img-banner" style="display:none">
+                    <i class="fas fa-plus" id="icon-banner"></i>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px; margin-top:12px">
                     <div class="img-click" style="width:22px; height:22px; border-radius:50%" onclick="openGal('footer_icon')">
                         <img id="img-footer_icon" style="display:none">
+                        <i class="fas fa-image" style="font-size:10px" id="icon-footer_icon"></i>
                     </div>
                     <span id="p-footer" style="font-size:12px; opacity:0.6">BagBot</span>
                 </div>
             </div>
 
             <div class="card">
-                <h3>Message</h3>
-                <input type="text" id="w-title" placeholder="Titre" oninput="sync()">
-                <textarea id="w-desc" placeholder="Description" rows="4" oninput="sync()"></textarea>
-                <input type="text" id="w-footer" placeholder="Footer text" oninput="sync()">
+                <h3>Configuration Message</h3>
+                <input type="text" id="w-title" placeholder="Titre (ex: Bienvenue {user})" oninput="sync()">
+                <textarea id="w-desc" placeholder="Description (ex: Tu es le {count}ème sur {server})" rows="4" oninput="sync()"></textarea>
+                <input type="text" id="w-footer" placeholder="Texte du footer" oninput="sync()">
 
-                <h3>Salon & Rôles</h3>
+                <h3>Salon & Déclenchement</h3>
                 <select id="w-chan"></select>
                 <div class="select-box" onclick="document.getElementById('drop-roles').classList.toggle('show')">
                     Rôles de déclenchement <i class="fas fa-chevron-down"></i>
                 </div>
                 <div id="drop-roles" class="dropdown-content"></div>
 
-                <button class="btn btn-save" style="margin-top:20px" onclick="save()">Enregistrer</button>
-                <button class="btn btn-test" onclick="testMessage()">Tester sur Discord</button>
+                <button class="btn btn-save" style="margin-top:20px" onclick="save()">Enregistrer la Config</button>
+                <button class="btn btn-test" onclick="testMessage()">Envoyer Test Discord</button>
             </div>
         </section>
 
         <section id="section-GALERIE" class="content-section">
-            <input type="file" id="file-in-admin" onchange="uploadFile('admin')" style="display:none">
-            <button class="btn btn-save" onclick="document.getElementById('file-in-admin').click()">Uploader Image</button>
-            <div id="admin-gal" class="gal-grid" style="width:100%; max-width:600px"></div>
+            <div class="card">
+                <h3>Ajouter à la Galerie</h3>
+                <input type="file" id="admin-file" onchange="uploadFile('admin')" style="display:none">
+                <button class="btn btn-save" onclick="document.getElementById('admin-file').click()">Uploader Image</button>
+                <div id="admin-gal-display" class="gal-grid"></div>
+            </div>
         </section>
     </main>
 
     <div id="modal-gal">
-        <div style="background:var(--panel); max-width:500px; margin:40px auto; padding:25px; border-radius:15px; position:relative">
+        <div class="modal-inner">
             <span onclick="closeGal()" style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:24px">&times;</span>
-            <h3>Ma Galerie / Téléverser</h3>
+            <h3 id="modal-title">Choisir une image</h3>
             
-            <input type="file" id="file-in-modal" onchange="uploadFile('modal')" style="display:none">
-            <button class="btn btn-test" onclick="document.getElementById('file-in-modal').click()" style="margin-top:15px">Téléverser une image</button>
+            <input type="file" id="modal-file" onchange="uploadFile('modal')" style="display:none">
+            <button class="btn btn-test" onclick="document.getElementById('modal-file').click()" style="margin: 15px 0;">
+                <i class="fas fa-upload"></i> Téléverser & Utiliser
+            </button>
             
-            <div id="gal-container" class="gal-grid"></div>
+            <div id="modal-gal-list" class="gal-grid"></div>
         </div>
     </div>
 
     <script>
         const API = window.location.origin;
-        let targetSlot = '';
+        let currentSlot = '';
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
         
@@ -154,47 +167,64 @@
         }
 
         async function openGal(slot) {
-            targetSlot = slot;
+            currentSlot = slot;
+            document.getElementById('modal-gal').style.display = 'block';
             const res = await fetch(`${API}/api/images`);
             const data = await res.json();
-            document.getElementById('gal-container').innerHTML = data.images.map(img => `
+            const list = document.getElementById('modal-gal-list');
+            list.innerHTML = data.images.map(img => `
                 <div class="gal-item"><img src="${API}${img}" onclick="selectImg('${img}')"></div>
-            `).join('');
-            document.getElementById('modal-gal').style.display = 'block';
+            `).join('') || "<p style='text-align:center; opacity:0.5'>Galerie vide</p>";
         }
 
         function selectImg(path) {
-            const img = document.getElementById(`img-${targetSlot}`);
+            const img = document.getElementById(`img-${currentSlot}`);
             img.src = path.startsWith('http') ? path : API + path;
             img.dataset.path = path;
             img.style.display = 'block';
-            if(document.getElementById(`icon-${targetSlot}`)) document.getElementById(`icon-${targetSlot}`).style.display = 'none';
+            const icon = document.getElementById(`icon-${currentSlot}`);
+            if(icon) icon.style.display = 'none';
             closeGal();
         }
 
         function closeGal() { document.getElementById('modal-gal').style.display = 'none'; }
 
         async function uploadFile(source) {
-            const inputId = source === 'admin' ? 'file-in-admin' : 'file-in-modal';
+            const inputId = source === 'admin' ? 'admin-file' : 'modal-file';
+            const file = document.getElementById(inputId).files[0];
+            if(!file) return;
+
             const fd = new FormData();
-            fd.append('file', document.getElementById(inputId).files[0]);
+            fd.append('file', file);
             const res = await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
             const data = await res.json();
-            if(source === 'modal') selectImg(data.path);
-            else loadAdminGal();
+            
+            if(source === 'modal') {
+                selectImg(data.path);
+            } else {
+                loadAdminGal();
+            }
         }
 
         async function loadAdminGal() {
             const res = await fetch(`${API}/api/images`);
             const data = await res.json();
-            document.getElementById('admin-gal').innerHTML = data.images.map(img => `
-                <div class="gal-item"><img src="${API}${img}"><button class="del-img" onclick="deleteImg('${img}')">Suppr</button></div>
+            const container = document.getElementById('admin-gal-display');
+            container.innerHTML = data.images.map(img => `
+                <div class="gal-item">
+                    <img src="${API}${img}">
+                    <button class="del-img" onclick="deleteImg('${img}')"><i class="fas fa-trash"></i></button>
+                </div>
             `).join('');
         }
 
         async function deleteImg(path) {
-            if(confirm("Supprimer l'image ?")) {
-                await fetch(`${API}/api/delete_image`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({image: path}) });
+            if(confirm("Supprimer définitivement cette image ?")) {
+                await fetch(`${API}/api/delete_image`, { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({image: path}) 
+                });
                 loadAdminGal();
             }
         }
@@ -213,13 +243,13 @@
                 }
             };
             await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            alert("Sauvegardé !");
+            alert("Configuration enregistrée !");
         }
 
         async function testMessage() {
             await save();
-            await fetch(`${API}/api/test_welcome`, { method: 'POST' });
-            alert("Test envoyé !");
+            const res = await fetch(`${API}/api/test_welcome`, { method: 'POST' });
+            if(res.ok) alert("Test envoyé avec succès !");
         }
 
         async function init() {
@@ -227,9 +257,10 @@
             const data = await res.json();
             if(data.status === "loading") return setTimeout(init, 2000);
 
+            // Charger les salons
             document.getElementById('w-chan').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
             
-            // CODE POUR ALIGNER LES RÔLES PROPREMENT
+            // Charger les rôles avec le bon alignement
             document.getElementById('drop-roles').innerHTML = data.all_roles.map(r => `
                 <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
                     <input type="checkbox" value="${r}" onclick="event.stopPropagation();">
@@ -237,19 +268,22 @@
                 </div>
             `).join('');
 
+            // Restaurer la config existante
             if(data.config.welcome) {
                 const w = data.config.welcome;
                 document.getElementById('w-title').value = w.title || "";
                 document.getElementById('w-desc').value = w.desc || "";
                 document.getElementById('w-footer').value = w.footer || "";
                 document.getElementById('w-chan').value = w.channel || "";
-                if(w.thumb) { targetSlot='thumb'; selectImg(w.thumb); }
-                if(w.banner) { targetSlot='banner'; selectImg(w.banner); }
-                if(w.footer_icon) { targetSlot='footer_icon'; selectImg(w.footer_icon); }
-                if(w.roles) w.roles.forEach(role => {
-                    const ck = document.querySelector(`#drop-roles input[value="${role}"]`);
-                    if(ck) ck.checked = true;
-                });
+                if(w.thumb) { currentSlot='thumb'; selectImg(w.thumb); }
+                if(w.banner) { currentSlot='banner'; selectImg(w.banner); }
+                if(w.footer_icon) { currentSlot='footer_icon'; selectImg(w.footer_icon); }
+                if(w.roles) {
+                    w.roles.forEach(r => {
+                        const input = document.querySelector(`#drop-roles input[value="${r}"]`);
+                        if(input) input.checked = true;
+                    });
+                }
             }
             sync();
         }
