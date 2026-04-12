@@ -4,9 +4,8 @@ from flask import Flask, request, jsonify, send_from_directory
 import threading
 import json
 import os
-import asyncio
 
-# --- CONFIGURATION ---
+# --- INITIALISATION ---
 app = Flask(__name__)
 UPLOAD_FOLDER = 'public/uploads'
 CONFIG_FILE = 'config.json'
@@ -32,39 +31,32 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f"✅ Bot Discord opérationnel : {bot.user}")
+    print(f"✅ Bot connecté en tant que : {bot.user}")
 
 # --- ROUTES API ---
 
 @app.route('/api/get_server_info', methods=['GET'])
 def get_server_info():
     config = load_config()
-    
-    # Vérification critique : Si le bot n'est pas prêt, on renvoie une erreur spécifique
+    # Si le bot n'est pas prêt, on renvoie les listes vides mais on précise l'état
     if not bot.is_ready() or not bot.guilds:
         return jsonify({
-            "status": "error",
-            "message": "Le bot n'est pas encore connecté à Discord",
-            "channels": [],
-            "all_roles": [],
+            "status": "loading",
+            "channels": [], 
+            "all_roles": [], 
             "config": config
         })
     
-    try:
-        guild = bot.guilds[0]
-        # On s'assure de récupérer tous les salons textuels
-        channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
-        # On récupère tous les rôles du serveur
-        roles = [r.name for r in guild.roles if r.name != "@everyone"]
-        
-        return jsonify({
-            "status": "success",
-            "channels": channels,
-            "all_roles": roles,
-            "config": config
-        })
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)})
+    guild = bot.guilds[0]
+    channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
+    roles = [r.name for r in guild.roles if r.name != "@everyone"]
+    
+    return jsonify({
+        "status": "success",
+        "channels": channels,
+        "all_roles": roles,
+        "config": config
+    })
 
 @app.route('/api/save_config', methods=['POST'])
 def save_config():
@@ -94,56 +86,4 @@ def upload():
 def delete_image():
     try:
         data = request.json
-        img_path = data.get('image') 
-        if not img_path: return "Path missing", 400
-        
-        # Transformation du chemin web en chemin système
-        full_path = img_path.lstrip('/')
-        if os.path.exists(full_path):
-            os.remove(full_path)
-            return jsonify({"status": "success"})
-        return jsonify({"status": "error", "message": "Fichier introuvable"}), 404
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-@app.route('/api/test_welcome', methods=['POST'])
-def test_welcome():
-    try:
-        config = load_config().get('welcome', {})
-        chan_id = config.get('channel')
-        if not chan_id: return jsonify({"status": "error", "message": "Aucun salon sélectionné"}), 400
-        
-        channel = bot.get_channel(int(chan_id))
-        if not channel: return jsonify({"status": "error", "message": "Salon introuvable sur Discord"}), 404
-
-        # Traitement des variables {user}
-        title = config.get('title', 'Bienvenue').replace("{user}", bot.user.name)
-        desc = config.get('desc', '').replace("{user}", bot.user.mention)
-
-        embed = discord.Embed(title=title, description=desc, color=0xed4245)
-        
-        base_url = f"http://{request.host}" 
-        if config.get('thumb'): embed.set_thumbnail(url=f"{base_url}{config['thumb']}")
-        if config.get('banner'): embed.set_image(url=f"{base_url}{config['banner']}")
-        
-        embed.set_footer(text=config.get('footer', 'BagBot'))
-        
-        bot.loop.create_task(channel.send(embed=embed))
-        return jsonify({"status": "success"})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-@app.route('/')
-def serve_index(): return send_from_directory('public', 'index.html')
-
-@app.route('/public/<path:path>')
-def serve_static(path): return send_from_directory('public', path)
-
-def run_flask():
-    # Utilisation du port spécifique 49501
-    app.run(host='0.0.0.0', port=49501, threaded=True)
-
-if __name__ == '__main__':
-    threading.Thread(target=run_flask).start()
-    bot.run("TON_TOKEN_ICI")
         
