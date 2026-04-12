@@ -7,14 +7,13 @@ import threading, os, json, asyncio, requests
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
-# --- CONFIGURATION ---
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
 GUILD_ID = os.getenv("GUILD_ID")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_full_v3")
+SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_full_v4")
 OWNER_ID = "943487722738311219"
 
 app = Flask(__name__, static_folder='public', static_url_path='')
@@ -39,7 +38,7 @@ def save_config(data):
     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
         json.dump(current, f, indent=4, ensure_ascii=False)
 
-# --- BOT DISCORD ---
+# --- BOT LOGIC ---
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -47,7 +46,6 @@ async def send_welcome_embed(member, config, is_test=False):
     try:
         chan_id = config.get("target_channel") or config.get("channel")
         if not chan_id: return "ERREUR: Salon non configuré."
-        
         channel = member.guild.get_channel(int(chan_id))
         if not channel: return "ERREUR: Salon introuvable."
 
@@ -55,7 +53,7 @@ async def send_welcome_embed(member, config, is_test=False):
             if not t: return ""
             return t.replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
 
-        embed = discord.Embed(title=rep(config.get('title', 'Bienvenue !')), description=rep(config.get('desc', '')), color=0xed4245)
+        embed = discord.Embed(title=rep(config.get('title', 'Bienvenue')), description=rep(config.get('desc', '')), color=0xed4245)
         
         file_to_send = None
         for key in ['thumb', 'banner']:
@@ -75,14 +73,12 @@ async def send_welcome_embed(member, config, is_test=False):
         content = f"{'🚀 **TEST**' if is_test else ''}\n{member.mention}"
         await channel.send(content=content, embed=embed, file=file_to_send if file_to_send else None)
         return "SUCCÈS"
-    except Exception as e:
-        return f"ERREUR: {str(e)}"
+    except Exception as e: return f"ERREUR: {str(e)}"
 
 @bot.event
 async def on_member_join(member):
     config = load_config()
-    if not config.get("trigger_roles"):
-        await send_welcome_embed(member, config)
+    if not config.get("trigger_roles"): await send_welcome_embed(member, config)
 
 @bot.event
 async def on_member_update(before, after):
@@ -90,10 +86,9 @@ async def on_member_update(before, after):
     triggers = config.get("trigger_roles", [])
     if triggers and len(before.roles) < len(after.roles):
         new_role = next(role for role in after.roles if role not in before.roles)
-        if new_role.name in triggers:
-            await send_welcome_embed(after, config)
+        if new_role.name in triggers: await send_welcome_embed(after, config)
 
-# --- API ---
+# --- ROUTES API ---
 @app.route('/')
 def index():
     if not session.get('admin'): return redirect('/login')
@@ -116,6 +111,7 @@ def callback():
         session['admin'] = True
         session['user_id'] = str(m['user']['id'])
         session['user_name'] = m['user']['username']
+        session['user_roles'] = [r for r in m.get('roles', [])]
         return redirect('/')
     return "Refusé", 403
 
@@ -157,13 +153,6 @@ def upload():
 @app.route('/api/images')
 def list_images():
     return jsonify({"images": [f"/uploads/{f}" for f in os.listdir(UPLOAD_FOLDER)]})
-
-@app.route('/api/delete_image', methods=['POST'])
-def del_img():
-    path = request.json.get('path', '').replace('/uploads/', '')
-    full_path = os.path.join(UPLOAD_FOLDER, path)
-    if os.path.exists(full_path): os.remove(full_path)
-    return jsonify({"status": "deleted"})
 
 def run_flask(): app.run(host='0.0.0.0', port=49501)
 if __name__ == "__main__":
