@@ -23,18 +23,40 @@ def load_config():
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             try: return json.load(f)
-            except: return {"welcome": {}, "admin_roles": []}
-    return {"welcome": {}, "admin_roles": []}
+            except: return {"welcome": {}, "admin_roles": [], "auto_roles": []}
+    return {"welcome": {}, "admin_roles": [], "auto_roles": []}
 
+# --- BOT DISCORD ---
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# --- AUTHENTIFICATION ---
+@bot.event
+async def on_member_join(member):
+    if str(member.guild.id) != str(GUILD_ID): return
+    config = load_config()
+    
+    # 1. Attribution des rôles automatiques
+    auto_roles = config.get('auto_roles', [])
+    for role_name in auto_roles:
+        role = discord.utils.get(member.guild.roles, name=role_name)
+        if role: await member.add_roles(role)
+
+    # 2. Envoi du message de bienvenue
+    w = config.get('welcome', {})
+    channel = bot.get_channel(int(w.get('channel')))
+    if channel:
+        title = w.get('title', '').replace('{user}', member.name)
+        desc = w.get('desc', '').replace('{user}', member.mention)
+        embed = discord.Embed(title=title, description=desc, color=0xed4245)
+        if w.get('banner'):
+            # Note: L'image doit être accessible via une URL publique ou un proxy
+            embed.set_image(url=f"http://{REDIRECT_URI.split(':')[1].replace('//','')}:49501{w['banner']}")
+        await channel.send(embed=embed)
+
+# --- ROUTES API ---
 @app.route('/api/login')
 def login():
-    url = (f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}"
-           f"&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify")
-    return redirect(url)
+    return redirect(f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify")
 
 @app.route('/api/callback')
 def callback():
@@ -55,12 +77,10 @@ def has_access():
     member = guild.get_member(int(uid)) if guild else None
     return any(r.name in config.get('admin_roles', []) for r in member.roles) if member else False
 
-# --- ROUTES API ---
 @app.route('/api/get_data')
 def get_data():
     if not has_access(): return jsonify({"status": "unauthorized"}), 401
     guild = bot.get_guild(int(GUILD_ID))
-    if not guild: return jsonify({"error": "Guild not found"}), 404
     return jsonify({
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
         "roles": [r.name for r in guild.roles if r.name != "@everyone"],
@@ -77,23 +97,9 @@ def save():
 
 @app.route('/api/upload', methods=['POST'])
 def upload():
-    if not has_access(): return jsonify({"status": "unauthorized"}), 401
     file = request.files['file']
     file.save(os.path.join(UPLOAD_FOLDER, file.filename))
     return jsonify({"status": "success"})
-
-@app.route('/api/test_welcome', methods=['POST'])
-def test_welcome():
-    if not has_access(): return jsonify({"status": "unauthorized"}), 401
-    config = load_config().get('welcome', {})
-    channel = bot.get_channel(int(config.get('channel')))
-    if channel:
-        embed = discord.Embed(title=config.get('title'), description=config.get('desc'), color=0xed4245)
-        if config.get('banner'):
-            embed.set_image(url=f"http://{request.host}{config['banner']}")
-        bot.loop.create_task(channel.send(embed=embed))
-        return jsonify({"status": "success"})
-    return jsonify({"status": "error"}), 400
 
 @app.route('/')
 def index(): return send_from_directory('public', 'index.html')
