@@ -2,238 +2,118 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BagBot Designer Pro - Full Fix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BagBot Designer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --accent: #ed4245; 
-            --bg-main: #000000; 
-            --bg-card: #111214;
-            --bg-sidebar: #0a0a0a;
-            --text-primary: #ffffff;
-            --text-muted: #949ba4;
-            --embed-bg: #1e1f22;
-            --border: #2b2d31;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-main); color: var(--text-primary); display: flex; height: 100vh; overflow: hidden; }
-
-        /* --- SIDEBAR --- */
-        #sidebar { width: 260px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: 0.3s; z-index: 100; }
-        #sidebar.collapsed { width: 0; opacity: 0; pointer-events: none; }
-
-        /* --- MAIN --- */
-        .main-view { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; }
-        .top-bar { height: 60px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 15px; background: #050505; }
-        .workspace { flex-grow: 1; overflow-y: auto; padding: 30px 15px; display: flex; flex-direction: column; align-items: center; }
-
-        /* --- EMBED DESIGN --- */
-        .embed-preview { width: 100%; max-width: 500px; background: var(--embed-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px; position: relative; margin-bottom: 20px; }
+        :root { --accent: #ed4245; --bg: #000000; --card: #111214; --border: #2b2d31; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; display: flex; height: 100vh; }
         
-        .thumb-zone { position: absolute; top: 16px; right: 16px; width: 80px; height: 80px; border: 2px dashed var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(0,0,0,0.2); z-index: 5; }
-        .thumb-zone img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
+        #sidebar { width: 250px; background: #050505; border-right: 1px solid var(--border); padding: 20px; }
+        .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; align-items: center; }
+        
+        /* DESIGN EMBED */
+        .embed-preview { width: 100%; max-width: 500px; background: #1e1f22; border-left: 4px solid var(--accent); padding: 15px; border-radius: 4px; position: relative; }
+        
+        .upload-zone { border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(0,0,0,0.3); }
+        .thumb-upload { position: absolute; top: 15px; right: 15px; width: 80px; height: 80px; }
+        .banner-upload { width: 100%; height: 150px; margin-top: 15px; }
+        .upload-zone img { width: 100%; height: 100%; object-fit: cover; }
 
-        .author-box { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-        .author-avatar { width: 24px; height: 24px; border-radius: 50%; background: #313338; cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
-        .author-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-        .inp { background: transparent; border: none; color: white; outline: none; width: 100%; }
-        .title-inp { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-        .desc-inp { font-size: 14px; min-height: 80px; color: var(--text-primary); resize: none; width: 100%; margin-top: 5px; }
-
-        .banner-zone { width: 100%; height: 160px; border: 2px dashed var(--border); border-radius: 4px; margin-top: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(0,0,0,0.2); overflow: hidden; }
-        .banner-zone img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* --- FORMULAIRE --- */
-        .controls { width: 100%; max-width: 500px; padding-bottom: 80px; }
-        .label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin: 20px 0 8px 0; display: block; }
-
-        .select-style { width: 100%; background: #111214; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 4px; outline: none; cursor: pointer; }
-
-        .reaction-row { display: flex; align-items: center; gap: 10px; background: #080808; padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid var(--border); }
-        .emo-btn { font-size: 20px; width: 44px; height: 44px; background: #1e1f22; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid var(--border); }
-
-        .btn { width: 100%; padding: 15px; border-radius: 4px; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; }
-        .btn-add { background: #2b2d31; color: white; margin-top: 10px; }
-        .btn-add:hover { background: #3f4147; }
-        .btn-send { background: var(--accent); color: white; margin-top: 25px; font-size: 15px; letter-spacing: 1px; }
-
-        /* --- MODAL --- */
-        #emoji-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 9999; }
-        .modal-box { background: #18191c; width: 90%; max-width: 380px; border-radius: 12px; border: 1px solid var(--border); }
-        .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; padding: 20px; max-height: 350px; overflow-y: auto; }
-        .emoji-item { font-size: 26px; cursor: pointer; text-align: center; transition: 0.2s; }
-        .emoji-item:hover { transform: scale(1.2); }
+        input, textarea, select { width: 100%; background: transparent; border: none; color: white; outline: none; margin-bottom: 10px; }
+        .title-in { font-size: 18px; font-weight: bold; }
+        
+        .controls { width: 100%; max-width: 500px; margin-top: 30px; }
+        .btn { width: 100%; padding: 12px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-add { background: #2b2d31; color: white; }
+        .btn-send { background: var(--accent); color: white; }
+        
+        .reaction-row { display: flex; gap: 10px; background: var(--card); padding: 10px; border-radius: 5px; margin-top: 10px; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
-    <div id="sidebar">
-        <div style="padding: 25px 20px; font-weight: 900; color: var(--accent); font-size: 20px; letter-spacing: 1px;">BAGBOT</div>
-        <div class="nav-item active" style="padding: 15px 20px; border-left: 4px solid var(--accent); background: rgba(237,66,69,0.1);"><i class="fas fa-magic"></i> Designer</div>
-    </div>
+<div id="sidebar">
+    <h2 style="color:var(--accent)">BAGBOT</h2>
+    <p><i class="fas fa-edit"></i> Designer</p>
+</div>
 
-    <div class="main-view">
-        <div class="top-bar">
-            <i class="fas fa-bars" onclick="toggleSidebar()" style="cursor:pointer; color: var(--accent); font-size: 20px;"></i>
-            <span style="font-weight: 800; letter-spacing: 1px; font-size: 12px;">ÉDITEUR DE MESSAGE</span>
+<div class="main">
+    <div class="embed-preview">
+        <div class="upload-zone thumb-upload" onclick="triggerInput('thumb')">
+            <i class="fas fa-plus" id="icon-thumb"></i>
+            <img id="img-thumb" style="display:none">
         </div>
 
-        <div class="workspace">
-            <div class="embed-preview">
-                <div class="thumb-zone" onclick="clickUpload('thumb')">
-                    <i class="fas fa-plus" id="plus-thumb"></i>
-                    <img id="view-thumb" style="display:none">
-                </div>
-                
-                <div class="author-box">
-                    <div class="author-avatar" onclick="clickUpload('author')">
-                        <i class="fas fa-user" id="plus-author" style="font-size:10px; color:var(--text-muted)"></i>
-                        <img id="view-author" style="display:none">
-                    </div>
-                    <input type="text" class="inp" value="BagBot System" style="font-size:13px; font-weight:600; color:white;">
-                </div>
+        <input type="text" class="title-in" value="Titre de l'Embed">
+        <textarea placeholder="Contenu du message..." rows="4"></textarea>
 
-                <input type="text" class="inp title-inp" value="Titre de l'Embed">
-                <textarea class="inp desc-inp" placeholder="Entrez le contenu de votre message..."></textarea>
-
-                <div class="banner-zone" onclick="clickUpload('banner')">
-                    <i class="fas fa-image" id="plus-banner" style="font-size:30px; color: #2b2d31;"></i>
-                    <img id="view-banner" style="display:none">
-                </div>
-            </div>
-
-            <div class="controls">
-                <label class="label">Salon de destination</label>
-                <select class="select-style" id="select-channels">
-                    <option value="">Chargement des salons...</option>
-                </select>
-
-                <label class="label">Réactions & Rôles</label>
-                <div id="reaction-list"></div>
-
-                <button class="btn btn-add" onclick="handleNewRow()">
-                    <i class="fas fa-plus-circle"></i> Ajouter une réaction
-                </button>
-
-                <button class="btn btn-send" onclick="sendToDiscord()">
-                    <i class="fas fa-paper-plane"></i> DÉPLOYER MAINTENANT
-                </button>
-            </div>
+        <div class="upload-zone banner-upload" onclick="triggerInput('banner')">
+            <i class="fas fa-image" id="icon-banner" style="font-size: 2em;"></i>
+            <img id="img-banner" style="display:none">
         </div>
     </div>
 
-    <div id="emoji-modal" onclick="closeEmojiModal()">
-        <div class="modal-box" onclick="event.stopPropagation()">
-            <div style="padding:15px; border-bottom:1px solid var(--border); font-weight:bold; display:flex; justify-content:space-between;">
-                <span>Choisir un Emoji</span>
-                <i class="fas fa-times" onclick="closeEmojiModal()" style="cursor:pointer;"></i>
-            </div>
-            <div class="emoji-grid" id="grid-emojis"></div>
-        </div>
-    </div>
+    <div class="controls">
+        <label>SALON DE DESTINATION</label>
+        <select id="chan-select" style="background:var(--card); padding:10px; border:1px solid var(--border)">
+            <option>Chargement...</option>
+        </select>
 
-    <input type="file" id="hidden-file" style="display:none" onchange="handleFile(this)">
+        <div id="reactions-list"></div>
+        <button class="btn btn-add" onclick="addNewReaction()"><i class="fas fa-plus"></i> Ajouter une réaction</button>
+        <button class="btn btn-send">DÉPLOYER</button>
+    </div>
+</div>
+
+<input type="file" id="file-helper" style="display:none" onchange="handleFile(this)">
 
 <script>
-    let globalRoles = [];
-    let activeEmojiBtn = null;
-    let activeTarget = "";
+    let roles = [];
+    let currentTarget = "";
 
-    const emojiList = ["✅","❌","🔥","⭐","🚀","📢","🛠️","🎁","🎉","🤖","🔞","👋","💡","🛡️","💎","👑","🌈","🎯","🎧","🎮","🍎","🍕","🏀","🚗","💎","🔥","✨","🌟"];
-
-    // 1. CHARGEMENT DES DONNÉES DEPUIS LE BOT
-    async function loadServerInfo() {
+    async function start() {
         try {
-            const response = await fetch('/api/get_server_info');
-            const data = await response.json();
-            
-            // Remplir les salons
-            const selectChan = document.getElementById('select-channels');
-            if(data.channels && data.channels.length > 0) {
-                selectChan.innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            } else {
-                selectChan.innerHTML = `<option>Aucun salon trouvé</option>`;
-            }
-
-            // Garder les rôles en mémoire
-            globalRoles = data.roles || [];
-            console.log("Données chargées :", data);
-        } catch (err) {
-            console.error("Erreur de récupération :", err);
-            document.getElementById('select-channels').innerHTML = `<option>Erreur de connexion au bot</option>`;
+            const res = await fetch('/api/get_server_info');
+            const data = await res.json();
+            roles = data.roles;
+            document.getElementById('chan-select').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+        } catch(e) {
+            alert("Impossible de joindre le bot. Est-il lancé sur Termux ?");
         }
     }
 
-    // 2. GESTION DES IMAGES
-    function clickUpload(type) {
-        activeTarget = type;
-        document.getElementById('hidden-file').click();
+    function triggerInput(type) {
+        currentTarget = type;
+        document.getElementById('file-helper').click();
     }
 
     function handleFile(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                const imgDisplay = document.getElementById('view-' + activeTarget);
-                const plusIcon = document.getElementById('plus-' + activeTarget);
-                imgDisplay.src = e.target.result;
-                imgDisplay.style.display = 'block';
-                if(plusIcon) plusIcon.style.display = 'none';
+                document.getElementById('img-' + currentTarget).src = e.target.result;
+                document.getElementById('img-' + currentTarget).style.display = 'block';
+                document.getElementById('icon-' + currentTarget).style.display = 'none';
             };
             reader.readAsDataURL(input.files[0]);
         }
     }
 
-    // 3. GESTION DES RÉACTIONS
-    function handleNewRow() {
-        const container = document.getElementById('reaction-list');
-        const row = document.createElement('div');
-        row.className = 'reaction-row';
-        
-        const roleOptions = globalRoles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-        
-        row.innerHTML = `
-            <div class="emo-btn" onclick="openEmojiPicker(this)">😀</div>
-            <select class="select-style" style="flex-grow:1;">
-                <option value="">Sélectionner un rôle...</option>
-                ${roleOptions}
+    function addNewReaction() {
+        const div = document.createElement('div');
+        div.className = 'reaction-row';
+        div.innerHTML = `
+            <div style="cursor:pointer">😀</div>
+            <select style="margin-bottom:0">
+                ${roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
             </select>
-            <i class="fas fa-trash" onclick="this.parentElement.remove()" style="color:var(--accent); cursor:pointer; padding:10px;"></i>
+            <i class="fas fa-trash" onclick="this.parentElement.remove()" style="color:var(--accent); cursor:pointer"></i>
         `;
-        container.appendChild(row);
+        document.getElementById('reactions-list').appendChild(div);
     }
 
-    // 4. EMOJI PICKER
-    function openEmojiPicker(btn) {
-        activeEmojiBtn = btn;
-        const grid = document.getElementById('grid-emojis');
-        grid.innerHTML = emojiList.map(emo => `<div class="emoji-item" onclick="selectThisEmoji('${emo}')">${emo}</div>`).join('');
-        document.getElementById('emoji-modal').style.display = 'flex';
-    }
-
-    function selectThisEmoji(emo) {
-        if(activeEmojiBtn) activeEmojiBtn.innerText = emo;
-        closeEmojiModal();
-    }
-
-    function closeEmojiModal() {
-        document.getElementById('emoji-modal').style.display = 'none';
-    }
-
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('collapsed');
-    }
-
-    async function sendToDiscord() {
-        alert("Envoi en cours... Vérifiez la console du bot.");
-        // Logique fetch('/api/deploy') à venir si nécessaire
-    }
-
-    // Lancement
-    window.onload = loadServerInfo;
+    window.onload = start;
 </script>
 </body>
 </html>
