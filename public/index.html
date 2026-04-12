@@ -43,11 +43,7 @@
         h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 16px; border-radius: 10px; margin-bottom: 15px; font-size: 15px; outline: none; }
         
-        .var-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #000; font-size: 13px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-        .var-table td { padding: 12px; border-bottom: 1px solid #111; }
-        .var-name { color: var(--accent); font-weight: 800; }
-
-        /* MULTISELECT */
+        /* MULTISELECT FIX */
         .multiselect { position: relative; margin-bottom: 20px; }
         .select-box { background: #000; border: 1px solid var(--border); padding: 16px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .dropdown-content { display: none; position: absolute; width: 100%; top: 100%; left: 0; background: #0d0d0d; border: 1px solid var(--border); z-index: 2000; max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
@@ -59,15 +55,13 @@
         .btn { border: none; padding: 18px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; text-transform: uppercase; margin-top: 10px; transition: 0.2s; }
         .btn-save { background: var(--accent); }
         .btn-test { background: #5865f2; }
-        .btn-test:hover { background: #4752c4; }
 
         /* GALERIE */
         .gal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; max-width: 600px; }
-        .gal-item { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+        .gal-item { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: #000; }
         .gal-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; cursor: pointer; }
-        .btn-del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        .btn-del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; font-size: 14px; }
 
-        /* MODAL */
         #modal-gal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10002; padding: 20px; overflow-y: auto; }
         .modal-inner { max-width: 500px; margin: 40px auto; background: var(--panel); padding: 20px; border-radius: 15px; border: 1px solid var(--border); }
 
@@ -81,13 +75,13 @@
     <div id="modal-gal">
         <div class="modal-inner">
             <span style="float:right; cursor:pointer; font-size:24px" onclick="closeGal()">&times;</span>
-            <h2 style="margin-bottom:20px">SOURCE DE L'IMAGE</h2>
+            <h2 style="margin-bottom:20px">MODIFIER L'IMAGE</h2>
             <input type="text" id="img-url-input" placeholder="Lien direct (https://...)">
             <button class="btn btn-test" onclick="selectImgByUrl()">UTILISER LE LIEN</button>
             <hr style="margin:20px 0; border:0; border-top:1px solid var(--border)">
-            <button class="btn btn-save" onclick="document.getElementById('file-in').click()">UPLOADER UN FICHIER</button>
-            <h3 style="margin-top:25px">OU GALERIE :</h3>
-            <div id="gal-container" class="gal-grid" style="grid-template-columns: repeat(2, 1fr);"></div>
+            <button class="btn btn-save" onclick="document.getElementById('file-in').click()">TÉLÉVERSER DEPUIS LA GALERIE</button>
+            <h3 style="margin-top:25px">OU CHOISIR EXISTANTE :</h3>
+            <div id="gal-container" class="gal-grid"></div>
         </div>
     </div>
 
@@ -115,20 +109,15 @@
             </div>
 
             <div class="card">
-                <h3>Configuration Texte</h3>
+                <h3>Contenu</h3>
                 <input type="text" id="w-title" placeholder="Titre..." oninput="sync()">
                 <textarea id="w-desc" rows="3" placeholder="Message..." oninput="sync()"></textarea>
                 <input type="text" id="w-footer" placeholder="Footer..." oninput="sync()">
-                <table class="var-table">
-                    <tr><td class="var-name">{user}</td><td>Mention @Utilisateur</td></tr>
-                    <tr><td class="var-name">{server}</td><td>Nom du serveur</td></tr>
-                    <tr><td class="var-name">{count}</td><td>Membres</td></tr>
-                </table>
-
-                <h3>Envoi & Rôles</h3>
+                
+                <h3>Envoi</h3>
                 <select id="w-chan"></select>
                 <div class="multiselect">
-                    <div class="select-box" onclick="document.getElementById('drop-roles').classList.toggle('show')">
+                    <div class="select-box" onclick="toggleDrop('drop-roles')">
                         Rôles de déclenchement <i class="fas fa-chevron-down"></i>
                     </div>
                     <div id="drop-roles" class="dropdown-content"></div>
@@ -141,21 +130,20 @@
 
         <section id="section-ADMIN" class="content-section">
             <div class="card">
-                <h3>Accès au Dashboard</h3>
-                <p style="margin-bottom:15px; font-size:14px; color:#888">Qui peut utiliser ce panel ?</p>
+                <h3>Rôles autorisés au Panel</h3>
                 <div class="multiselect">
-                    <div class="select-box" onclick="document.getElementById('drop-admin').classList.toggle('show')">
-                        Rôles Admin <i class="fas fa-chevron-down"></i>
+                    <div class="select-box" onclick="toggleDrop('drop-admin')">
+                        Sélectionner les rôles <i class="fas fa-chevron-down"></i>
                     </div>
                     <div id="drop-admin" class="dropdown-content"></div>
                 </div>
-                <button class="btn btn-save" onclick="saveAdmin()">SAUVEGARDER ADMIN</button>
+                <button class="btn btn-save" onclick="saveAdmin()">METTRE À JOUR LES ACCÈS</button>
             </div>
         </section>
 
         <section id="section-GALERIE" class="content-section">
             <input type="file" id="file-in" onchange="up()" style="display:none">
-            <button class="btn btn-save" style="max-width:300px; margin-bottom:30px" onclick="document.getElementById('file-in').click()">AJOUTER IMAGE</button>
+            <button class="btn btn-save" style="max-width:300px; margin-bottom:30px" onclick="document.getElementById('file-in').click()">AJOUTER UNE IMAGE</button>
             <div id="gallery-admin" class="gal-grid"></div>
         </section>
         
@@ -166,6 +154,7 @@
         let CONFIG = {}; let targetSlot = ''; const API = window.location.origin;
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+        function toggleDrop(id) { document.getElementById(id).classList.toggle('show'); }
         
         function show(name, el) { 
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active')); 
@@ -177,7 +166,6 @@
             if(name === 'GALERIE') loadAdminG();
         }
 
-        // --- GALERIE & IMAGES ---
         async function openGal(slot) {
             targetSlot = slot;
             const res = await fetch(`${API}/api/images`); const d = await res.json();
@@ -205,23 +193,22 @@
         }
 
         async function up() { 
-            const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]);
+            const file = document.getElementById('file-in').files[0];
+            if(!file) return;
+            const fd = new FormData(); fd.append('file', file);
             await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
             if(document.getElementById('modal-gal').style.display === 'block') openGal(targetSlot);
             loadAdminG();
         }
 
         async function delImg(path) {
-            if(!confirm("Supprimer cette image définitivement ?")) return;
-            try {
-                const res = await fetch(`${API}/api/delete_image`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({path: path})
-                });
-                if(res.ok) loadAdminG();
-                else alert("Erreur lors de la suppression");
-            } catch(e) { console.error(e); }
+            if(!confirm("Supprimer cette image ?")) return;
+            const res = await fetch(`${API}/api/delete_image`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ image: path }) // Changé de 'path' à 'image' pour correspondre au serveur
+            });
+            if(res.ok) loadAdminG(); else alert("Erreur lors de la suppression");
         }
 
         async function loadAdminG() {
@@ -234,7 +221,6 @@
             `).join('');
         }
 
-        // --- SYNC & SAVE ---
         function sync() {
             document.getElementById('p-title').innerText = document.getElementById('w-title').value || "Titre";
             document.getElementById('p-desc').innerText = document.getElementById('w-desc').value || "Description...";
@@ -252,40 +238,36 @@
                 footer_icon: document.getElementById('img-footer_icon').dataset.path || "",
                 trigger_roles: Array.from(document.querySelectorAll('#drop-roles input:checked')).map(i => i.value)
             };
-            const res = await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
-            if(res.ok) alert("✅ Configuration sauvegardée !");
+            await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
+            alert("Sauvegardé !");
         }
 
         async function saveAdmin() {
             CONFIG.admin_roles = Array.from(document.querySelectorAll('#drop-admin input:checked')).map(i => i.value);
-            const res = await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
-            if(res.ok) alert("✅ Rôles admin mis à jour !");
+            await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
+            alert("Accès admin mis à jour !");
         }
 
         async function testMessage() {
-            await save(); // On sauvegarde avant pour être sûr d'envoyer les dernières modifs
+            await save();
             const res = await fetch(`${API}/api/test_welcome`, { method: 'POST' });
-            if(res.ok) alert("🚀 Test envoyé sur Discord !");
-            else alert("❌ Erreur lors de l'envoi du test.");
+            if(res.ok) alert("Test envoyé !"); else alert("Erreur d'envoi test.");
         }
 
-        // --- INIT ---
         async function init() {
             const res = await fetch(`${API}/api/get_server_info`); const data = await res.json();
             CONFIG = data.config;
-            
             document.getElementById('w-chan').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
             
-            const makeRoles = (target, selected) => {
-                document.getElementById(target).innerHTML = data.all_roles.map(r => `
+            const renderRoles = (id, selected) => {
+                document.getElementById(id).innerHTML = data.all_roles.map(r => `
                     <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
                         <span>${r}</span> <input type="checkbox" value="${r}" ${(selected || []).includes(r)?'checked':''}>
                     </div>
                 `).join('');
             };
-
-            makeRoles('drop-roles', CONFIG.welcome?.trigger_roles);
-            makeRoles('drop-admin', CONFIG.admin_roles);
+            renderRoles('drop-roles', CONFIG.welcome?.trigger_roles);
+            renderRoles('drop-admin', CONFIG.admin_roles);
             
             if(CONFIG.welcome) {
                 document.getElementById('w-title').value = CONFIG.welcome.title || "";
