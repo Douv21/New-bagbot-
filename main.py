@@ -13,8 +13,7 @@ GUILD_ID = os.getenv("GUILD_ID")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_v5_responsive")
-OWNER_ID = "943487722738311219"
+SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_v7_stable")
 
 app = Flask(__name__, static_folder='public', static_url_path='')
 CORS(app)
@@ -47,45 +46,27 @@ async def send_welcome_embed(member, config, is_test=False):
         if not chan_id: return "ERREUR: Salon non configuré."
         channel = member.guild.get_channel(int(chan_id))
         if not channel: return "ERREUR: Salon introuvable."
-
+        
         def rep(t):
             if not t: return ""
             return t.replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
-
+        
         embed = discord.Embed(title=rep(config.get('title', 'Bienvenue')), description=rep(config.get('desc', '')), color=0xed4245)
         
         file_to_send = None
         for key in ['thumb', 'banner']:
             val = config.get(key)
-            if val:
-                if val.startswith('/uploads/'):
-                    fname = val.split('/')[-1]
-                    fpath = os.path.join(UPLOAD_FOLDER, fname)
-                    if os.path.exists(fpath):
-                        file_to_send = discord.File(fpath, filename=fname)
-                        if key == 'thumb': embed.set_thumbnail(url=f"attachment://{fname}")
-                        else: embed.set_image(url=f"attachment://{fname}")
-                else:
-                    if key == 'thumb': embed.set_thumbnail(url=val)
-                    else: embed.set_image(url=val)
+            if val and val.startswith('/uploads/'):
+                fname = val.split('/')[-1]
+                fpath = os.path.join(UPLOAD_FOLDER, fname)
+                if os.path.exists(fpath):
+                    file_to_send = discord.File(fpath, filename=fname)
+                    if key == 'thumb': embed.set_thumbnail(url=f"attachment://{fname}")
+                    else: embed.set_image(url=f"attachment://{fname}")
 
-        content = f"{'🚀 **TEST**' if is_test else ''}\n{member.mention}"
-        await channel.send(content=content, embed=embed, file=file_to_send if file_to_send else None)
+        await channel.send(content=f"{member.mention}", embed=embed, file=file_to_send if file_to_send else None)
         return "SUCCÈS"
     except Exception as e: return f"ERREUR: {str(e)}"
-
-@bot.event
-async def on_member_join(member):
-    config = load_config()
-    if not config.get("trigger_roles"): await send_welcome_embed(member, config)
-
-@bot.event
-async def on_member_update(before, after):
-    config = load_config()
-    triggers = config.get("trigger_roles", [])
-    if triggers and len(before.roles) < len(after.roles):
-        new_role = next(role for role in after.roles if role not in before.roles)
-        if new_role.name in triggers: await send_welcome_embed(after, config)
 
 @app.route('/')
 def index():
@@ -105,33 +86,26 @@ def callback():
     token = r.json().get('access_token')
     res = requests.get(f'https://discord.com/api/users/@me/guilds/{GUILD_ID}/member', headers={'Authorization': f'Bearer {token}'})
     if res.status_code == 200:
-        m = res.json()
         session['admin'] = True
-        session['user_id'] = str(m['user']['id'])
-        session['user_name'] = m['user']['username']
+        session['user_id'] = res.json()['user']['id']
         return redirect('/')
     return "Refusé", 403
 
 @app.route('/api/get_server_info')
 def get_info():
-    if not session.get('admin'): return jsonify({"error": "Unauth"}), 401
     guild = bot.get_guild(int(GUILD_ID))
     return jsonify({
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
         "all_roles": sorted([r.name for r in guild.roles if r.name != "@everyone"]),
         "bot": {"name": bot.user.name, "avatar": str(bot.user.display_avatar.url)},
-        "config": load_config(),
-        "user_connected": session.get('user_name', 'User'),
-        "server_name": guild.name,
-        "member_count": guild.member_count
+        "config": load_config()
     })
 
 @app.route('/api/test_message', methods=['POST'])
 def test_msg():
-    data = request.json
     guild = bot.get_guild(int(GUILD_ID))
     member = guild.get_member(int(session['user_id'])) or bot.user
-    fut = asyncio.run_coroutine_threadsafe(send_welcome_embed(member, data, True), bot.loop)
+    fut = asyncio.run_coroutine_threadsafe(send_welcome_embed(member, request.json, True), bot.loop)
     return jsonify({"status": fut.result()})
 
 @app.route('/api/save_config', methods=['POST'])
@@ -149,6 +123,15 @@ def upload():
 @app.route('/api/images')
 def list_images():
     return jsonify({"images": [f"/uploads/{f}" for f in os.listdir(UPLOAD_FOLDER)]})
+
+@app.route('/api/delete_image', methods=['POST'])
+def delete_img():
+    path = request.json.get('path', '').replace('/uploads/', '')
+    full_path = os.path.join(UPLOAD_FOLDER, path)
+    if os.path.exists(full_path):
+        os.remove(full_path)
+        return jsonify({"status": "deleted"})
+    return jsonify({"status": "error"}), 404
 
 def run_flask(): app.run(host='0.0.0.0', port=49501)
 if __name__ == "__main__":
