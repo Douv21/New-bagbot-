@@ -1,140 +1,158 @@
 import discord
 from discord.ext import commands
-from flask import Flask, send_from_directory, jsonify, request, session, redirect
-from flask_cors import CORS
-from flask_session import Session
-import threading, os, json, asyncio, requests
-from werkzeug.utils import secure_filename
-from dotenv import load_dotenv
+from flask import Flask, request, jsonify, send_from_directory
+import threading
+import json
+import os
 
-load_dotenv()
-TOKEN = os.getenv("TOKEN")
-GUILD_ID = os.getenv("GUILD_ID")
-CLIENT_ID = os.getenv("CLIENT_ID")
-CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-REDIRECT_URI = os.getenv("REDIRECT_URI")
-SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_final_pro")
-
-app = Flask(__name__, static_folder='public', static_url_path='')
-CORS(app)
-app.config.update(SESSION_PERMANENT=True, SESSION_TYPE="filesystem", SECRET_KEY=SECRET_KEY)
-Session(app)
-
+# --- CONFIGURATION INITIALE ---
+app = Flask(__name__)
+# On s'assure que le dossier des images existe
 UPLOAD_FOLDER = 'public/uploads'
-CONFIG_FILE = 'config.json'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
+CONFIG_FILE = 'config.json'
+
+# Fonction pour charger la config
 def load_config():
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-            try: return json.load(f)
-            except: return {"welcome": {}, "admin_roles": []}
+            return json.load(f)
     return {"welcome": {}, "admin_roles": []}
 
-def save_config(data):
-    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
-
-intents = discord.Intents.all()
+# --- PARTIE BOT DISCORD ---
+intents = discord.Intents.default()
+intents.members = True  # Crucial pour la bienvenue
+intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-async def send_welcome_embed(member):
-    config = load_config().get("welcome", {})
-    chan_id = config.get("channel")
-    if not chan_id: return
-    channel = member.guild.get_channel(int(chan_id))
-    if not channel: return
+@bot.event
+async def on_ready():
+    print(f"✅ Bot connecté en tant que {bot.user}")
 
-    def rep(t):
-        if not t: return ""
-        return (t.replace("{user}", member.mention)
-                 .replace("{user_name}", member.name)
-                 .replace("{server}", member.guild.name)
-                 .replace("{count}", str(member.guild.member_count)))
+# --- ROUTES API POUR LE PANEL ---
 
-    embed = discord.Embed(title=rep(config.get('title', 'Bienvenue')), description=rep(config.get('desc', '')), color=0xed4245)
+# 1. Récupérer les infos (Salons, Rôles, Config)
+@app.route('/api/get_server_info', methods=['GET'])
+def get_server_info():
+    config = load_config()
+    # On récupère les données du premier serveur où se trouve le bot
+    if not bot.guilds:
+        return jsonify({"channels": [], "all_roles": [], "config": config})
     
-    files = []
-    if config.get('thumb'):
-        t_name = config['thumb'].split('/')[-1]
-        t_path = os.path.join(UPLOAD_FOLDER, t_name)
-        if os.path.exists(t_path):
-            files.append(discord.File(t_path, filename=t_name))
-            embed.set_thumbnail(url=f"attachment://{t_name}")
+    guild = bot.guilds[0]
+    channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
+    roles = [r.name for r in guild.roles if r.name != "@everyone"]
+    
+    return jsonify({
+        "channels": channels,
+        "all_roles": roles,
+        "config": config
+    })
 
-    if config.get('banner'):
-        b_name = config['banner'].split('/')[-1]
-        b_path = os.path.join(UPLOAD_FOLDER, b_name)
-        if os.path.exists(b_path):
-            files.append(discord.File(b_path, filename=b_name))
-            embed.set_image(url=f"attachment://{b_name}")
+# 2. Sauvegarder la configuration (Bienvenue + Admin)
+@app.route('/api/save_config', methods=['POST'])
+def save_config():
+    try:
+        new_config = request.json
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(new_config, f, indent=4, ensure_ascii=False)
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-    await channel.send(embed=embed, files=files if files else None)
+# 3. Gérer la Galerie (Liste des images)
+@app.route('/api/images', methods=['GET'])
+def list_images():
+    imgs = [f"/public/uploads/{file}" for file in os.listdir(UPLOAD_FOLDER) 
+            if file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+    return jsonify({"images": imgs})
 
-@bot.event
-async def on_member_join(member):
-    if not load_config().get("welcome", {}).get("trigger_roles"):
-        await send_welcome_embed(member)
+# 4. Suppression réelle d'une image
+@app.route('/api/delete_image', methods=['POST'])
+def delete_image():
+    try:
+        data = request.json
+        img_path = data.get('image') # Le HTML envoie "/public/uploads/nom.jpg"
+        
+        # Nettoyage du chemin pour correspondre au système de fichiers
+        if img_path.startswith('/'):
+            img_path = img_path[1:]
+        
+        if os.path.exists(img_path):
+            os.remove(img_path)
+            return jsonify({"status": "success"})
+        else:
+            return jsonify({"status": "error", "message": "Fichier introuvable"}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-@bot.event
-async def on_member_update(before, after):
-    config = load_config().get("welcome", {})
-    trigger_roles = config.get("trigger_roles", [])
-    if trigger_roles:
-        for r_name in trigger_roles:
-            role = discord.utils.get(after.roles, name=r_name)
-            if role and not discord.utils.get(before.roles, name=r_name):
-                await send_welcome_embed(after)
+# 5. Upload d'image
+@app.route('/api/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return "No file", 400
+    file = request.files['file']
+    if file:
+        file.save(os.path.join(UPLOAD_FOLDER, file.filename))
+        return jsonify({"status": "success"})
+
+# 6. BOUTON TEST : Envoi du message sur Discord
+@app.route('/api/test_welcome', methods=['POST'])
+def test_welcome():
+    config = load_config().get('welcome', {})
+    channel_id = config.get('channel')
+    
+    if not channel_id:
+        return jsonify({"status": "error", "message": "Aucun salon configuré"}), 400
+
+    channel = bot.get_channel(int(channel_id))
+    if not channel:
+        return jsonify({"status": "error", "message": "Salon introuvable"}), 404
+
+    # Construction de l'Embed
+    embed = discord.Embed(
+        title=config.get('title', 'Bienvenue !').replace("{user}", bot.user.name),
+        description=config.get('desc', 'Content de vous voir.').replace("{user}", bot.user.mention),
+        color=0xed4245
+    )
+    
+    # Gestion des images (Thumb, Banner, Footer Icon)
+    # On vérifie si c'est une URL ou un chemin local
+    def get_url(path):
+        if not path: return None
+        return path if path.startswith('http') else f"http://ton-ip-ou-domaine:5000{path}"
+
+    if config.get('thumb'): embed.set_thumbnail(url=get_url(config['thumb']))
+    if config.get('banner'): embed.set_image(url=get_url(config['banner']))
+    
+    footer_text = config.get('footer', 'BagBot Ultimate')
+    footer_icon = get_url(config.get('footer_icon'))
+    embed.set_footer(text=footer_text, icon_url=footer_icon)
+
+    # Envoi via le thread du bot
+    bot.loop.create_task(channel.send(embed=embed))
+    return jsonify({"status": "success"})
+
+# Serveur des fichiers statiques (pour voir les images dans le panel)
+@app.route('/public/uploads/<path:filename>')
+def custom_static(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 @app.route('/')
 def index():
-    if not session.get('admin'): return redirect('/login')
     return send_from_directory('public', 'index.html')
 
-@app.route('/login')
-def login():
-    url = f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify+guilds.members.read"
-    return redirect(url)
+# --- LANCEMENT ---
+def run_flask():
+    app.run(host='0.0.0.0', port=5000)
 
-@app.route('/login/callback')
-def callback():
-    code = request.args.get('code')
-    data = {'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET, 'grant_type': 'authorization_code', 'code': code, 'redirect_uri': REDIRECT_URI}
-    r = requests.post('https://discord.com/api/oauth2/token', data=data)
-    token = r.json().get('access_token')
-    res = requests.get(f'https://discord.com/api/users/@me/guilds/{GUILD_ID}/member', headers={'Authorization': f'Bearer {token}'})
-    if res.status_code == 200:
-        session['admin'] = True
-        return redirect('/')
-    return "Accès refusé", 403
-
-@app.route('/api/get_server_info')
-def get_info():
-    guild = bot.get_guild(int(GUILD_ID))
-    return jsonify({
-        "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
-        "all_roles": sorted([r.name for r in guild.roles if r.name != "@everyone"]),
-        "config": load_config()
-    })
-
-@app.route('/api/save_config', methods=['POST'])
-def save_cfg():
-    save_config(request.json)
-    return jsonify({"status": "success"})
-
-@app.route('/api/upload', methods=['POST'])
-def upload():
-    file = request.files['file']
-    filename = secure_filename(file.filename)
-    file.save(os.path.join(UPLOAD_FOLDER, filename))
-    return jsonify({"url": f"/uploads/{filename}"})
-
-@app.route('/api/images')
-def list_images():
-    return jsonify({"images": [f"/uploads/{f}" for f in os.listdir(UPLOAD_FOLDER)]})
-
-def run_flask(): app.run(host='0.0.0.0', port=49501)
-if __name__ == "__main__":
-    threading.Thread(target=run_flask).start()
-    bot.run(TOKEN)
+if __name__ == '__main__':
+    # On lance Flask dans un thread séparé pour ne pas bloquer le bot Discord
+    t = threading.Thread(target=run_flask)
+    t.start()
+    
+    # Lance le bot (Remplace par ton vrai token)
+    bot.run("TON_TOKEN_ICI")
     
