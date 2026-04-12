@@ -14,9 +14,8 @@ GUILD_ID = os.getenv("GUILD_ID")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SECRET_KEY = os.getenv("SECRET_KEY", "bagbot-final-secure")
+SECRET_KEY = os.getenv("SECRET_KEY", "bagbot-super-secret")
 
-# TON ID DISCORD POUR L'ACCÈS ADMIN EXCLUSIF
 OWNER_ID = "943487722738311219"
 
 app = Flask(__name__, static_folder='public', static_url_path='')
@@ -35,9 +34,12 @@ CONFIG_FILE = 'config.json'
 def load_config():
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-            try: return json.load(f)
-            except: return {"admin_roles": ["Admin", "Fondateur"]}
-    return {"admin_roles": ["Admin", "Fondateur"]}
+            try:
+                data = json.load(f)
+                if "admin_roles" not in data: data["admin_roles"] = []
+                return data
+            except: return {"admin_roles": []}
+    return {"admin_roles": []}
 
 def save_config(data):
     current = load_config()
@@ -49,7 +51,6 @@ def save_config(data):
 
 @app.route('/login')
 def login():
-    # Force la déconnexion avant de relancer l'auth
     session.clear()
     url = f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify+guilds.members.read"
     return redirect(url)
@@ -64,7 +65,7 @@ def callback():
     r = requests.post('https://discord.com/api/oauth2/token', data=data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     access_token = r.json().get('access_token')
 
-    if not access_token: return "Erreur : Token Discord non récupéré.", 400
+    if not access_token: return "Erreur Token", 400
 
     headers = {'Authorization': f'Bearer {access_token}'}
     res = requests.get(f'https://discord.com/api/users/@me/guilds/{GUILD_ID}/member', headers=headers)
@@ -73,13 +74,11 @@ def callback():
         member_data = res.json()
         u_id = str(member_data['user']['id']).strip()
         
-        # LOGS DE DÉBOGAGE DANS TERMUX
-        print(f"\n[AUTH] Connexion de : {member_data['user']['username']} (ID: {u_id})")
+        print(f"[LOGIN] {member_data['user']['username']} connecté.")
         
         is_admin = False
         if u_id == OWNER_ID:
             is_admin = True
-            print("[AUTH] Succès : Propriétaire reconnu.")
         else:
             guild = bot.get_guild(int(GUILD_ID))
             admin_names = load_config().get('admin_roles', [])
@@ -92,7 +91,6 @@ def callback():
         if is_admin:
             session['admin'] = True
             session['user_id'] = u_id
-            session['user_name'] = member_data['user']['username']
             return redirect('/')
     
     return "Accès refusé.", 403
@@ -107,26 +105,26 @@ def index():
 @app.route('/api/get_server_info')
 def get_info():
     if not session.get('admin'): return jsonify({"error": "Unauth"}), 401
+    
     guild = bot.get_guild(int(GUILD_ID))
-    if not guild: return jsonify({"error": "Bot non présent"}), 500
+    if not guild:
+        print("[ERREUR] Guild non trouvée. Vérifiez GUILD_ID.")
+        return jsonify({"error": "Guild introuvable", "all_roles": [], "channels": []}), 200
     
     channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
     all_roles = [role.name for role in guild.roles if role.name != "@everyone"]
-    
-    # On compare bien en string pour le menu Admin
-    is_owner = str(session.get('user_id')) == OWNER_ID
     
     return jsonify({
         "channels": channels,
         "all_roles": sorted(all_roles),
         "bot": {"name": bot.user.name, "avatar": str(bot.user.display_avatar.url)}, 
         "config": load_config(),
-        "is_owner": is_owner
+        "is_owner": str(session.get('user_id')) == OWNER_ID
     })
 
 @app.route('/api/save_roles', methods=['POST'])
 def save_roles_route():
-    if str(session.get('user_id')) != OWNER_ID: return jsonify({"error": "Interdit"}), 403
+    if str(session.get('user_id')) != OWNER_ID: return jsonify({"error": "Forbidden"}), 403
     roles = request.json.get('roles', [])
     save_config({"admin_roles": roles})
     return jsonify({"status": "success"})
@@ -168,6 +166,7 @@ def test_message():
         if not channel: return
         def rep(t): return t.replace("{user}", bot.user.mention).replace("{server}", channel.guild.name).replace("{count}", str(channel.guild.member_count)).replace("{channel}", channel.mention).replace("{everyone}", "@everyone").replace("{here}", "@here")
         embed = discord.Embed(title=rep(data.get('title', '')), description=rep(data.get('desc', '')), color=0xed4245)
+        
         files = []
         for key in ['thumb', 'banner']:
             val = data.get(key)
@@ -181,7 +180,9 @@ def test_message():
             elif val and val.startswith('http'):
                 if key == 'thumb': embed.set_thumbnail(url=val)
                 else: embed.set_image(url=val)
+        
         await channel.send(embed=embed, files=files)
+    
     asyncio.run_coroutine_threadsafe(send_task(), bot.loop)
     return jsonify({"status": "success"})
 
@@ -189,9 +190,9 @@ def test_message():
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-def run_flask(): app.run(host='0.0.0.0', port=49501, debug=False)
+def run_flask():
+    app.run(host='0.0.0.0', port=49501, debug=False)
 
 if __name__ == "__main__":
     threading.Thread(target=run_flask).start()
     bot.run(TOKEN)
-    
