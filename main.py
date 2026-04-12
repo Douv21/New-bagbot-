@@ -49,8 +49,7 @@ def save_config():
 def test_welcome():
     config = load_config().get('welcome', {})
     channel_id = config.get('channel')
-    if not channel_id: return jsonify({"status": "error", "message": "Aucun salon"}), 400
-    
+    if not channel_id: return jsonify({"status": "error"}), 400
     channel = bot.get_channel(int(channel_id))
     guild = bot.guilds[0]
     
@@ -59,21 +58,18 @@ def test_welcome():
         return t.replace("{user}", bot.user.name).replace("{server}", guild.name).replace("{count}", str(guild.member_count))
 
     embed = discord.Embed(title=parse_vars(config.get('title')), description=parse_vars(config.get('desc')), color=0xed4245)
-    
     base_url = f"http://{request.host}"
     if config.get('thumb'):
-        url = config['thumb'] if config['thumb'].startswith('http') else f"{base_url}{config['thumb']}"
-        embed.set_thumbnail(url=url)
+        embed.set_thumbnail(url=config['thumb'] if config['thumb'].startswith('http') else f"{base_url}{config['thumb']}")
     if config.get('banner'):
-        url = config['banner'] if config['banner'].startswith('http') else f"{base_url}{config['banner']}"
-        embed.set_image(url=url)
+        embed.set_image(url=config['banner'] if config['banner'].startswith('http') else f"{base_url}{config['banner']}")
     
-    footer_text = parse_vars(config.get('footer', 'BagBot'))
+    f_text = parse_vars(config.get('footer', 'BagBot'))
     if config.get('footer_icon'):
         f_url = config['footer_icon'] if config['footer_icon'].startswith('http') else f"{base_url}{config['footer_icon']}"
-        embed.set_footer(text=footer_text, icon_url=f_url)
+        embed.set_footer(text=f_text, icon_url=f_url)
     else:
-        embed.set_footer(text=footer_text)
+        embed.set_footer(text=f_text)
 
     bot.loop.create_task(channel.send(embed=embed))
     return jsonify({"status": "success"})
@@ -86,8 +82,9 @@ def list_images():
 @app.route('/api/upload', methods=['POST'])
 def upload():
     file = request.files['file']
-    file.save(os.path.join(UPLOAD_FOLDER, file.filename))
-    return jsonify({"status": "success"})
+    filename = file.filename.replace(" ", "_")
+    file.save(os.path.join(UPLOAD_FOLDER, filename))
+    return jsonify({"status": "success", "path": f"/public/uploads/{filename}"})
 
 @app.route('/api/delete_image', methods=['POST'])
 def delete_image():
