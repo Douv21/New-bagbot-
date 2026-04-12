@@ -1,100 +1,65 @@
 import discord
 from discord.ext import commands
 from flask import Flask, request, jsonify, send_from_directory, session, redirect
-import requests, threading, json, os
+import requests, threading, os, json
 from dotenv import load_dotenv
 
-# 1. Charger le .env AVANT toute chose
 load_dotenv()
 
-# 2. Récupérer les variables (avec une sécurité si vide)
+# Variables d'environnement
 TOKEN = os.getenv("DISCORD_TOKEN")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 GUILD_ID = os.getenv("GUILD_ID")
 OWNER_ID = os.getenv("OWNER_ID")
-REDIRECT_URI = os.getenv("REDIRECT_URI")
+# Utilise exactement celle-ci pour correspondre à ta capture
+REDIRECT_URI = "http://192.168.1.133:49501/api/callback"
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-UPLOAD_FOLDER = os.path.join('public', 'uploads')
-CONFIG_FILE = 'config.json'
 
-if not os.path.exists(UPLOAD_FOLDER): os.makedirs(UPLOAD_FOLDER)
+@app.route('/')
+def index():
+    # Sert le fichier index.html situé dans le dossier 'public'
+    return send_from_directory('public', 'index.html')
 
-def load_config():
-    if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-            try: return json.load(f)
-            except: return {"welcome": {}, "admin_roles": []}
-    return {"welcome": {}, "admin_roles": []}
-
-intents = discord.Intents.default()
-intents.members = True 
-intents.guilds = True
-bot = commands.Bot(command_prefix="!", intents=intents)
-
-# --- ROUTES D'AUTH (Celles qui manquaient peut-être) ---
+# LA ROUTE DE CONNEXION (C'est elle que le bouton doit appeler)
 @app.route('/api/login')
 def login():
-    if not CLIENT_ID: return "Erreur: CLIENT_ID non trouvé dans le .env", 500
     url = (f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}"
            f"&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify")
     return redirect(url)
 
+# LA ROUTE DE RETOUR (Doit être identique à ta capture)
 @app.route('/api/callback')
 def callback():
     code = request.args.get('code')
-    data = {'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET, 'grant_type': 'authorization_code', 'code': code, 'redirect_uri': REDIRECT_URI}
+    data = {
+        'client_id': CLIENT_ID,
+        'client_secret': CLIENT_SECRET,
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': REDIRECT_URI
+    }
     r = requests.post('https://discord.com/api/oauth2/token', data=data)
-    token_resp = r.json()
-    if 'access_token' not in token_resp: return f"Erreur OAuth: {token_resp}", 400
+    resp = r.json()
     
-    user_data = requests.get('https://discord.com/api/users/@me', headers={'Authorization': f'Bearer {token_resp["access_token"]}'}).json()
-    session['user_id'] = user_data.get('id')
-    return redirect('/')
+    if 'access_token' in resp:
+        user = requests.get('https://discord.com/api/users/@me', 
+                            headers={'Authorization': f'Bearer {resp["access_token"]}'}).json()
+        session['user_id'] = user.get('id')
+        return redirect('/')
+    return f"Erreur de connexion : {resp}"
 
-def check_access():
-    uid = session.get('user_id')
-    if not uid: return False
-    if str(uid) == str(OWNER_ID): return True
-    config = load_config()
-    guild = bot.get_guild(int(GUILD_ID))
-    member = guild.get_member(int(uid)) if guild else None
-    if member:
-        return any(role in [r.name for r in member.roles] for role in config.get('admin_roles', []))
-    return False
-
-# --- ROUTES API ---
 @app.route('/api/get_server_info')
-def get_server_info():
-    if not check_access(): return jsonify({"status": "unauthorized"}), 401
-    guild = bot.get_guild(int(GUILD_ID))
-    if not guild: return jsonify({"status": "error", "message": "Guild introuvable"}), 404
-    return jsonify({
-        "status": "success", 
-        "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
-        "all_roles": [r.name for r in guild.roles if r.name != "@everyone"],
-        "config": load_config()
-    })
-
-@app.route('/api/save_config', methods=['POST'])
-def save_config():
-    if not check_access(): return jsonify({"status": "unauthorized"}), 401
-    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-        json.dump(request.json, f, indent=4, ensure_ascii=False)
-    return jsonify({"status": "success"})
-
-# --- SERVIR LES FICHIERS ---
-@app.route('/')
-def index():
-    return send_from_directory('public', 'index.html')
-
-@app.route('/public/<path:path>')
-def serve_public(path):
-    return send_from_directory('public', path)
+def get_info():
+    if str(session.get('user_id')) != str(OWNER_ID):
+        return jsonify({"status": "unauthorized"}), 401
+    return jsonify({"status": "success", "message": "Connecté !"})
 
 if __name__ == '__main__':
-    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=49501, debug=False), daemon=True).start()
+    # On lance sur le port 49501 comme sur tes captures
+    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=49501), daemon=True).start()
+    bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
     bot.run(TOKEN)
     
