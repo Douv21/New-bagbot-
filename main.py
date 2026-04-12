@@ -1,17 +1,22 @@
 import os
 import json
 import discord
+import threading
 from discord.ext import commands
 from flask import Flask, session, request, jsonify, redirect
+from dotenv import load_dotenv
 
-# --- CONFIGURATION ---
-TOKEN = "TON_TOKEN_ICI"
-CLIENT_ID = "TON_ID_ICI"
-CLIENT_SECRET = "TON_SECRET_ICI"
+# --- CHARGEMENT DU .ENV ---
+load_dotenv()
+TOKEN = os.getenv("DISCORD_TOKEN")
+CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
+GUILD_ID = int(os.getenv("GUILD_ID"))
 REDIRECT_URI = "http://192.168.1.133:49501/login/callback"
-GUILD_ID = 123456789012345678 # Remplace par l'ID de ton serveur
 
-app = Flask(__name__, static_folder='public', static_url_for_path='/')
+# --- INITIALISATION ---
+# Correction de la ligne 14 (static_url_path) vue sur ton Termux
+app = Flask(__name__, static_folder='public', static_url_path='/')
 app.secret_key = os.urandom(24)
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
@@ -22,6 +27,7 @@ def load_config():
     with open('config.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
+# --- ROUTES API ---
 @app.route('/')
 def index():
     return app.send_static_file('index.html')
@@ -76,12 +82,12 @@ def login():
 
 @app.route('/login/callback')
 def callback():
-    session['user_id'] = "123"
-    session['user_name'] = "Admin"
+    session['user_id'] = "admin"
+    session['user_name'] = "Administrateur"
     return redirect('/')
 
 if __name__ == "__main__":
-    import threading
+    # On lance Flask dans un thread pour ne pas bloquer le Bot
     threading.Thread(target=lambda: app.run(host='0.0.0.0', port=49501, use_reloader=False)).start()
     bot.run(TOKEN)
     
