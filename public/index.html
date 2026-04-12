@@ -10,66 +10,67 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: white; display: flex; height: 100vh; overflow: hidden; }
         
-        /* SIDEBAR ANIMÉE */
+        /* SIDEBAR PC */
         #sidebar { 
             width: 260px; background: #000; border-right: 1px solid var(--border); 
-            display: flex; flex-direction: column; transition: transform 0.3s ease; z-index: 1000;
+            display: flex; flex-direction: column; transition: 0.3s ease; flex-shrink: 0;
         }
         .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 4px solid var(--accent); }
 
-        /* RESPONSIVE MOBILE SIDEBAR */
+        /* MOBILE OVERLAY & SIDEBAR */
         @media (max-width: 900px) {
-            #sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
+            #sidebar { 
+                position: fixed; left: 0; top: 0; bottom: 0; 
+                transform: translateX(-100%); z-index: 2000; 
+            }
             #sidebar.open { transform: translateX(0); }
+            #overlay { 
+                display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1999; 
+            }
+            #overlay.show { display: block; }
         }
 
-        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; }
+        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
         header { 
             height: 60px; background: var(--panel); border-bottom: 1px solid var(--border); 
-            display: flex; align-items: center; padding: 0 20px; font-weight: 900; gap: 15px;
+            display: flex; align-items: center; padding: 0 20px; font-weight: 900; gap: 20px;
+            position: sticky; top: 0; z-index: 100;
         }
-        .menu-btn { display: none; font-size: 20px; cursor: pointer; color: var(--accent); }
-        @media (max-width: 900px) { .menu-btn { display: block; } }
+        
+        /* BOUTON HAMBURGER */
+        .menu-toggle { 
+            display: none; font-size: 22px; cursor: pointer; color: var(--accent); 
+        }
+        @media (max-width: 900px) { .menu-toggle { display: block; } }
 
         .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; width: 100%; }
         .content-section.active { display: flex; }
 
-        /* EMBED PREVIEW */
-        .discord-embed { 
-            width: 100%; max-width: 480px; background: var(--discord); border-left: 4px solid var(--accent); 
-            padding: 16px; border-radius: 4px; position: relative; margin-bottom: 25px; 
-        }
-        .thumb-preview { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: #000; border: 1px dashed #444; }
-        .banner-preview { width: 100%; height: 140px; margin-top: 10px; background: #000; border: 1px dashed #444; }
+        /* RESTE DU STYLE (Inchangé) */
+        .discord-embed { width: 100%; max-width: 480px; background: var(--discord); border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; position: relative; margin-bottom: 25px; }
+        .thumb-preview { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: #000; border: 1px dashed #444; overflow: hidden; }
+        .banner-preview { width: 100%; height: 140px; margin-top: 10px; background: #000; border: 1px dashed #444; overflow: hidden; }
         .img-zone img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* CARDS */
         .card { width: 100%; max-width: 480px; background: var(--panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
-        h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
-        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
-
-        /* MULTISELECT DROPDOWN */
+        h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
         .multiselect { position: relative; margin-bottom: 15px; }
-        .select-box { background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .dropdown-content { 
-            display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0a0a0a; 
-            border: 1px solid var(--border); border-radius: 8px; max-height: 180px; overflow-y: auto; z-index: 100; 
-        }
+        .select-box { background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; }
+        .dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0a0a0a; border: 1px solid var(--border); border-radius: 8px; max-height: 180px; overflow-y: auto; z-index: 100; }
         .dropdown-content.show { display: block; }
-        .option { display: flex; align-items: center; padding: 10px; gap: 10px; border-bottom: 1px solid #111; cursor: pointer; }
-        .option input { accent-color: var(--accent); width: 18px; height: 18px; }
-
+        .option { display: flex; align-items: center; padding: 10px; gap: 10px; cursor: pointer; }
         .btn { border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-bottom: 10px; }
         .btn-save { background: var(--accent); }
         .btn-test { background: #5865F2; }
-
         #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; width: 100%; max-width: 480px; }
         .gallery-card { aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; }
         .gallery-card img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
+    <div id="overlay" onclick="toggleMenu()"></div>
+    
     <nav id="sidebar">
         <div style="padding: 25px; font-size: 22px; font-weight: 900; color: var(--accent);">BAGBOT</div>
         <div class="nav-item active" onclick="show('accueil', this)"><i class="fas fa-home"></i> ACCUEIL</div>
@@ -77,9 +78,9 @@
         <div class="nav-item" onclick="show('images', this)"><i class="fas fa-images"></i> GALERIE</div>
     </nav>
 
-    <main onclick="closeSidebar()">
+    <main>
         <header>
-            <i class="fas fa-bars menu-btn" onclick="event.stopPropagation(); toggleSidebar()"></i>
+            <i class="fas fa-bars menu-toggle" onclick="toggleMenu()"></i>
             <span id="bot-name">DASHBOARD</span>
         </header>
 
@@ -87,24 +88,20 @@
             <div class="discord-embed">
                 <div class="thumb-preview img-zone" onclick="triggerUp('thumb')"><div id="box-thumb"></div></div>
                 <div id="p-title" style="font-weight: bold; margin-bottom: 5px;">Titre</div>
-                <div id="p-desc" style="font-size: 14px; white-space: pre-wrap; color: #dcddde;">Message de bienvenue...</div>
+                <div id="p-desc" style="font-size: 14px; white-space: pre-wrap; color: #dcddde;">Bienvenue...</div>
                 <div class="banner-preview img-zone" onclick="triggerUp('banner')"><div id="box-banner"></div></div>
             </div>
-
             <div class="card">
-                <h3>Contenu</h3>
+                <h3>Configuration</h3>
                 <input type="text" id="in-title" placeholder="Titre..." oninput="sync()">
-                <textarea id="in-desc" rows="3" placeholder="Description ({user}...)" oninput="sync()"></textarea>
-                
+                <textarea id="in-desc" rows="3" placeholder="Message..." oninput="sync()"></textarea>
                 <h3>Salon</h3>
                 <select id="chan-list"></select>
-
-                <h3>Déclencheur (Rôles)</h3>
+                <h3>Rôles Déclencheurs</h3>
                 <div class="multiselect">
-                    <div class="select-box" onclick="toggleDrop('drop-trigger')">Rôles sélectionnés <i class="fas fa-chevron-down"></i></div>
+                    <div class="select-box" onclick="toggleDrop('drop-trigger')">Sélectionner <i class="fas fa-chevron-down"></i></div>
                     <div id="drop-trigger" class="dropdown-content"></div>
                 </div>
-
                 <button class="btn btn-save" onclick="save()">ENREGISTRER</button>
                 <button class="btn btn-test" onclick="test()">TESTER</button>
             </div>
@@ -112,7 +109,7 @@
 
         <section id="admin" class="content-section">
             <div class="card">
-                <h3>Accès Dashboard</h3>
+                <h3>Accès Admin</h3>
                 <div class="multiselect">
                     <div class="select-box" onclick="toggleDrop('drop-admin')">Rôles autorisés <i class="fas fa-chevron-down"></i></div>
                     <div id="drop-admin" class="dropdown-content"></div>
@@ -124,7 +121,7 @@
         <section id="images" class="content-section">
             <input type="file" id="file-in" onchange="up()" style="display:none">
             <button class="btn btn-save" style="max-width:480px" onclick="triggerUp('gallery')">UPLOADER</button>
-            <div id="gallery" style="margin-top:20px;"></div>
+            <div id="gallery" style="margin-top:20px"></div>
         </section>
     </main>
 
@@ -132,26 +129,26 @@
         const API = window.location.origin;
         let targetImg = '';
 
-        // TOGGLE SIDEBAR MOBILE
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
+        // FONCTION MENU MOBILE
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('show');
+        }
 
         function show(id, el) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             el.classList.add('active');
-            closeSidebar();
+            if(window.innerWidth <= 900) toggleMenu(); // Ferme le menu après clic sur mobile
             if(id === 'images') loadG();
         }
 
         function toggleDrop(id) { document.getElementById(id).classList.toggle('show'); }
-
         function sync() {
             document.getElementById('p-title').innerText = document.getElementById('in-title').value || "Titre";
             document.getElementById('p-desc').innerText = document.getElementById('in-desc').value || "Description...";
         }
-
         function triggerUp(t) { targetImg = t; document.getElementById('file-in').click(); }
 
         async function up() {
@@ -187,7 +184,7 @@
                 banner: document.querySelector('.banner-preview').dataset.path || null
             };
             await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(p) });
-            alert("Sauvegardé !");
+            alert("Configuration sauvegardée !");
         }
 
         async function test() {
@@ -200,7 +197,7 @@
             };
             const res = await fetch(`${API}/api/test_message`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(p) });
             const d = await res.json();
-            alert("Réponse : " + d.status);
+            alert("Discord : " + d.status);
         }
 
         async function init() {
