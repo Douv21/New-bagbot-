@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BagBot Pro - Dashboard</title>
+    <title>BagBot Designer Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -18,20 +18,21 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg-dark); color: white; display: flex; height: 100vh; overflow: hidden; }
 
-        /* --- SIDEBAR RÉTRACTABLE --- */
+        /* --- SIDEBAR FIXE / RÉTRACTABLE --- */
         #sidebar {
             width: 260px;
             background: var(--bg-sidebar);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease, width 0.3s ease;
+            transition: 0.3s;
+            flex-shrink: 0;
             z-index: 1000;
         }
 
-        #sidebar.collapsed { width: 0; transform: translateX(-100%); }
+        #sidebar.collapsed { width: 0; overflow: hidden; border: none; }
 
-        .sidebar-header { padding: 25px 20px; font-weight: 900; color: var(--accent); font-size: 22px; letter-spacing: 1px; }
+        .sidebar-header { padding: 25px 20px; font-weight: 900; color: var(--accent); font-size: 22px; }
         
         .nav-item {
             padding: 15px 20px;
@@ -39,18 +40,18 @@
             align-items: center;
             gap: 12px;
             color: var(--text-muted);
+            text-decoration: none;
             cursor: pointer;
-            transition: 0.2s;
         }
 
-        .nav-item:hover, .nav-item.active {
+        .nav-item.active {
             background: rgba(237, 66, 69, 0.1);
             color: white;
             border-left: 4px solid var(--accent);
         }
 
-        /* --- CONTENU PRINCIPAL --- */
-        .main-content { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; }
+        /* --- CONTENU --- */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
         
         .top-nav {
             height: 60px;
@@ -62,11 +63,9 @@
             gap: 20px;
         }
 
-        .toggle-btn { cursor: pointer; color: var(--accent); font-size: 20px; z-index: 1100; }
-
         .scroll-area { flex-grow: 1; overflow-y: auto; padding: 30px 15px; display: flex; flex-direction: column; align-items: center; }
 
-        /* --- DESIGN EMBED --- */
+        /* --- EMBED DESIGN (PAS DE CHEVAUCHEMENT) --- */
         .embed-container {
             width: 100%;
             max-width: 500px;
@@ -78,27 +77,27 @@
             margin-bottom: 25px;
         }
 
-        .click-zone { border: 2px dashed var(--border); background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; z-index: 10; }
-        .click-zone img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
+        .thumb-zone { position: absolute; top: 16px; right: 16px; width: 80px; height: 80px; border: 2px dashed var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; background: rgba(0,0,0,0.2); }
+        .thumb-zone img { width: 100%; height: 100%; object-fit: cover; }
 
-        .thumb-box { position: absolute; top: 16px; right: 16px; width: 80px; height: 80px; }
-        .banner-box { width: 100%; height: 160px; margin-top: 15px; }
+        .input-field { background: transparent; border: none; color: white; outline: none; width: 100%; margin-bottom: 10px; }
+        .title-field { font-size: 18px; font-weight: bold; padding-right: 90px; } /* Espace pour la thumbnail */
+        .desc-field { font-size: 14px; min-height: 80px; resize: none; color: #dbdee1; }
 
-        .input-ghost { background: transparent; border: none; color: white; outline: none; width: 100%; margin-bottom: 5px; }
-        .title-ghost { font-size: 18px; font-weight: bold; }
-        .desc-ghost { font-size: 14px; min-height: 80px; resize: none; }
+        .banner-zone { width: 100%; height: 180px; border: 2px dashed var(--border); margin-top: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; background: rgba(0,0,0,0.2); }
+        .banner-zone img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* --- BOUTONS --- */
+        /* --- FORMULAIRE --- */
         .form-panel { width: 100%; max-width: 500px; padding-bottom: 100px; }
-        .label-style { font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; margin: 15px 0 8px; display: block; }
+        .label-text { font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; margin: 20px 0 8px; display: block; }
 
-        .select-dark { width: 100%; background: #111214; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 4px; outline: none; }
+        .select-input { width: 100%; background: #111214; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 4px; }
 
-        .btn { width: 100%; padding: 15px; border-radius: 4px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn { width: 100%; padding: 15px; border-radius: 4px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-add { background: #2b2d31; color: white; }
-        .btn-send { background: var(--accent); color: white; margin-top: 25px; font-size: 16px; }
+        .btn-send { background: var(--accent); color: white; margin-top: 30px; font-size: 16px; }
 
-        .row-reac { display: flex; align-items: center; gap: 10px; background: #080808; padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px solid var(--border); }
+        .reac-row { display: flex; align-items: center; gap: 10px; background: #080808; padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
@@ -117,100 +116,109 @@
 
     <div class="main-content">
         <div class="top-nav">
-            <i class="fas fa-bars toggle-btn" onclick="toggleMenu()"></i>
-            <span style="font-weight: bold; font-size: 14px; letter-spacing: 1px;">DASHBOARD</span>
+            <i class="fas fa-bars" onclick="toggleSidebar()" style="color:var(--accent); cursor:pointer; font-size:20px;"></i>
+            <span style="font-weight: bold; font-size: 14px;">DASHBOARD</span>
         </div>
 
         <div class="scroll-area">
             <div class="embed-container">
-                <div class="click-zone thumb-box" onclick="triggerFile('thumb')">
-                    <i class="fas fa-plus" id="icon-thumb"></i>
-                    <img id="view-thumb" style="display:none">
+                <div class="thumb-zone" onclick="openUpload('thumb')">
+                    <i class="fas fa-plus" id="plus-thumb"></i>
+                    <img id="img-thumb" style="display:none">
                 </div>
                 
-                <input type="text" class="input-ghost title-ghost" value="Titre de l'Embed">
-                <textarea class="input-ghost desc-ghost" placeholder="Votre message ici..."></textarea>
+                <input type="text" class="input-field title-field" value="Titre de l'Embed">
+                <textarea class="input-field desc-field" placeholder="Votre message ici..."></textarea>
 
-                <div class="click-zone banner-box" onclick="triggerFile('banner')">
-                    <i class="fas fa-image" id="icon-banner" style="font-size: 24px;"></i>
-                    <img id="view-banner" style="display:none">
+                <div class="banner-zone" onclick="openUpload('banner')">
+                    <i class="fas fa-image" id="plus-banner" style="font-size: 24px;"></i>
+                    <img id="img-banner" style="display:none">
                 </div>
             </div>
 
             <div class="form-panel">
-                <label class="label-style">Salon de destination</label>
-                <select id="chan-list" class="select-dark">
-                    <option>Chargement...</option>
+                <label class="label-text">Salon de destination</label>
+                <select id="select-channels" class="select-input">
+                    <option>Chargement des salons...</option>
                 </select>
 
-                <div id="reac-container"></div>
+                <div id="reactions-list"></div>
                 
-                <button class="btn btn-add" onclick="addNewRow()">
+                <button class="btn btn-add" onclick="addNewReaction()">
                     <i class="fas fa-plus-circle"></i> Ajouter une réaction
                 </button>
 
-                <button class="btn btn-send">
-                    <i class="fas fa-paper-plane"></i> DÉPLOYER LE MESSAGE
-                </button>
+                <button class="btn btn-send">DÉPLOYER LE MESSAGE</button>
             </div>
         </div>
     </div>
 
-    <input type="file" id="file-input" style="display:none" onchange="previewFile(this)">
+    <input type="file" id="real-file-input" style="display:none" onchange="preview(this)">
 
 <script>
-    let roleCache = [];
-    let uploadTarget = "";
+    let rolesData = [];
+    let currentImgType = "";
 
-    function toggleMenu() {
+    function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('collapsed');
     }
 
-    async function loadData() {
+    // FONCTION CRITIQUE : Se connecte au port 49501
+    async function fetchData() {
         try {
-            const res = await fetch('/api/get_server_info');
-            const data = await res.json();
-            roleCache = data.roles || [];
-            document.getElementById('chan-list').innerHTML = data.channels.map(c => 
-                `<option value="${c.id}"># ${c.name}</option>`
-            ).join('');
-        } catch(e) { console.error("Erreur bot"); }
+            // On précise bien le port 49501 dans l'URL si on est sur un autre port, 
+            // mais comme Flask sert la page, une URL relative suffit.
+            const response = await fetch('/api/get_server_info');
+            const data = await response.json();
+            
+            rolesData = data.roles || [];
+            const chanSelect = document.getElementById('select-channels');
+            
+            if(data.channels && data.channels.length > 0) {
+                chanSelect.innerHTML = data.channels.map(c => 
+                    `<option value="${c.id}"># ${c.name}</option>`
+                ).join('');
+            } else {
+                chanSelect.innerHTML = "<option>Aucun salon trouvé</option>";
+            }
+        } catch(e) {
+            document.getElementById('select-channels').innerHTML = "<option>Erreur : Bot hors ligne</option>";
+        }
     }
 
-    function triggerFile(type) {
-        uploadTarget = type;
-        document.getElementById('file-input').click();
+    function openUpload(type) {
+        currentImgType = type;
+        document.getElementById('real-file-input').click();
     }
 
-    function previewFile(input) {
+    function preview(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                const img = document.getElementById('view-' + uploadTarget);
+                const img = document.getElementById('img-' + currentImgType);
                 img.src = e.target.result;
                 img.style.display = 'block';
-                document.getElementById('icon-' + uploadTarget).style.display = 'none';
+                document.getElementById('plus-' + currentImgType).style.display = 'none';
             };
             reader.readAsDataURL(input.files[0]);
         }
     }
 
-    function addNewRow() {
-        const container = document.getElementById('reac-container');
+    function addNewReaction() {
+        const list = document.getElementById('reactions-list');
         const div = document.createElement('div');
-        div.className = 'row-reac';
+        div.className = 'reac-row';
         div.innerHTML = `
             <div style="font-size: 20px; cursor: pointer;">😀</div>
-            <select class="select-dark" style="border:none; background:transparent;">
-                ${roleCache.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
+            <select class="select-input" style="border:none; background:transparent;">
+                ${rolesData.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
             </select>
             <i class="fas fa-trash" onclick="this.parentElement.remove()" style="color:var(--accent); cursor:pointer;"></i>
         `;
-        container.appendChild(div);
+        list.appendChild(div);
     }
 
-    window.onload = loadData;
+    window.onload = fetchData;
 </script>
 </body>
 </html>
-
