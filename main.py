@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify, send_from_directory
 import threading
 import json
 import os
+import time
 
 # --- INITIALISATION ---
 app = Flask(__name__)
@@ -23,29 +24,41 @@ def load_config():
     return {"welcome": {}, "admin_roles": []}
 
 # --- BOT DISCORD ---
+# Assure-toi que les 3 Privileged Gateway Intents sont cochés sur le portail Discord !
 intents = discord.Intents.default()
 intents.members = True 
+intents.guilds = True
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f"✅ Bot Discord prêt : {bot.user}")
+    print(f"✅ Bot Discord en ligne : {bot.user}")
+    print(f"📊 Connecté à {len(bot.guilds)} serveur(s)")
 
 # --- ROUTES API ---
 
 @app.route('/api/get_server_info', methods=['GET'])
 def get_server_info():
     config = load_config()
-    # On attend que le bot soit connecté pour donner les infos
+    
+    # Si le bot n'est pas prêt, on informe le JS pour qu'il réessaye
     if not bot.is_ready() or not bot.guilds:
-        return jsonify({"channels": [], "all_roles": [], "config": config})
+        return jsonify({
+            "status": "waiting",
+            "channels": [], 
+            "all_roles": [], 
+            "config": config
+        })
     
     guild = bot.guilds[0]
+    # On trie les salons par position pour que ce soit propre
     channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
+    # On récupère tous les noms de rôles
     roles = [r.name for r in guild.roles if not r.is_default()]
     
     return jsonify({
+        "status": "ready",
         "channels": channels,
         "all_roles": roles,
         "config": config
@@ -110,13 +123,15 @@ def test_welcome():
         if config.get('thumb'): embed.set_thumbnail(url=f"{base_url}{config['thumb']}")
         if config.get('banner'): embed.set_image(url=f"{base_url}{config['banner']}")
         
-        embed.set_footer(text=config.get('footer', 'BagBot'))
-        if config.get('footer_icon'): embed.set_footer(text=config.get('footer'), icon_url=f"{base_url}{config['footer_icon']}")
+        f_text = config.get('footer', 'BagBot')
+        if config.get('footer_icon'): 
+            embed.set_footer(text=f_text, icon_url=f"{base_url}{config['footer_icon']}")
+        else:
+            embed.set_footer(text=f_text)
         
         bot.loop.create_task(channel.send(embed=embed))
         return jsonify({"status": "success"})
     except Exception as e:
-        print(f"Erreur test: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 # --- SERVEUR DE FICHIERS ---
@@ -131,5 +146,6 @@ def run_flask():
 
 if __name__ == '__main__':
     threading.Thread(target=run_flask).start()
+    # REMPLACE BIEN LE TOKEN ICI
     bot.run("TON_TOKEN_ICI")
     
