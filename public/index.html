@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BagBot | Accueil Maître</title>
+    <title>BagBot | Accueil Master</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -20,66 +20,65 @@
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
         body { background: var(--bg-dark); color: var(--text); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* --- CONTENEUR --- */
         .viewport { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        header { height: 60px; background: #050505; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 10px; flex-shrink: 0; }
-        .page-title { font-weight: 900; font-size: 14px; letter-spacing: 1px; color: #fff; }
-
-        .content-scroll { flex: 1; overflow-y: auto; padding: 30px 15px; display: flex; flex-direction: column; align-items: center; scrollbar-width: thin; scrollbar-color: #000 #111; }
-
-        .module-card { width: 100%; max-width: 580px; background: var(--card); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
-        .module-label { font-size: 11px; font-weight: 800; color: var(--text-m); text-transform: uppercase; margin-bottom: 15px; display: block; }
+        header { height: 60px; background: #050505; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 15px; }
         
-        /* --- ARCHITECTURE EMBED DISCORD COMPLET --- */
+        .content-scroll { flex: 1; overflow-y: auto; padding: 30px 15px; display: flex; flex-direction: column; align-items: center; }
+
+        .module-card { width: 100%; max-width: 580px; background: var(--card); border-radius: 8px; padding: 25px; border: 1px solid var(--border); }
+        .module-label { font-size: 11px; font-weight: 800; color: var(--text-m); text-transform: uppercase; margin-bottom: 20px; display: block; letter-spacing: 1px; }
+
+        /* --- EMBED INTERACTIF --- */
         .discord-embed {
             background: var(--embed-bg);
             border-left: 4px solid var(--accent);
             border-radius: 4px;
             padding: 16px;
-            margin-bottom: 25px;
             display: flex;
             flex-direction: column;
-            cursor: pointer;
-            transition: 0.2s;
+            position: relative;
         }
-        .discord-embed:hover { background: #313338; }
 
-        /* Auteur (Logo du Bot) */
-        .embed-author { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-        .author-icon { width: 24px; height: 24px; border-radius: 50%; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .author-icon i { font-size: 14px; color: var(--accent); }
+        /* Styles des zones cliquables */
+        .editable-zone { border: 1px solid transparent; transition: 0.2s; cursor: pointer; border-radius: 4px; }
+        .editable-zone:hover { border-color: rgba(237, 66, 69, 0.5); background: rgba(255,255,255,0.02); }
+
+        .embed-author { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .author-icon { width: 24px; height: 24px; border-radius: 50%; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); }
+        .author-icon img { width: 100%; height: 100%; object-fit: cover; }
         .author-name { font-size: 13px; font-weight: 700; color: #fff; }
 
-        /* Contenu Principal et Miniature */
-        .embed-main-content { display: flex; justify-content: space-between; gap: 15px; }
-        .embed-text-fields { flex: 1; }
-        
-        #p-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; display: block; }
-        #p-desc { font-size: 14px; color: #dbdee1; line-height: 1.4; display: block; }
-        
-        .thumb-upload { width: 80px; height: 80px; background: rgba(0,0,0,0.2); border: 2px dashed #444; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #444; }
+        #p-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; display: block; padding: 5px; }
+        #p-desc { font-size: 14px; color: #dbdee1; line-height: 1.4; display: block; padding: 5px; }
 
-        /* Image Principale */
-        .embed-image-box { width: 100%; height: 200px; background: #2b2d31; margin-top: 15px; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px dashed #444; }
+        .embed-main-content { display: flex; justify-content: space-between; gap: 15px; }
+        
+        /* Thumbnail (Miniature) */
+        .thumb-box { width: 80px; height: 80px; background: #1e1f22; border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Banner (Grande Image) */
+        .banner-box { width: 100%; height: 180px; background: #1e1f22; margin-top: 15px; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .banner-box img { width: 100%; height: 100%; object-fit: cover; }
 
         /* Footer */
-        .embed-footer { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+        .embed-footer { display: flex; align-items: center; gap: 8px; margin-top: 15px; }
         .footer-icon { width: 20px; height: 20px; border-radius: 50%; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .footer-icon i { font-size: 11px; color: #333; }
+        .footer-icon img { width: 100%; height: 100%; object-fit: cover; }
         #p-footer { font-size: 12px; color: #949ba4; font-weight: 600; }
 
-        /* --- ZONE ÉDITION INTERACTIVE --- */
-        #edit-zone.hidden { display: none; }
-        .edit-group { margin-bottom: 20px; border-top: 1px solid var(--border); padding-top: 20px; }
-        
-        label { display: block; font-size: 11px; font-weight: 800; color: var(--text-m); text-transform: uppercase; margin-bottom: 8px; }
-        input, select, textarea { width: 100%; background: var(--input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 6px; margin-bottom: 12px; }
-        textarea { resize: none; }
-        
-        .image-input-stack { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        /* --- INPUTS DYNAMIQUES (HIDDEN) --- */
+        .edit-overlay { 
+            background: var(--input); border: 1px solid var(--accent); color: white; 
+            padding: 10px; border-radius: 6px; width: 100%; margin-top: 10px; font-size: 13px;
+            display: none;
+        }
+        .edit-overlay.active { display: block; }
 
-        .btn-main { width: 100%; background: var(--accent); color: white; border: none; padding: 16px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 14px; transition: 0.2s; }
-        .btn-main:hover { filter: brightness(1.1); }
+        /* BOUTON VALIDER */
+        .btn-valider { width: 100%; background: var(--accent); color: white; border: none; padding: 18px; border-radius: 6px; font-weight: 900; cursor: pointer; text-transform: uppercase; margin-top: 30px; letter-spacing: 1px; }
+        
+        select { width: 100%; background: var(--input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 6px; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -87,108 +86,130 @@
     <div class="viewport">
         <header>
             <i class="fas fa-bars" style="color: var(--accent);"></i>
-            <div class="page-title">CONFIGURATION ACCUEIL</div>
+            <div style="font-weight: 900; font-size: 14px;">ACCUEIL CONFIGURATION</div>
         </header>
 
         <div class="content-scroll">
             <div class="module-card">
-                <span class="module-label">Aperçu Complet (Cliquez pour éditer)</span>
+                <span class="module-label">Éditeur Visuel (Cliquez sur un élément)</span>
                 
-                <div class="discord-embed" id="embed-trigger">
-                    <div class="embed-author">
-                        <div class="author-icon"><i class="fas fa-robot"></i></div>
+                <div class="discord-embed">
+                    <div class="embed-author editable-zone" onclick="toggleEdit('author')">
+                        <div class="author-icon" id="author-icon-box"><i class="fas fa-robot"></i></div>
                         <span class="author-name">BagBot System</span>
                     </div>
-                    
+                    <input type="text" id="edit-author-url" class="edit-overlay" placeholder="Lien URL du logo..." oninput="updateImage('author')">
+
                     <div class="embed-main-content">
-                        <div class="embed-text-fields">
-                            <span id="p-title">Bienvenue sur le serveur !</span>
-                            <span id="p-desc">Nous sommes ravis de te voir ici {user}. N'oublie pas de lire le règlement !</span>
+                        <div style="flex:1">
+                            <div class="editable-zone" onclick="toggleEdit('title')">
+                                <span id="p-title">Bienvenue sur le serveur !</span>
+                            </div>
+                            <input type="text" id="edit-title" class="edit-overlay" value="Bienvenue sur le serveur !" oninput="syncText('title')">
+
+                            <div class="editable-zone" onclick="toggleEdit('desc')">
+                                <span id="p-desc">Ravi de te voir ici {user}. N'oublie pas de lire le règlement !</span>
+                            </div>
+                            <textarea id="edit-desc" class="edit-overlay" rows="3" oninput="syncText('desc')">Ravi de te voir ici {user}. N'oublie pas de lire le règlement !</textarea>
                         </div>
-                        <div class="thumb-upload"><i class="fas fa-plus"></i></div>
+
+                        <div class="thumb-box editable-zone" onclick="toggleEdit('thumb')" id="thumb-preview">
+                            <i class="fas fa-plus" style="color: #333;"></i>
+                        </div>
                     </div>
-                    
-                    <div class="embed-image-box">
+                    <input type="text" id="edit-thumb-url" class="edit-overlay" placeholder="Lien URL miniature..." oninput="updateImage('thumb')">
+
+                    <div class="banner-box editable-zone" onclick="toggleEdit('banner')" id="banner-preview">
                         <i class="fas fa-image" style="font-size: 30px; color: #333;"></i>
                     </div>
-                    
-                    <div class="embed-footer">
-                        <div class="footer-icon"><i class="fas fa-info-circle"></i></div>
+                    <input type="text" id="edit-banner-url" class="edit-overlay" placeholder="Lien URL grande image..." oninput="updateImage('banner')">
+
+                    <div class="embed-footer editable-zone" onclick="toggleEdit('footer')">
+                        <div class="footer-icon" id="footer-icon-box"><i class="fas fa-info-circle"></i></div>
                         <span id="p-footer">ID: {user_id} • BagBot OS</span>
                     </div>
+                    <input type="text" id="edit-footer-text" class="edit-overlay" value="ID: {user_id} • BagBot OS" oninput="syncText('footer')">
+                    <input type="text" id="edit-footer-url" class="edit-overlay" placeholder="Lien URL icône footer..." oninput="updateImage('footer')">
                 </div>
 
-                <div id="edit-zone" class="hidden">
-                    <div class="edit-group">
-                        <label>Texte Principal</label>
-                        <input type="text" id="in-title" placeholder="Titre..." value="Bienvenue sur le serveur !">
-                        <textarea id="in-desc" rows="4" placeholder="Description...">Nous sommes ravis de te voir ici {user}. N'oublie pas de lire le règlement !</textarea>
-                    </div>
+                <select id="chan-list">
+                    <option value="">Chargement des salons...</option>
+                </select>
 
-                    <div class="edit-group">
-                        <label>Texte de Footer</label>
-                        <input type="text" id="in-footer" placeholder="Footer..." value="ID: {user_id} • BagBot OS">
-                    </div>
-
-                    <div class="edit-group image-input-stack">
-                        <div>
-                            <label>URL Miniature</label>
-                            <input type="text" id="in-thumb" placeholder="https://...">
-                        </div>
-                        <div>
-                            <label>URL Image Principale</label>
-                            <input type="text" id="in-image" placeholder="https://...">
-                        </div>
-                    </div>
-                </div>
-
-                <div style="margin-top: 15px;">
-                    <label>Salon de diffusion</label>
-                    <select id="welcome-chan">
-                        <option value="123"># bagbot-install</option>
-                    </select>
-                </div>
-
-                <button class="btn-main">Valider et Enregistrer</button>
+                <button class="btn-valider" onclick="saveToBot()">Valider et Enregistrer</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Système d'édition interactive
-        const trigger = document.getElementById('embed-trigger');
-        const editZone = document.getElementById('edit-zone');
-
-        const pTitle = document.getElementById('p-title');
-        const pDesc = document.getElementById('p-desc');
-        const pFooter = document.getElementById('p-footer');
-        
-        const inTitle = document.getElementById('in-title');
-        const inDesc = document.getElementById('in-desc');
-        const inFooter = document.getElementById('in-footer');
-
-        // Afficher/Cacher les champs
-        trigger.onclick = () => editZone.classList.toggle('hidden');
-
-        // Mise à jour de l'aperçu en temps réel
-        inTitle.oninput = () => pTitle.innerText = inTitle.value || "Titre de l'annonce";
-        inDesc.oninput = () => pDesc.innerText = inDesc.value || "Décrivez votre annonce ici...";
-        inFooter.oninput = () => pFooter.innerText = inFooter.value || "BagBot OS";
-
-        // Chargement des salons depuis le bot
-        async function fetchChans() {
-            try {
-                const res = await fetch('/api/get_server_info');
-                const data = await res.json();
-                if (data.channels) {
-                    const sel = document.getElementById('welcome-chan');
-                    sel.innerHTML = data.channels.map(c => 
-                        `<option value="${c.id}"># ${c.name}</option>`
-                    ).join('');
-                }
-            } catch(e) { console.log("Bot Link Error"); }
+        // Fonction pour afficher/cacher les champs d'édition
+        function toggleEdit(id) {
+            const el = document.querySelectorAll('.edit-overlay');
+            el.forEach(input => {
+                if(!input.id.includes(id)) input.style.display = 'none';
+            });
+            
+            // Pour le footer on affiche les deux inputs (texte et icône)
+            if(id === 'footer') {
+                document.getElementById('edit-footer-text').style.display = 'block';
+                document.getElementById('edit-footer-url').style.display = 'block';
+            } else {
+                const target = document.getElementById('edit-' + id + (id.includes('url') ? '' : (id === 'thumb' || id === 'banner' || id === 'author' ? '-url' : '')));
+                target.style.display = target.style.display === 'block' ? 'none' : 'block';
+            }
         }
-        window.onload = fetchChans;
+
+        // Synchronisation du texte
+        function syncText(id) {
+            document.getElementById('p-' + id).innerText = document.getElementById('edit-' + id + (id === 'footer' ? '-text' : '')).value;
+        }
+
+        // Mise à jour des images
+        function updateImage(type) {
+            const url = document.getElementById('edit-' + type + '-url').value;
+            const container = document.getElementById(type === 'author' ? 'author-icon-box' : type === 'footer' ? 'footer-icon-box' : type + '-preview');
+            
+            if(url.startsWith('http')) {
+                container.innerHTML = `<img src="${url}">`;
+            } else {
+                container.innerHTML = `<i class="fas fa-${type === 'author' ? 'robot' : type === 'footer' ? 'info-circle' : 'image'}"></i>`;
+            }
+        }
+
+        // SAUVEGARDE UNIVERSELLE VERS MAIN.PY
+        async function saveToBot() {
+            const data = {
+                category: "accueil",
+                settings: {
+                    title: document.getElementById('edit-title').value,
+                    description: document.getElementById('edit-desc').value,
+                    footer_text: document.getElementById('edit-footer-text').value,
+                    footer_icon: document.getElementById('edit-footer-url').value,
+                    thumbnail: document.getElementById('edit-thumb-url').value,
+                    banner: document.getElementById('edit-banner-url').value,
+                    author_icon: document.getElementById('edit-author-url').value,
+                    channel: document.getElementById('chan-list').value
+                }
+            };
+
+            const res = await fetch('/api/save_settings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            
+            const result = await res.json();
+            alert(result.message);
+        }
+
+        // Récupérer les salons
+        window.onload = async () => {
+            const res = await fetch('/api/get_server_info');
+            const data = await res.json();
+            if(data.channels) {
+                document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            }
+        };
     </script>
 </body>
 </html>
