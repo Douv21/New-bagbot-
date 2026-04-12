@@ -7,12 +7,14 @@ import json
 import os
 from dotenv import load_dotenv
 
+# Chargement du .env
 load_dotenv()
+
 TOKEN = os.getenv("DISCORD_TOKEN")
-CLIENT_ID = "TON_CLIENT_ID"
-CLIENT_SECRET = "TON_CLIENT_SECRET"
-REDIRECT_URI = "http://192.168.1.133:49501/api/callback" 
-OWNER_ID = "TON_ID_DISCORD" # Accès permanent
+CLIENT_ID = os.getenv("DISCORD_CLIENT_ID")
+CLIENT_SECRET = os.getenv("DISCORD_CLIENT_SECRET")
+REDIRECT_URI = "http://192.168.1.133:49501/api/callback"
+OWNER_ID = os.getenv("OWNER_ID")
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -33,7 +35,7 @@ intents.members = True
 intents.guilds = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# --- AUTHENTIFICATION ---
+# --- SECURITÉ & OAUTH2 ---
 @app.route('/api/login')
 def login():
     return redirect(f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify")
@@ -45,15 +47,16 @@ def callback():
     r = requests.post('https://discord.com/api/oauth2/token', data=data)
     token = r.json().get('access_token')
     user_data = requests.get('https://discord.com/api/users/@me', headers={'Authorization': f'Bearer {token}'}).json()
-    session['user_id'] = user_data['id']
+    session['user_id'] = user_data.get('id')
     return redirect('/')
 
 def check_access():
-    if 'user_id' not in session: return False
-    if session['user_id'] == OWNER_ID: return True
+    uid = session.get('user_id')
+    if not uid: return False
+    if str(uid) == str(OWNER_ID): return True
     config = load_config()
     guild = bot.guilds[0]
-    member = guild.get_member(int(session['user_id']))
+    member = guild.get_member(int(uid))
     if member:
         member_roles = [r.name for r in member.roles]
         return any(role in member_roles for role in config.get('admin_roles', []))
@@ -73,16 +76,17 @@ def get_server_info():
 def save_config():
     if not check_access(): return jsonify({"status": "unauthorized"}), 401
     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-        json.dump(request.json, f, indent=4)
+        json.dump(request.json, f, indent=4, ensure_ascii=False)
     return jsonify({"status": "success"})
 
 @app.route('/api/images')
 def list_images():
     files = os.listdir(UPLOAD_FOLDER)
-    return jsonify({"images": [f"/public/uploads/{f}" for f in files if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]})
+    return jsonify({"images": [f"/public/uploads/{f}" for f in files if f.lower().endswith(('.png', '.jpg', '.jpeg'))]})
 
 @app.route('/api/upload', methods=['POST'])
 def upload():
+    if not check_access(): return jsonify({"status": "unauthorized"}), 401
     file = request.files['file']
     filename = file.filename.replace(" ", "_")
     file.save(os.path.join(UPLOAD_FOLDER, filename))
@@ -92,8 +96,10 @@ def upload():
 def test_welcome():
     config = load_config().get('welcome', {})
     channel = bot.get_channel(int(config.get('channel')))
+    if not channel: return jsonify({"status": "error"}), 400
     embed = discord.Embed(title=config.get('title'), description=config.get('desc'), color=0xed4245)
-    if config.get('banner'): embed.set_image(url=f"http://{request.host}{config['banner']}")
+    if config.get('banner'):
+        embed.set_image(url=f"http://{request.host}{config['banner']}")
     bot.loop.create_task(channel.send(embed=embed))
     return jsonify({"status": "success"})
 
