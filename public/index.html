@@ -2,155 +2,295 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>BagBot Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg-dark: #050505; --bg-panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --text-muted: #949ba4; }
-        body { background: var(--bg-dark); color: white; font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; }
+        :root { 
+            --bg-dark: #050505; 
+            --bg-panel: #0f0f0f; 
+            --sidebar-bg: #000000; 
+            --accent: #ed4245; 
+            --embed-bg: #2b2d31; 
+            --text-muted: #949ba4; 
+            --border: #1e1e1e; 
+            --discord-blue: #5865F2; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-dark); color: white; display: flex; height: 100vh; overflow: hidden; }
+
+        /* SIDEBAR */
+        #sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; height: 100%; z-index: 2000; transition: 0.3s; }
+        .nav-item { padding: 18px 25px; display: flex; align-items: center; gap: 15px; color: var(--text-muted); cursor: pointer; font-weight: 700; border-right: 3px solid transparent; }
+        .nav-item.active { color: var(--accent); background: rgba(237, 66, 69, 0.05); border-right-color: var(--accent); }
+
+        /* MAIN CONTENT */
+        main { flex: 1; margin-left: 260px; display: flex; flex-direction: column; height: 100vh; }
+        header { height: 60px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 15px; flex-shrink: 0; }
         
-        #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); transition: 0.3s; }
-        main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        header { height: 60px; background: var(--bg-panel); display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--border); }
-        
-        .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; flex: 1; }
+        .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; flex: 1; padding-bottom: 100px; }
         .content-section.active { display: flex; }
 
-        .discord-embed { width: 100%; max-width: 450px; background: #2b2d31; border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; position: relative; margin-bottom: 20px; }
-        .thumb-preview { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: rgba(0,0,0,0.1); border: 1px dashed #444; }
-        .banner-preview { width: 100%; height: 120px; margin-top: 10px; background: rgba(0,0,0,0.1); border: 1px dashed #444; }
+        /* DISCORD PREVIEW */
+        .discord-preview-msg { width: 100%; max-width: 480px; margin-bottom: 5px; color: var(--text-muted); font-size: 14px; }
+        .discord-embed { width: 100%; max-width: 480px; background: var(--embed-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px; margin-bottom: 20px; position: relative; }
+        .thumb-preview { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: rgba(0,0,0,0.2); border: 1px dashed #444; overflow: hidden; cursor: pointer; }
+        .banner-preview { width: 100%; height: 140px; margin-top: 10px; background: rgba(0,0,0,0.2); border: 1px dashed #444; overflow: hidden; cursor: pointer; }
         .img-zone img { width: 100%; height: 100%; object-fit: cover; }
 
-        .config-card { width: 100%; max-width: 450px; background: var(--bg-panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
-        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        /* CONFIG CARDS */
+        .config-card { width: 100%; max-width: 480px; background: var(--bg-panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
+        h3 { margin-bottom: 15px; font-size: 14px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
         
-        /* CHECKBOX LIST STYLE */
-        .checkbox-list { background: #000; border: 1px solid var(--border); border-radius: 8px; max-height: 200px; overflow-y: auto; padding: 10px; margin-bottom: 15px; }
-        .checkbox-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid #111; cursor: pointer; }
-        .checkbox-item:last-child { border: none; }
-        .checkbox-item input { width: auto; margin: 0; cursor: pointer; }
-        .checkbox-item label { cursor: pointer; font-size: 14px; flex: 1; }
+        /* CHECKBOX LIST (LES RÔLES) */
+        .checkbox-list { background: #000; border: 1px solid var(--border); border-radius: 8px; max-height: 180px; overflow-y: auto; padding: 5px; margin-bottom: 15px; }
+        .checkbox-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #111; gap: 12px; cursor: pointer; }
+        .checkbox-item:hover { background: #080808; }
+        .checkbox-item input[type="checkbox"] { width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--accent); }
+        .checkbox-item label { flex: 1; cursor: pointer; font-size: 14px; }
 
-        .btn { border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-bottom: 10px; }
+        .btn { border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; color: white; transition: 0.2s; margin-bottom: 10px; }
         .btn-save { background: var(--accent); }
+        .btn-test { background: var(--discord-blue); }
 
-        #gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 450px; }
-        .gallery-card { aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); position: relative; }
+        /* GALLERY */
+        #gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; max-width: 480px; }
+        .gallery-card { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #000; border: 1px solid var(--border); cursor: pointer; }
         .gallery-card img { width: 100%; height: 100%; object-fit: cover; }
+        .del-btn { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; width: 28px; height: 28px; border-radius: 50%; z-index: 10; }
 
-        @media (max-width: 900px) { #sidebar { display: none; } }
+        /* MODAL */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal.active { display: flex; }
+
+        @media (max-width: 900px) { 
+            main { margin-left: 0; } 
+            #sidebar { transform: translateX(-100%); z-index: 3000; } 
+            #sidebar.open { transform: translateX(0); } 
+        }
     </style>
 </head>
 <body>
+
     <nav id="sidebar">
-        <div style="padding: 25px; font-size: 20px; font-weight: 900; color: var(--accent);">BAGBOT</div>
-        <div style="padding: 15px 25px; color: var(--accent); cursor: pointer;" onclick="show('accueil')">ACCUEIL</div>
-        <div style="padding: 15px 25px; color: #666; cursor: pointer;" onclick="show('images')">IMAGES</div>
+        <div style="padding: 25px; font-size: 22px; font-weight: 900; color: var(--accent); display: flex; justify-content: space-between; align-items: center;">
+            BAGBOT <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer; font-size: 18px;"></i>
+        </div>
+        <div class="nav-item active" onclick="show('accueil', this)"><i class="fas fa-home"></i> Accueil</div>
+        <div class="nav-item" onclick="show('images', this)"><i class="fas fa-images"></i> Images</div>
+        <div id="nav-admin" class="nav-item" style="display:none" onclick="show('admin', this)"><i class="fas fa-user-shield"></i> Admin</div>
     </nav>
 
     <main>
-        <header><span id="bot-name">Chargement...</span></header>
-
+        <header>
+            <i class="fas fa-bars" onclick="toggleSidebar()" style="cursor:pointer; color:var(--accent); font-size:22px"></i> 
+            <span id="bot-name" style="font-weight: 800; margin-left: 10px;">Chargement...</span>
+        </header>
+        
         <section id="accueil" class="content-section active">
+            <div class="discord-preview-msg">Ping : <span id="p-ping">@Utilisateur</span></div>
             <div class="discord-embed">
                 <div class="thumb-preview img-zone" onclick="openM('thumb')" id="box-thumb"></div>
-                <div id="p-title" style="font-weight: bold; margin-bottom: 5px;">Titre</div>
-                <div id="p-desc" style="font-size: 14px; white-space: pre-wrap;">Description...</div>
+                <div id="p-title" style="font-weight: 700; margin-bottom: 5px; font-size: 16px;">Titre</div>
+                <div id="p-desc" style="font-size: 14px; color: #dbdee1; line-height: 1.4; white-space: pre-wrap;">Description...</div>
                 <div class="banner-preview img-zone" onclick="openM('banner')" id="box-banner"></div>
             </div>
 
             <div class="config-card">
-                <h3>Paramètres</h3>
+                <h3>1. Message & Embed</h3>
                 <input type="text" id="in-title" placeholder="Titre..." oninput="sync()">
-                <textarea id="in-desc" rows="3" placeholder="Description..." oninput="sync()"></textarea>
+                <textarea id="in-desc" rows="4" placeholder="Description ({user}, {server}...)" oninput="sync()"></textarea>
                 
-                <label style="font-size:12px; color:var(--text-muted)">Salon :</label>
+                <h3>2. Destination</h3>
                 <select id="chan-list"></select>
 
-                <label style="font-size:12px; color:var(--text-muted)">Rôles déclencheurs (facultatif) :</label>
-                <div id="role-checkboxes" class="checkbox-list"></div>
+                <h3>3. Rôles déclencheurs</h3>
+                <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
+                    Si rien n'est coché, le message s'envoie dès l'arrivée sur le serveur.
+                </p>
+                <div id="trigger-roles-list" class="checkbox-list"></div>
 
                 <button class="btn btn-save" onclick="save()">ENREGISTRER</button>
+                <button class="btn btn-test" onclick="test()">TESTER L'ENVOI</button>
             </div>
         </section>
 
         <section id="images" class="content-section">
+            <div class="config-card">
+                <h3>Images</h3>
+                <button class="btn" style="background:#222" onclick="document.getElementById('file-in').click()">TÉLÉVERSER</button>
+            </div>
             <div id="gallery"></div>
+        </section>
+
+        <section id="admin" class="content-section">
+            <div class="config-card">
+                <h3>Accès Dashboard</h3>
+                <div id="admin-roles-list" class="checkbox-list"></div>
+                <button class="btn btn-save" onclick="saveAdminRoles()">SAUVEGARDER ADMINS</button>
+            </div>
         </section>
     </main>
 
-    <div id="modal" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); display:none; align-items:center; justify-content:center; z-index:100;">
-        <div style="background:var(--bg-panel); padding:20px; border-radius:12px; width:90%; max-width:300px;">
-            <input type="file" id="file-in" onchange="up()">
-            <button class="btn btn-save" onclick="document.getElementById('modal').style.display='none'">FERMER</button>
+    <div id="modal" class="modal">
+        <div style="background: var(--bg-panel); padding: 25px; border-radius: 12px; width: 100%; max-width: 350px;">
+            <input type="text" id="url-in" placeholder="Lien URL">
+            <input type="file" id="file-in" style="display:none" onchange="up()">
+            <button class="btn btn-save" onclick="apply()">CONFIRMER</button>
+            <button class="btn" style="background:transparent" onclick="document.getElementById('modal').classList.remove('active')">ANNULER</button>
         </div>
     </div>
 
     <script>
+        let target = ''; 
         const API = window.location.origin;
-        let target = '';
+        let userData = { name: "Utilisateur", server: "Mon Serveur", count: "12" };
 
-        function show(id) { 
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+        function show(id, el) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active'); 
+            if(el) el.classList.add('active');
             if(id === 'images') loadG();
+            if(window.innerWidth < 900) document.getElementById('sidebar').classList.remove('open');
+        }
+
+        function replacePlaceholders(text) {
+            if(!text) return "";
+            return text.replace(/{user}/g, userData.name).replace(/{server}/g, userData.server).replace(/{count}/g, userData.count);
         }
 
         function sync() {
-            document.getElementById('p-title').innerText = document.getElementById('in-title').value || "Titre";
-            document.getElementById('p-desc').innerText = document.getElementById('in-desc').value || "Description...";
+            const t = document.getElementById('in-title').value;
+            const d = document.getElementById('in-desc').value;
+            document.getElementById('p-ping').innerText = "@" + userData.name;
+            document.getElementById('p-title').innerText = replacePlaceholders(t) || "Titre";
+            document.getElementById('p-desc').innerText = replacePlaceholders(d) || "Description...";
         }
 
-        function openM(t) { target = t; document.getElementById('modal').style.display = 'flex'; }
+        function openM(t) { target = t; document.getElementById('modal').classList.add('active'); }
 
         async function up() {
-            const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]);
+            const fd = new FormData();
+            fd.append('file', document.getElementById('file-in').files[0]);
             const res = await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
             const data = await res.json();
-            document.getElementById('box-'+target).innerHTML = `<img src="${API+data.url}">`;
-            document.getElementById('box-'+target).dataset.path = data.url;
-            document.getElementById('modal').style.display = 'none';
+            document.getElementById('url-in').value = data.url;
+            apply();
+        }
+
+        function apply() {
+            const v = document.getElementById('url-in').value;
+            if(v) {
+                const s = v.startsWith('http') ? v : API + v;
+                document.getElementById('box-'+target).innerHTML = `<img src="${s}">`;
+                document.getElementById('box-'+target).dataset.path = v;
+            }
+            document.getElementById('modal').classList.remove('active');
         }
 
         async function loadG() {
             const res = await fetch(`${API}/api/images`);
-            const d = await res.json();
-            document.getElementById('gallery').innerHTML = d.images.map(img => `<div class="gallery-card" onclick="document.getElementById('box-banner').innerHTML='<img src=${API+img}>'; document.getElementById('box-banner').dataset.path='${img}'; show('accueil')"><img src="${API+img}"></div>`).join('');
+            const data = await res.json();
+            document.getElementById('gallery').innerHTML = data.images.map(u => `
+                <div class="gallery-card">
+                    <button class="del-btn" onclick="event.stopPropagation(); deleteImg('${u}')"><i class="fas fa-trash"></i></button>
+                    <img src="${API+u}" onclick="document.getElementById('url-in').value='${u}'; apply(); show('accueil', document.querySelector('.nav-item'))">
+                </div>
+            `).join('');
+        }
+
+        async function deleteImg(p) {
+            if(confirm("Supprimer ?")) {
+                await fetch(`${API}/api/delete_image`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({path:p}) });
+                loadG();
+            }
         }
 
         async function save() {
-            const roles = [];
-            document.querySelectorAll('#role-checkboxes input:checked').forEach(i => roles.push(i.value));
-            
-            const p = {
-                title: document.getElementById('in-title').value,
-                desc: document.getElementById('in-desc').value,
+            // Récupérer les rôles cochés
+            const triggers = [];
+            document.querySelectorAll('#trigger-roles-list input:checked').forEach(i => triggers.push(i.value));
+
+            const p = { 
+                title: document.getElementById('in-title').value, 
+                desc: document.getElementById('in-desc').value, 
+                thumb: document.getElementById('box-thumb').dataset.path || null, 
+                banner: document.getElementById('box-banner').dataset.path || null,
                 target_channel: document.getElementById('chan-list').value,
-                trigger_roles: roles,
-                thumb: document.getElementById('box-thumb').dataset.path || null,
-                banner: document.getElementById('box-banner').dataset.path || null
+                trigger_roles: triggers
             };
             await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(p) });
-            alert("Sauvegardé !");
+            alert("✅ Configuration sauvegardée !");
+        }
+
+        async function test() {
+            const p = { 
+                channel: document.getElementById('chan-list').value, 
+                title: document.getElementById('in-title').value, 
+                desc: document.getElementById('in-desc').value, 
+                thumb: document.getElementById('box-thumb').dataset.path || null, 
+                banner: document.getElementById('box-banner').dataset.path || null 
+            };
+            await fetch(`${API}/api/test_message`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(p) });
+            alert("🚀 Test envoyé !");
+        }
+
+        async function saveAdminRoles() {
+            const roles = [];
+            document.querySelectorAll('#admin-roles-list input:checked').forEach(i => roles.push(i.value));
+            await fetch(`${API}/api/save_roles`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({roles}) });
+            alert("Admins mis à jour !");
         }
 
         async function init() {
             const res = await fetch(`${API}/api/get_server_info`);
+            if(res.status === 401) { window.location.href = "/login"; return; }
             const d = await res.json();
-            document.getElementById('bot-name').innerText = d.bot.name;
-            document.getElementById('chan-list').innerHTML = d.channels.map(c => `<option value="${c.id}" ${d.config.target_channel == c.id ? 'selected':''}># ${c.name}</option>`).join('');
             
-            // Generate checkboxes
-            document.getElementById('role-checkboxes').innerHTML = d.all_roles.map(r => `
+            userData.name = d.user_connected;
+            userData.server = d.server_name;
+            userData.count = d.member_count;
+            document.getElementById('bot-name').innerText = d.bot.name;
+
+            // Salons
+            document.getElementById('chan-list').innerHTML = d.channels.map(c => 
+                `<option value="${c.id}" ${d.config.target_channel == c.id ? 'selected':''}># ${c.name}</option>`
+            ).join('');
+            
+            // Liste Rôles Welcome (Checkboxes)
+            document.getElementById('trigger-roles-list').innerHTML = d.all_roles.map(r => `
                 <div class="checkbox-item">
-                    <input type="checkbox" id="role-${r}" value="${r}" ${(d.config.trigger_roles || []).includes(r) ? 'checked' : ''}>
-                    <label for="role-${r}">${r}</label>
+                    <input type="checkbox" value="${r}" id="trig-${r}" ${(d.config.trigger_roles || []).includes(r) ? 'checked' : ''}>
+                    <label for="trig-${r}">${r}</label>
                 </div>
             `).join('');
 
+            // Liste Rôles Admin (Checkboxes)
+            document.getElementById('admin-roles-list').innerHTML = d.all_roles.map(r => `
+                <div class="checkbox-item">
+                    <input type="checkbox" value="${r}" id="adm-${r}" ${(d.config.admin_roles || []).includes(r) ? 'checked' : ''}>
+                    <label for="adm-${r}">${r}</label>
+                </div>
+            `).join('');
+
+            if(d.is_owner) document.getElementById('nav-admin').style.display = 'flex';
+            
             if(d.config) {
                 document.getElementById('in-title').value = d.config.title || "";
                 document.getElementById('in-desc').value = d.config.desc || "";
+                if(d.config.thumb) { 
+                    document.getElementById('box-thumb').innerHTML = `<img src="${d.config.thumb.startsWith('http') ? d.config.thumb : API+d.config.thumb}">`; 
+                    document.getElementById('box-thumb').dataset.path = d.config.thumb; 
+                }
+                if(d.config.banner) { 
+                    document.getElementById('box-banner').innerHTML = `<img src="${d.config.banner.startsWith('http') ? d.config.banner : API+d.config.banner}">`; 
+                    document.getElementById('box-banner').dataset.path = d.config.banner; 
+                }
                 sync();
             }
         }
