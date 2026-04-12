@@ -41,12 +41,13 @@
         /* --- DISCORD EMBED --- */
         .discord-embed { width: 100%; max-width: 520px; background: var(--embed-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px; margin-bottom: 25px; flex-shrink: 0; }
         .embed-author { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
-        .embed-author img { width: 24px; height: 24px; border-radius: 50%; }
+        .embed-author img { width: 24px; height: 24px; border-radius: 50%; background: #000; }
         .embed-main { display: flex; justify-content: space-between; gap: 10px; }
         .embed-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 5px; }
         .embed-description { font-size: 14px; color: #dbdee1; line-height: 1.4; white-space: pre-wrap; }
         
-        .img-zone { border: 1px dashed #444; border-radius: 4px; cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); }
+        .img-zone { border: 1px dashed #444; border-radius: 4px; cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); transition: 0.2s; }
+        .img-zone:hover { border-color: var(--accent); }
         .thumb-box { width: 80px; height: 80px; flex-shrink: 0; }
         .banner-box { width: 100%; height: 160px; margin-top: 15px; }
         .img-zone img { width: 100%; height: 100%; object-fit: cover; }
@@ -56,7 +57,8 @@
         .config-card { width: 100%; max-width: 520px; background: var(--bg-panel); border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 30px; }
         label { display: block; font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
-        
+        input:focus, textarea:focus { border-color: var(--accent); outline: none; }
+
         .variables-help { background: #000; border: 1px solid #222; border-radius: 8px; padding: 12px; margin-bottom: 15px; }
         .var-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .var-item { font-size: 11px; color: var(--text-muted); cursor: pointer; padding: 8px; background: #0a0a0a; border-radius: 5px; }
@@ -64,9 +66,10 @@
 
         .btn-save { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; transition: 0.2s; }
         .btn-test { background: var(--discord-blue); margin-top: 10px; }
+        .btn-save:active { transform: scale(0.98); }
 
         /* --- GALLERY --- */
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; width: 100%; max-width: 800px; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; width: 100%; }
         .gallery-card { background: var(--bg-panel); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); position: relative; aspect-ratio: 1; }
         .gallery-card img { width: 100%; height: 100%; object-fit: cover; }
         .delete-btn { position: absolute; top: 5px; right: 5px; background: rgba(237, 66, 69, 0.9); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -125,9 +128,10 @@
             </div>
 
             <div class="config-card">
-                <label>Titre</label>
+                <label>Titre de l'embed</label>
                 <input type="text" id="in-title" placeholder="Titre..." oninput="sync()">
-                <label>Message</label>
+                
+                <label>Message de bienvenue</label>
                 <textarea id="in-desc" rows="4" oninput="sync()" placeholder="Message..."></textarea>
                 
                 <div class="variables-help">
@@ -140,14 +144,14 @@
                 <label>Salon d'envoi</label>
                 <select id="chan-list"></select>
 
-                <button class="btn-save" onclick="saveData()">ENREGISTRER</button>
-                <button class="btn-save btn-test" onclick="testConfig()"><i class="fas fa-vial"></i> TESTER SUR DISCORD</button>
+                <button class="btn-save" onclick="saveData()">ENREGISTRER LA CONFIG</button>
+                <button class="btn-save btn-test" onclick="testConfig()"><i class="fas fa-paper-plane"></i> TESTER SUR DISCORD</button>
             </div>
         </section>
 
         <section id="images" class="content-section">
             <div style="width: 100%; max-width: 800px;">
-                <h2 style="margin-bottom: 20px;">Ma Galerie</h2>
+                <h2 style="margin-bottom: 20px;">Ma Galerie d'Images</h2>
                 <div class="gallery-grid" id="main-gallery"></div>
             </div>
         </section>
@@ -156,9 +160,9 @@
     <div id="imgModal" class="modal">
         <div class="modal-content">
             <h3 style="margin-bottom: 15px; color: var(--accent);">Source de l'image</h3>
-            <input type="text" id="url-input" placeholder="URL de l'image...">
+            <input type="text" id="url-input" placeholder="URL de l'image (http...)">
             <input type="file" id="file-input" style="display:none" onchange="uploadFile()">
-            <button class="btn-save" style="background:#222; margin-bottom:10px" onclick="document.getElementById('file-input').click()">TÉLÉVERSER</button>
+            <button class="btn-save" style="background:#222; margin-bottom:10px" onclick="document.getElementById('file-input').click()">TÉLÉVERSER DEPUIS MOBILE</button>
             <button class="btn-save" onclick="applyImg()">APPLIQUER</button>
             <button class="btn-save" style="background:transparent; color:#666" onclick="closeModal()">ANNULER</button>
         </div>
@@ -181,13 +185,24 @@
             if(window.innerWidth <= 900) toggleMenu();
         }
 
+        // --- SYNCHRONISATION APERÇU ---
         function sync() {
-            document.getElementById('p-title').innerText = document.getElementById('in-title').value || "Titre";
-            document.getElementById('p-desc').innerText = document.getElementById('in-desc').value || "Description...";
+            let title = document.getElementById('in-title').value || "Titre";
+            let desc = document.getElementById('in-desc').value || "Description...";
+
+            // Remplacement visuel pour la simulation
+            let previewDesc = desc
+                .replace(/{user}/g, '<span style="color: #5865F2; font-weight: 500;">@Membre</span>')
+                .replace(/{server}/g, '<b>Nom du Serveur</b>')
+                .replace(/{count}/g, '<b>123</b>');
+
+            document.getElementById('p-title').innerText = title;
+            document.getElementById('p-desc').innerHTML = previewDesc;
         }
 
         function addVar(v) { document.getElementById('in-desc').value += v; sync(); }
 
+        // --- GESTION IMAGES ---
         function openImgModal(target) {
             currentTarget = target;
             document.getElementById('url-input').value = "";
@@ -197,16 +212,23 @@
         function closeModal() { document.getElementById('imgModal').classList.remove('active'); }
 
         async function uploadFile() {
-            const fd = new FormData(); fd.append('file', document.getElementById('file-input').files[0]);
-            const res = await fetch('/api/upload', { method: 'POST', body: fd });
+            const fd = new FormData();
+            const file = document.getElementById('file-input').files[0];
+            if(!file) return;
+            fd.append('file', file);
+            
+            const res = await fetch(`${window.location.origin}/api/upload`, { method: 'POST', body: fd });
             const data = await res.json();
             document.getElementById('url-input').value = data.url;
-            alert("Image prête !");
+            alert("Image téléversée ! Cliquez sur APPLIQUER.");
         }
 
         function applyImg() {
             const val = document.getElementById('url-input').value;
-            if(val) document.getElementById('box-' + currentTarget).innerHTML = `<img src="${val}">`;
+            if(val) {
+                const finalUrl = val.startsWith('http') ? val : window.location.origin + val;
+                document.getElementById('box-' + currentTarget).innerHTML = `<img src="${finalUrl}">`;
+            }
             closeModal();
         }
 
@@ -216,47 +238,56 @@
                 channel: document.getElementById('chan-list').value,
                 title: document.getElementById('in-title').value,
                 desc: document.getElementById('in-desc').value,
-                thumb: document.querySelector('#box-thumb img')?.src || null,
-                banner: document.querySelector('#box-banner img')?.src || null
+                thumb: document.querySelector('#box-thumb img')?.getAttribute('src') || null,
+                banner: document.querySelector('#box-banner img')?.getAttribute('src') || null
             };
-            const res = await fetch('/api/save_config', {
+            const res = await fetch(`${window.location.origin}/api/save_config`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
             });
-            if(res.ok) alert("✅ Sauvegardé !");
+            if(res.ok) alert("✅ Configuration enregistrée !");
         }
 
         async function testConfig() {
+            const channelId = document.getElementById('chan-list').value;
+            if(!channelId || channelId === "Chargement...") return alert("❌ Sélectionnez un salon !");
+
             const payload = {
-                channel: document.getElementById('chan-list').value,
+                channel: channelId,
                 title: document.getElementById('in-title').value,
                 desc: document.getElementById('in-desc').value,
-                thumb: document.querySelector('#box-thumb img')?.src || null,
-                banner: document.querySelector('#box-banner img')?.src || null
+                thumb: document.querySelector('#box-thumb img')?.getAttribute('src') || null,
+                banner: document.querySelector('#box-banner img')?.getAttribute('src') || null
             };
-            const res = await fetch('/api/test_message', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            if(res.ok) alert("🧪 Test envoyé sur Discord !");
+
+            try {
+                const res = await fetch(`${window.location.origin}/api/test_message`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if(res.ok) alert("🧪 Test envoyé ! Vérifiez Discord.");
+                else alert("❌ Erreur d'envoi.");
+            } catch(e) {
+                alert("❌ Erreur de connexion au serveur.");
+            }
         }
 
         async function loadMainGallery() {
-            const res = await fetch('/api/images');
+            const res = await fetch(`${window.location.origin}/api/images`);
             const data = await res.json();
             document.getElementById('main-gallery').innerHTML = data.images.map(u => `
                 <div class="gallery-card">
                     <img src="${u}">
                     <button class="delete-btn" onclick="deleteImage('${u}')"><i class="fas fa-trash"></i></button>
                 </div>
-            `).join('');
+            `).join('') || "<p style='color: #444;'>Aucune image.</p>";
         }
 
         async function deleteImage(url) {
             if(!confirm("Supprimer l'image ?")) return;
-            const res = await fetch('/api/images/delete', {
+            const res = await fetch(`${window.location.origin}/api/images/delete`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ url: url })
@@ -264,24 +295,31 @@
             if(res.ok) loadMainGallery();
         }
 
+        // --- INITIALISATION ---
         async function init() {
-            const res = await fetch('/api/get_server_info');
-            const data = await res.json();
-            
-            document.getElementById('bot-name').innerText = data.bot.name;
-            document.getElementById('bot-avatar').src = data.bot.avatar;
-            document.getElementById('prev-auth').src = data.bot.avatar;
-            document.getElementById('bot-name-prev').innerText = data.bot.name;
-            document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            try {
+                const res = await fetch(`${window.location.origin}/api/get_server_info`);
+                const data = await res.json();
+                
+                document.getElementById('bot-name').innerText = data.bot.name;
+                document.getElementById('bot-avatar').src = data.bot.avatar;
+                document.getElementById('prev-auth').src = data.bot.avatar;
+                document.getElementById('bot-name-prev').innerText = data.bot.name;
+                
+                if(data.channels.length > 0) {
+                    document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                }
 
-            // Charger config existante
-            if(data.config) {
-                document.getElementById('in-title').value = data.config.title || "";
-                document.getElementById('in-desc').value = data.config.desc || "";
-                if(data.config.channel) document.getElementById('chan-list').value = data.config.channel;
-                if(data.config.thumb) document.getElementById('box-thumb').innerHTML = `<img src="${data.config.thumb}">`;
-                if(data.config.banner) document.getElementById('box-banner').innerHTML = `<img src="${data.config.banner}">`;
-                sync();
+                if(data.config) {
+                    document.getElementById('in-title').value = data.config.title || "";
+                    document.getElementById('in-desc').value = data.config.desc || "";
+                    if(data.config.channel) document.getElementById('chan-list').value = data.config.channel;
+                    if(data.config.thumb) document.getElementById('box-thumb').innerHTML = `<img src="${data.config.thumb}">`;
+                    if(data.config.banner) document.getElementById('box-banner').innerHTML = `<img src="${data.config.banner}">`;
+                    sync();
+                }
+            } catch(e) {
+                console.error("Erreur Init:", e);
             }
         }
 
