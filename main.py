@@ -13,7 +13,7 @@ GUILD_ID = os.getenv("GUILD_ID")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_stable_v1")
+SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_final_pro")
 
 app = Flask(__name__, static_folder='public', static_url_path='')
 CORS(app)
@@ -52,19 +52,21 @@ async def send_welcome_embed(member):
                  .replace("{server}", member.guild.name)
                  .replace("{count}", str(member.guild.member_count)))
 
-    embed = discord.Embed(title=rep(config.get('title')), description=rep(config.get('desc')), color=0xed4245)
+    embed = discord.Embed(title=rep(config.get('title', 'Bienvenue')), description=rep(config.get('desc', '')), color=0xed4245)
     
     files = []
     if config.get('thumb'):
         t_name = config['thumb'].split('/')[-1]
-        if os.path.exists(os.path.join(UPLOAD_FOLDER, t_name)):
-            files.append(discord.File(os.path.join(UPLOAD_FOLDER, t_name), filename=t_name))
+        t_path = os.path.join(UPLOAD_FOLDER, t_name)
+        if os.path.exists(t_path):
+            files.append(discord.File(t_path, filename=t_name))
             embed.set_thumbnail(url=f"attachment://{t_name}")
 
     if config.get('banner'):
         b_name = config['banner'].split('/')[-1]
-        if os.path.exists(os.path.join(UPLOAD_FOLDER, b_name)):
-            files.append(discord.File(os.path.join(UPLOAD_FOLDER, b_name), filename=b_name))
+        b_path = os.path.join(UPLOAD_FOLDER, b_name)
+        if os.path.exists(b_path):
+            files.append(discord.File(b_path, filename=b_name))
             embed.set_image(url=f"attachment://{b_name}")
 
     await channel.send(embed=embed, files=files if files else None)
@@ -78,10 +80,11 @@ async def on_member_join(member):
 async def on_member_update(before, after):
     config = load_config().get("welcome", {})
     trigger_roles = config.get("trigger_roles", [])
-    for r_name in trigger_roles:
-        role = discord.utils.get(after.roles, name=r_name)
-        if role and not discord.utils.get(before.roles, name=r_name):
-            await send_welcome_embed(after)
+    if trigger_roles:
+        for r_name in trigger_roles:
+            role = discord.utils.get(after.roles, name=r_name)
+            if role and not discord.utils.get(before.roles, name=r_name):
+                await send_welcome_embed(after)
 
 @app.route('/')
 def index():
