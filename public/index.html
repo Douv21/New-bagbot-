@@ -3,328 +3,361 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BagBot Designer Pro | Verrouillé</title>
+    <title>BagBot OS | Dashboard Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* CONFIGURATION DES COULEURS ET VARIABLES */
+        /* --- CORE SYSTEM --- */
         :root {
             --accent: #ed4245;
-            --bg-main: #0b0b0b;
-            --bg-sidebar: #000000;
+            --accent-hover: #c03537;
+            --bg-dark: #0b0b0b;
+            --bg-side: #000000;
             --bg-card: #1e1f22;
             --bg-input: #111214;
-            --border-color: #2b2d31;
-            --text-main: #ffffff;
+            --border: #2b2d31;
+            --text-main: #f2f3f5;
             --text-muted: #949ba4;
-            --sidebar-width: 260px;
-            --header-height: 60px;
+            --sidebar-w: 260px;
+            --header-h: 60px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* RESET ET BASE */
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { 
-            background: var(--bg-main); 
-            color: var(--text-main); 
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
-            display: flex; 
-            height: 100vh; 
+        
+        body {
+            background: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            display: flex;
+            height: 100vh;
             width: 100vw;
-            overflow: hidden; 
+            overflow: hidden;
         }
 
-        /* --- SIDEBAR VERROUILLÉE --- */
-        #sidebar { 
-            width: var(--sidebar-width); 
-            background: var(--bg-sidebar); 
-            border-right: 1px solid var(--border-color); 
-            display: flex; 
-            flex-direction: column; 
+        /* --- SIDEBAR ENGINE --- */
+        #sidebar {
+            width: var(--sidebar-w);
+            background: var(--bg-side);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
             flex-shrink: 0;
-            z-index: 1000;
-        }
-        .sidebar-brand { 
-            padding: 30px 24px; 
-            font-size: 24px; 
-            font-weight: 900; 
-            color: var(--accent); 
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-        .nav-menu { flex: 1; padding: 10px; }
-        .nav-item { 
-            padding: 14px 20px; 
-            border-radius: 4px; 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-            color: var(--text-muted); 
-            cursor: pointer; 
-            transition: all 0.2s ease;
-            margin-bottom: 4px;
-            font-weight: 600;
-        }
-        .nav-item i { width: 20px; text-align: center; font-size: 18px; }
-        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
-        .nav-item.active { 
-            background: rgba(237, 66, 69, 0.15); 
-            color: var(--accent); 
-            border-left: 4px solid var(--accent);
-            border-radius: 0 4px 4px 0;
-            margin-left: -10px;
-            padding-left: 26px;
+            z-index: 999;
+            transition: var(--transition);
         }
 
-        /* --- ZONE PRINCIPALE --- */
-        .main-content { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            min-width: 0; 
-            position: relative;
+        .brand-zone {
+            padding: 30px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
-        header { 
-            height: var(--header-height); 
-            background: #050505; 
-            border-bottom: 1px solid var(--border-color); 
-            display: flex; 
-            align-items: center; 
-            padding: 0 25px; 
+
+        .nav-container { flex: 1; padding: 12px; }
+        
+        .nav-group-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #4e5058;
+            text-transform: uppercase;
+            padding: 20px 12px 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-link {
+            padding: 12px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: var(--text-muted);
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .nav-link:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        
+        .nav-link.active {
+            background: rgba(237, 66, 69, 0.1);
+            color: var(--accent);
+        }
+
+        /* --- MAIN VIEWPORT --- */
+        .viewport {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            position: relative;
+            background: var(--bg-dark);
+        }
+
+        .top-nav {
+            height: var(--header-h);
+            background: rgba(5, 5, 5, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
             justify-content: space-between;
             flex-shrink: 0;
         }
-        .view-title { font-weight: 800; font-size: 14px; letter-spacing: 1px; color: #fff; display: flex; align-items: center; gap: 10px; }
-        .server-status { font-size: 11px; background: #23a559; padding: 5px 12px; border-radius: 20px; font-weight: 900; text-transform: uppercase; }
 
-        /* --- CONTENEUR DE SCROLL --- */
-        .scroll-container { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 40px 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            scrollbar-width: thin;
-            scrollbar-color: var(--border-color) transparent;
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 15px;
         }
 
-        /* --- DESIGN DE L'EMBED (STRICT DISCORD) --- */
-        .embed-wrapper { 
-            width: 100%; 
-            max-width: 520px; 
-            background: var(--bg-card); 
-            border-radius: 4px; 
-            border-left: 4px solid var(--accent); 
-            padding: 16px 20px; 
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        .main-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            scroll-behavior: smooth;
         }
-        .embed-header { display: flex; gap: 20px; margin-bottom: 10px; }
-        .embed-main-fields { flex: 1; min-width: 0; }
-        
-        .input-title { 
-            background: transparent; 
-            border: none; 
-            color: #fff; 
-            font-size: 18px; 
-            font-weight: 700; 
-            width: 100%; 
-            margin-bottom: 8px; 
-            display: block;
+
+        /* --- EMBED ARCHITECTURE --- */
+        .embed-container {
+            width: 100%;
+            max-width: 520px;
+            background: var(--bg-card);
+            border-radius: 4px;
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            margin-bottom: 30px;
         }
-        .input-description { 
-            background: transparent; 
-            border: none; 
-            color: #dbdee1; 
-            font-size: 14px; 
-            width: 100%; 
-            resize: none; 
-            min-height: 80px; 
+
+        .embed-header-flex { display: flex; gap: 16px; }
+        .fields-stack { flex: 1; }
+
+        .title-in {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .desc-in {
+            background: transparent;
+            border: none;
+            color: #dbdee1;
+            font-size: 14px;
+            width: 100%;
+            resize: none;
+            min-height: 120px;
             line-height: 1.5;
-            display: block;
         }
 
-        .thumbnail-box { 
-            width: 80px; 
-            height: 80px; 
-            background: rgba(0,0,0,0.3); 
-            border: 2px dashed #333; 
-            border-radius: 4px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            cursor: pointer; 
-            flex-shrink: 0;
-            color: #444;
+        .thumb-upload {
+            width: 80px;
+            height: 80px;
+            background: rgba(0,0,0,0.2);
+            border: 2px dashed #333;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #4e5058;
+            transition: var(--transition);
         }
-        .thumbnail-box:hover { border-color: var(--accent); color: var(--accent); }
-        .thumbnail-box span { font-size: 9px; margin-top: 5px; font-weight: 700; }
 
-        .banner-preview { 
-            width: 100%; 
-            height: 240px; 
-            background: #2b2d31; 
-            border-radius: 4px; 
-            margin-top: 15px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            border: 1px dashed #333; 
-            position: relative;
+        .thumb-upload:hover { border-color: var(--accent); color: #fff; }
+
+        .banner-box {
+            width: 100%;
+            height: 240px;
+            background: #2b2d31;
+            border-radius: 4px;
+            margin-top: 20px;
+            border: 1px dashed #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
             overflow: hidden;
         }
-        .banner-preview i { font-size: 40px; color: #333; }
 
-        /* --- FORMULAIRE ET CONTROLES --- */
-        .settings-area { width: 100%; max-width: 520px; margin-top: 30px; }
-        .label-text { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; display: block; }
+        /* --- CONTROLS BOX --- */
+        .control-panel { width: 100%; max-width: 520px; }
         
-        .select-wrapper { position: relative; width: 100%; }
-        select { 
-            width: 100%; 
-            background: var(--bg-input); 
-            border: 1px solid var(--border-color); 
-            color: #fff; 
-            padding: 14px 18px; 
-            border-radius: 5px; 
-            appearance: none; 
+        .input-group { margin-bottom: 24px; }
+        .label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .custom-select {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 14px 18px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
+            transition: var(--transition);
         }
-        .select-wrapper::after {
-            content: '\f078';
-            font-family: 'Font Awesome 6 Free';
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 4px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: var(--transition);
+        }
+
+        .btn-gray { background: #4e5058; color: #fff; padding: 12px; }
+        .btn-gray:hover { background: #6d6f78; }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--accent);
+            color: #fff;
+            padding: 18px;
+            font-size: 16px;
+            text-transform: uppercase;
             font-weight: 900;
-            position: absolute;
-            right: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            pointer-events: none;
-        }
-
-        .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
-        .btn-sec { 
-            background: #4e5058; 
-            color: #fff; 
-            border: none; 
-            padding: 12px; 
-            border-radius: 5px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px; 
-            font-size: 13px;
-        }
-        .btn-sec:hover { background: #6d6f78; }
-
-        .btn-main { 
-            width: 100%; 
-            background: var(--accent); 
-            color: #fff; 
-            border: none; 
-            padding: 18px; 
-            border-radius: 5px; 
-            font-weight: 800; 
-            font-size: 16px; 
-            text-transform: uppercase; 
-            cursor: pointer; 
-            margin-top: 30px; 
+            margin-top: 30px;
             box-shadow: 0 4px 15px rgba(237, 66, 69, 0.3);
-            transition: transform 0.2s;
         }
-        .btn-main:active { transform: scale(0.98); }
 
-        /* --- SCRIPT LOGIC --- */
+        .btn-primary:active { transform: scale(0.98); }
+
+        /* --- ANIMATIONS & MODALS (JavaScript Dependancy) --- */
     </style>
 </head>
 <body>
 
-    <nav id="sidebar">
-        <div class="sidebar-brand">BagBot</div>
-        <div class="nav-menu">
-            <div class="nav-item active"><i class="fas fa-pen-nib"></i> Designer</div>
-            <div class="nav-item"><i class="fas fa-robot"></i> Auto-Mod</div>
-            <div class="nav-item"><i class="fas fa-commands"></i> Commandes</div>
-            <div class="nav-item"><i class="fas fa-database"></i> Logs</div>
-            <div class="nav-item"><i class="fas fa-cog"></i> Configuration</div>
+    <aside id="sidebar">
+        <div class="brand-zone">
+            <i class="fas fa-shield-cat"></i>
+            <span>BagBot</span>
         </div>
-        <div style="padding: 20px; text-align: center; color: #222; font-size: 10px; font-weight: bold;">BAGBOT SYSTEM v3.0</div>
-    </nav>
+        
+        <div class="nav-container">
+            <div class="nav-group-label">Serveur</div>
+            <div class="nav-link active"><i class="fas fa-pen-fancy"></i> Designer</div>
+            <div class="nav-link"><i class="fas fa-list-check"></i> Auto-Mod</div>
+            
+            <div class="nav-group-label">Configuration</div>
+            <div class="nav-link"><i class="fas fa-terminal"></i> Commandes</div>
+            <div class="nav-link"><i class="fas fa-database"></i> Journaux</div>
+            <div class="nav-link"><i class="fas fa-sliders-h"></i> Paramètres</div>
+        </div>
+        
+        <div style="padding: 20px; text-align: center; border-top: 1px solid var(--border);">
+            <div style="font-size: 10px; color: var(--text-muted); font-weight: 800;">BAGBOT V3.1.2-STABLE</div>
+        </div>
+    </aside>
 
-    <main class="main-content">
-        <header>
-            <div class="view-title">
-                <i class="fas fa-th-large" style="color: var(--accent);"></i>
-                <span>DASHBOARD PRINCIPAL</span>
+    <div class="viewport">
+        <header class="top-nav">
+            <div class="page-title">
+                <i class="fas fa-bars" style="color: var(--accent); cursor: pointer;"></i>
+                <span>DASHBOARD</span>
             </div>
-            <div class="server-status">Bot Connecté</div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 11px; font-weight: 900; color: #23a559;">● BOT ACTIF</span>
+            </div>
         </header>
 
-        <div class="scroll-container">
-            <div class="embed-wrapper">
-                <div class="embed-header">
-                    <div class="embed-main-fields">
-                        <input type="text" class="input-title" value="Titre de l'annonce" id="title-val">
-                        <textarea class="input-description" id="desc-val" placeholder="Entrez votre message ici..."></textarea>
+        <div class="main-scroll">
+            <div class="embed-container">
+                <div class="embed-header-flex">
+                    <div class="fields-stack">
+                        <input type="text" class="title-in" value="Titre de l'Annonce" id="inp-title">
+                        <textarea class="desc-in" id="inp-desc" placeholder="Rédigez votre message ici..."></textarea>
                     </div>
-                    <div class="thumbnail-box">
-                        <i class="fas fa-image"></i>
-                        <span>THUMBNAIL</span>
+                    <div class="thumb-upload">
+                        <i class="fas fa-camera"></i>
+                        <span style="font-size: 9px; margin-top: 5px; font-weight: 800;">IMAGE</span>
                     </div>
                 </div>
-                <div class="banner-preview">
-                    <i class="fas fa-photo-video"></i>
+                <div class="banner-box">
+                    <i class="fas fa-cloud-arrow-up" style="font-size: 40px; color: #333;"></i>
                 </div>
             </div>
 
-            <div class="settings-area">
-                <label class="label-text">Choisir le salon de diffusion</label>
-                <div class="select-wrapper">
-                    <select id="channel-select">
-                        <option>Chargement des salons...</option>
+            <div class="control-panel">
+                <div class="input-group">
+                    <label class="label">Salon de destination</label>
+                    <select class="custom-select" id="channel-list">
+                        <option>Chargement des canaux...</option>
                     </select>
                 </div>
 
-                <div class="button-grid">
-                    <button class="btn-sec"><i class="fas fa-plus-circle"></i> Réaction</button>
-                    <button class="btn-sec"><i class="fas fa-bell"></i> Mention</button>
+                <div class="btn-grid">
+                    <button class="btn btn-gray"><i class="fas fa-plus-circle"></i> Réaction</button>
+                    <button class="btn btn-gray"><i class="fas fa-at"></i> Mentionner</button>
                 </div>
 
-                <button class="btn-main" id="deploy-btn">
-                    <i class="fas fa-paper-plane" style="margin-right: 12px;"></i> Envoyer le message
+                <button class="btn btn-primary" id="send-trigger">
+                    <i class="fas fa-paper-plane" style="margin-right: 12px;"></i> Publier maintenant
                 </button>
             </div>
         </div>
-    </main>
+    </div>
 
     <script>
-        // Synchronisation avec l'API Flask de Termux
-        async function initDashboard() {
+        // LOGIQUE DE CHARGEMENT API
+        async function bootstrap() {
             try {
-                const response = await fetch('/api/get_server_info');
-                const data = await response.json();
-                
+                const res = await fetch('/api/get_server_info');
+                const data = await res.json();
                 if (data.channels) {
-                    const select = document.getElementById('channel-select');
-                    select.innerHTML = data.channels.map(c => 
+                    const el = document.getElementById('channel-list');
+                    el.innerHTML = data.channels.map(c => 
                         `<option value="${c.id}"># ${c.name}</option>`
                     ).join('');
                 }
-            } catch (err) {
-                console.error("Erreur de liaison API:", err);
-                document.getElementById('channel-select').innerHTML = "<option>Erreur de connexion au bot</option>";
+            } catch (e) {
+                console.error("API Link Error");
             }
         }
 
-        document.getElementById('deploy-btn').onclick = function() {
-            const channel = document.getElementById('channel-select').value;
-            alert("Déploiement en cours sur le salon ID: " + channel);
+        // Action bouton principal
+        document.getElementById('send-trigger').onclick = () => {
+            const chan = document.getElementById('channel-list').selectedOptions[0].text;
+            alert("Envoi en cours vers " + chan);
         };
 
-        window.onload = initDashboard;
+        window.onload = bootstrap;
     </script>
 </body>
 </html>
