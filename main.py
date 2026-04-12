@@ -13,7 +13,7 @@ GUILD_ID = os.getenv("GUILD_ID")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_v13_full")
+SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_v14_final")
 
 app = Flask(__name__, static_folder='public', static_url_path='')
 CORS(app)
@@ -47,13 +47,15 @@ async def send_event_embed(member, event_type):
 
     def rep(t):
         if not t: return ""
-        return t.replace("{user}", member.mention).replace("{user_name}", member.name).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
+        return (t.replace("{user}", member.mention)
+                 .replace("{user_name}", member.name)
+                 .replace("{server}", member.guild.name)
+                 .replace("{count}", str(member.guild.member_count)))
 
     color = 0xed4245 if event_type == "welcome" else 0x2b2d31
     embed = discord.Embed(title=rep(config.get('title')), description=rep(config.get('desc')), color=color)
     
     files = []
-    # Gestion Thumbnail
     if config.get('thumb'):
         t_name = config['thumb'].split('/')[-1]
         t_path = os.path.join(UPLOAD_FOLDER, t_name)
@@ -61,7 +63,6 @@ async def send_event_embed(member, event_type):
             files.append(discord.File(t_path, filename=t_name))
             embed.set_thumbnail(url=f"attachment://{t_name}")
 
-    # Gestion Banner
     if config.get('banner'):
         b_name = config['banner'].split('/')[-1]
         b_path = os.path.join(UPLOAD_FOLDER, b_name)
@@ -72,8 +73,12 @@ async def send_event_embed(member, event_type):
     await channel.send(embed=embed, files=files if files else None)
 
 @bot.event
+async def on_member_join(member):
+    if not load_config().get("welcome", {}).get("trigger_roles"):
+        await send_event_embed(member, "welcome")
+
+@bot.event
 async def on_member_update(before, after):
-    # Déclenchement sur ajout de rôle (Bienvenue facultative)
     config = load_config().get("welcome", {})
     trigger_roles = config.get("trigger_roles", [])
     if trigger_roles:
@@ -83,16 +88,9 @@ async def on_member_update(before, after):
                 await send_event_embed(after, "welcome")
 
 @bot.event
-async def on_member_join(member):
-    # Si pas de rôles déclencheurs, on envoie direct
-    if not load_config().get("welcome", {}).get("trigger_roles"):
-        await send_event_embed(member, "welcome")
-
-@bot.event
 async def on_member_remove(member):
     await send_event_embed(member, "leave")
 
-# --- ROUTES API ---
 @app.route('/')
 def index():
     if not session.get('admin'): return redirect('/login')
@@ -144,4 +142,4 @@ def run_flask(): app.run(host='0.0.0.0', port=49501)
 if __name__ == "__main__":
     threading.Thread(target=run_flask).start()
     bot.run(TOKEN)
-    
+        
