@@ -3,36 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>BagBot Panel v16</title>
+    <title>BagBot Panel v17</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord: #2b2d31; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         
-        body { background: var(--bg); color: white; display: flex; height: 100vh; overflow: hidden; }
+        /* Correction du scroll : on autorise le défilement sur le body */
+        body { background: var(--bg); color: white; display: flex; min-height: 100vh; overflow-x: hidden; }
 
-        /* SIDEBAR - Correction du décalage pour ne pas cacher le nom */
+        /* SIDEBAR */
         #sidebar { 
             width: 260px; background: #000; border-right: 1px solid var(--border); 
-            display: flex; flex-direction: column; z-index: 9999; transition: 0.3s; 
+            display: flex; flex-direction: column; z-index: 9999; transition: 0.3s;
+            position: sticky; top: 0; height: 100vh;
         }
-        .sidebar-header {
-            padding: 30px 25px; font-size: 22px; font-weight: 900; color: var(--accent);
-            display: flex; align-items: center; justify-content:建设者; gap: 15px;
-        }
+        .sidebar-header { padding: 30px 25px; font-size: 22px; font-weight: 900; color: var(--accent); display: flex; align-items: center; gap: 15px; }
         .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 4px solid var(--accent); }
         
         @media (max-width: 900px) { 
-            #sidebar { position: fixed; transform: translateX(-100%); height: 100%; } 
+            #sidebar { position: fixed; transform: translateX(-100%); left: 0; } 
             #sidebar.open { transform: translateX(0); } 
         }
 
-        /* MAIN CONTENT */
-        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
+        /* MAIN CONTENT - On enlève overflow:hidden pour permettre le défilement naturel */
+        main { flex: 1; display: flex; flex-direction: column; position: relative; min-width: 0; }
         
         header { 
-            height: 70px; min-height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); 
+            height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); 
             display: flex; align-items: center; padding-left: 80px; font-weight: 900; position: sticky; top: 0; z-index: 100; 
         }
 
@@ -44,51 +43,67 @@
         @media (max-width: 900px) { .menu-toggle { display: block; } }
 
         /* SECTIONS */
-        .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; }
+        .content-section { display: none; flex-direction: column; align-items: center; padding: 20px 15px; width: 100%; }
         .content-section.active { display: flex; }
 
-        /* PREVIEW DISCORD */
-        .discord-embed { width: 100%; max-width: 450px; background: var(--discord); border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; position: relative; margin-bottom: 25px; }
-        .embed-thumb { width: 75px; height: 75px; position: absolute; right: 16px; top: 16px; background: #1a1a1a; border-radius: 4px; overflow: hidden; border: 1px solid #333; }
-        #p-title { font-weight: bold; font-size: 16px; padding-right: 85px; margin-bottom: 8px; color: #fff; }
-        #p-desc { font-size: 14px; color: #dcddde; white-space: pre-wrap; line-height: 1.4; }
-        .banner-preview { width: 100%; height: 140px; margin-top: 15px; background: #1a1a1a; border-radius: 4px; overflow: hidden; border: 1px solid #333; }
+        /* DISCORD EMBED PLUS GRAND ET SANS CHEVAUCHEMENT */
+        .discord-embed { 
+            width: 100%; max-width: 550px; background: var(--discord); border-left: 4px solid var(--accent); 
+            padding: 20px; border-radius: 4px; position: relative; margin-bottom: 30px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .embed-thumb { 
+            width: 80px; height: 80px; position: absolute; right: 20px; top: 20px; 
+            background: #1a1a1a; border-radius: 4px; overflow: hidden; border: 1px solid #333; 
+        }
+        #p-title { font-weight: bold; font-size: 18px; padding-right: 90px; margin-bottom: 12px; color: #fff; }
+        #p-desc { font-size: 15px; color: #dcddde; white-space: pre-wrap; line-height: 1.5; margin-bottom: 15px; padding-right: 10px; }
+        
+        /* Bannière plus grande */
+        .banner-preview { 
+            width: 100%; min-height: 180px; background: #1a1a1a; border-radius: 4px; 
+            overflow: hidden; border: 1px solid #333; margin-top: 10px;
+        }
         .img-fill { width: 100%; height: 100%; object-fit: cover; }
 
-        /* CARDS & INPUTS */
-        .card { width: 100%; max-width: 450px; background: var(--panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
+        /* CARDS */
+        .card { width: 100%; max-width: 550px; background: var(--panel); border-radius: 12px; padding: 25px; border: 1px solid var(--border); margin-bottom: 30px; }
         h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; }
-        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 14px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; outline: none; }
+        
+        input, textarea, select { 
+            width: 100%; background: #000; border: 1px solid var(--border); color: white; 
+            padding: 16px; border-radius: 10px; margin-bottom: 20px; font-size: 15px; outline: none; 
+        }
 
-        /* SECTION VARIABLES - Nouvel affichage */
-        .var-badge-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px dashed #333; }
-        .var-badge { background: #1a1a1a; color: var(--accent); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; font-family: monospace; border: 1px solid #333; cursor: pointer; }
-        .var-badge:hover { background: var(--accent); color: white; }
+        /* VARIABLES BADGES */
+        .var-badge-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid #222; }
+        .var-badge { background: #1a1a1a; color: var(--accent); padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; font-family: monospace; border: 1px solid #333; }
 
         /* MULTISELECT */
-        .multiselect { position: relative; margin-bottom: 15px; }
-        .select-box { background: #000; border: 1px solid var(--border); padding: 14px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; }
-        .dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0d0d0d; border: 1px solid var(--border); z-index: 8000; max-height: 200px; overflow-y: auto; border-radius: 0 0 8px 8px; }
+        .multiselect { position: relative; margin-bottom: 20px; }
+        .select-box { background: #000; border: 1px solid var(--border); padding: 16px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0d0d0d; border: 1px solid var(--border); z-index: 8000; max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px; }
         .dropdown-content.show { display: block; }
-        .option { padding: 12px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
+        .option { padding: 14px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
 
-        .btn { border: none; padding: 18px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; text-transform: uppercase; }
-        .btn-save { background: var(--accent); }
+        .btn { border: none; padding: 20px; border-radius: 12px; font-weight: 800; cursor: pointer; width: 100%; color: white; text-transform: uppercase; font-size: 15px; transition: 0.2s; }
+        .btn-save { background: var(--accent); box-shadow: 0 4px 15px rgba(237, 66, 69, 0.3); }
+        .btn-save:active { transform: scale(0.98); }
 
         #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9000; }
         #overlay.show { display: block; }
-        footer { padding: 20px; text-align: center; color: #333; font-size: 11px; font-weight: bold; }
+        
+        /* FOOTER : On s'assure qu'il ne chevauche rien */
+        footer { width: 100%; padding: 40px 20px; text-align: center; color: #444; font-size: 12px; font-weight: bold; border-top: 1px solid var(--border); background: #000; margin-top: auto; }
     </style>
 </head>
 <body>
     <div id="overlay" onclick="toggleSidebar()"></div>
     <div class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
 
-    <div class="layout">
+    <div class="layout" style="display: flex; width: 100%;">
         <nav id="sidebar">
-            <div class="sidebar-header">
-                <i class="fas fa-robot"></i> BAGBOT
-            </div>
+            <div class="sidebar-header"><i class="fas fa-robot"></i> BAGBOT</div>
             <div class="nav-item active" onclick="show('welcome', this)"><i class="fas fa-door-open"></i> BIENVENUE</div>
             <div class="nav-item" onclick="show('admin', this)"><i class="fas fa-user-shield"></i> ACCÈS</div>
             <div class="nav-item" onclick="show('images', this)"><i class="fas fa-images"></i> GALERIE</div>
@@ -100,34 +115,34 @@
             <section id="welcome" class="content-section active">
                 <div class="discord-embed">
                     <div class="embed-thumb" id="p-thumb"></div>
-                    <div id="p-title">Titre...</div>
-                    <div id="p-desc">Message...</div>
+                    <div id="p-title">Titre du message</div>
+                    <div id="p-desc">Votre message apparaîtra ici avec les variables remplacées...</div>
                     <div class="banner-preview" id="p-banner"></div>
                 </div>
 
                 <div class="card">
                     <h3>Message d'accueil</h3>
                     <input type="text" id="w-title" placeholder="Titre (ex: {user} arrive !)" oninput="sync()">
-                    <textarea id="w-desc" rows="4" placeholder="Description..." oninput="sync()"></textarea>
+                    <textarea id="w-desc" rows="5" placeholder="Description..." oninput="sync()"></textarea>
                     
-                    <h3>Variables disponibles</h3>
+                    <h3>Variables utilisables</h3>
                     <div class="var-badge-container">
-                        <span class="var-badge" title="Mentionne l'utilisateur">{user}</span>
-                        <span class="var-badge" title="Nom simple">{user_name}</span>
-                        <span class="var-badge" title="Nom du serveur">{server}</span>
-                        <span class="var-badge" title="Nombre de membres">{count}</span>
+                        <span class="var-badge">{user}</span>
+                        <span class="var-badge">{user_name}</span>
+                        <span class="var-badge">{server}</span>
+                        <span class="var-badge">{count}</span>
                     </div>
 
-                    <h3>Salon</h3>
+                    <h3>Salon de destination</h3>
                     <select id="w-chan"></select>
 
                     <h3>Rôles Déclencheurs (Facultatif)</h3>
                     <div class="multiselect">
-                        <div class="select-box" onclick="toggleDrop('drop-trigger')">Rôles <i class="fas fa-chevron-down"></i></div>
+                        <div class="select-box" onclick="toggleDrop('drop-trigger')">Sélectionner les rôles <i class="fas fa-chevron-down"></i></div>
                         <div id="drop-trigger" class="dropdown-content"></div>
                     </div>
 
-                    <button class="btn btn-save" onclick="save()">ENREGISTRER</button>
+                    <button class="btn btn-save" onclick="save()">ENREGISTRER LA CONFIGURATION</button>
                 </div>
             </section>
 
@@ -145,9 +160,10 @@
             <section id="images" class="content-section">
                 <input type="file" id="file-in" onchange="up()" style="display:none">
                 <button class="btn btn-save" onclick="document.getElementById('file-in').click()">UPLOADER IMAGE</button>
-                <div id="gallery" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:20px; width:100%; max-width:450px;"></div>
+                <div id="gallery" style="display:grid; grid-template-columns:repeat(2,1fr); gap:15px; margin-top:30px; width:100%; max-width:550px;"></div>
             </section>
-            <footer>BAGBOT &copy; 2026</footer>
+            
+            <footer>BAGBOT DASHBOARD &copy; 2026<br>Tous droits réservés</footer>
         </main>
     </div>
 
@@ -167,6 +183,7 @@
             document.getElementById(id).classList.add('active'); el.classList.add('active');
             if(window.innerWidth <= 900) toggleSidebar(); 
             if(id === 'images') loadG();
+            window.scrollTo(0,0);
         }
 
         function sync() {
@@ -194,11 +211,14 @@
 
         async function loadG() {
             const res = await fetch(`${API}/api/images`); const d = await res.json();
-            document.getElementById('gallery').innerHTML = d.images.map(img => `<img src="${API+img}" style="width:100%; border-radius:8px; cursor:pointer" onclick="setImg('${img}')">`).join('');
+            document.getElementById('gallery').innerHTML = d.images.map(img => `
+                <div style="position:relative">
+                    <img src="${API+img}" style="width:100%; aspect-ratio:16/9; border-radius:10px; cursor:pointer; object-fit:cover; border:1px solid #333" onclick="setImg('${img}')">
+                </div>`).join('');
         }
 
         function setImg(path) {
-            const target = confirm("Mettre en BANNIÈRE (OK) ou en THUMBNAIL (Annuler) ?") ? 'p-banner' : 'p-thumb';
+            const target = confirm("Mettre en BANNIÈRE (OK) ou en MINIATURE (Annuler) ?") ? 'p-banner' : 'p-thumb';
             const box = document.getElementById(target);
             box.innerHTML = `<img src="${API+path}" class="img-fill">`;
             box.dataset.path = path;
@@ -215,7 +235,7 @@
             };
             CONFIG.admin_roles = Array.from(document.querySelectorAll('#drop-admin input:checked')).map(i => i.value);
             await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
-            alert("Sauvegardé !");
+            alert("✅ Configuration enregistrée !");
         }
 
         async function init() {
