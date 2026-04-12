@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BagBot | Accueil & Welcomer</title>
+    <title>BagBot | Accueil Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -29,39 +29,61 @@
         .nav-item { padding: 14px 18px; display: flex; align-items: center; gap: 12px; color: var(--text-muted); cursor: pointer; border-radius: 8px; margin-bottom: 5px; font-weight: 600; }
         .nav-item.active { background: rgba(237, 66, 69, 0.1); color: var(--accent); }
 
-        /* --- MAIN CONTENT --- */
+        /* --- MAIN --- */
         .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         header { height: 60px; background: #050505; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 20px; }
         #burger { font-size: 22px; color: var(--accent); cursor: pointer; }
 
         .content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
 
-        /* --- SYSTÈME D'ACCUEIL --- */
         .module-card { width: 100%; max-width: 600px; background: var(--card); border-radius: 12px; padding: 25px; margin-bottom: 20px; border: 1px solid var(--border); }
-        .module-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; color: var(--accent); }
         
-        .toggle-group { display: flex; background: var(--input); padding: 5px; border-radius: 8px; margin-bottom: 20px; }
-        .toggle-btn { flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-radius: 6px; font-weight: bold; transition: 0.2s; }
-        .toggle-btn.active { background: var(--accent); color: white; }
+        /* --- APERÇU INTERACTIF (STYLE DISCORD) --- */
+        .preview-label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; display: block; }
+        
+        .embed-preview {
+            background: #2b2d31;
+            border-left: 4px solid var(--accent);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 25px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .embed-preview:hover { background: #313338; }
+        
+        #preview-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; display: block; }
+        #preview-desc { font-size: 14px; color: #dbdee1; line-height: 1.4; display: block; }
+        
+        /* --- FORMULAIRE --- */
+        .hidden-inputs { display: none; }
+        input, select, textarea { 
+            width: 100%; background: var(--input); border: 1px solid var(--border); 
+            color: white; padding: 12px; border-radius: 6px; margin-bottom: 15px; 
+        }
 
-        label { display: block; font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
-        
-        textarea, input, select { width: 100%; background: var(--input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-family: inherit; }
-        
-        .preview-box { width: 100%; padding: 15px; background: #2b2d31; border-radius: 6px; border-left: 4px solid var(--accent); margin-top: 10px; display: none; }
-        .preview-box.show { display: block; }
+        .btn-save { 
+            width: 100%; background: var(--accent); color: white; border: none; 
+            padding: 16px; border-radius: 8px; font-weight: 900; cursor: pointer; 
+            text-transform: uppercase; margin-top: 10px;
+        }
 
-        .btn-save { width: 100%; background: var(--accent); color: white; border: none; padding: 16px; border-radius: 8px; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        .btn-save:hover { filter: brightness(1.2); }
+        /* Notification de succès */
+        #toast {
+            position: fixed; bottom: 20px; right: 20px; background: #23a559;
+            color: white; padding: 12px 25px; border-radius: 5px; font-weight: bold;
+            display: none; z-index: 2000;
+        }
     </style>
 </head>
 <body>
+
+    <div id="toast">✅ Configuration enregistrée !</div>
 
     <nav id="sidebar">
         <div class="sidebar-header">BAGBOT</div>
         <div class="nav-list">
             <div class="nav-item active"><i class="fas fa-door-open"></i> Accueil</div>
-            <div class="nav-item"><i class="fas fa-paper-plane"></i> Messages</div>
             <div class="nav-item"><i class="fas fa-cog"></i> Paramètres</div>
         </div>
     </nav>
@@ -69,86 +91,89 @@
     <div class="main">
         <header>
             <div id="burger"><i class="fas fa-bars"></i></div>
-            <div style="font-weight: 900; letter-spacing: 1px;">ACCUEIL & WELCOMER</div>
+            <div style="font-weight: 900; letter-spacing: 1px;">CONFIGURATION ACCUEIL</div>
         </header>
 
         <div class="content">
             <div class="module-card">
-                <div class="module-title"><i class="fas fa-user-plus"></i> Arrivée des Membres</div>
+                <span class="preview-label">Aperçu en direct (Cliquez pour éditer)</span>
                 
-                <label>Type de message</label>
-                <div class="toggle-group">
-                    <button class="toggle-btn active" onclick="setType('welcome', 'simple')">Simple</button>
-                    <button class="toggle-btn" onclick="setType('welcome', 'embed')">Embed</button>
+                <div class="embed-preview" id="embed-trigger">
+                    <span id="preview-title">Bienvenue sur le serveur !</span>
+                    <span id="preview-desc">Nous sommes ravis de te voir ici {user}. N'oublie pas de lire le règlement !</span>
                 </div>
 
-                <label>Salon d'accueil</label>
-                <select id="welcome-chan"><option>Chargement des salons...</option></select>
-
-                <div id="welcome-simple-fields">
-                    <label>Message de texte</label>
-                    <textarea placeholder="Bienvenue {user} sur le serveur !"></textarea>
-                </div>
-
-                <div id="welcome-embed-fields" style="display: none;">
+                <div id="edit-zone" class="hidden-inputs">
                     <label>Titre de l'Embed</label>
-                    <input type="text" placeholder="Nouveau Membre !">
-                    <label>Description</label>
-                    <textarea placeholder="Bienvenue parmi nous {user}..."></textarea>
-                    <label>Couleur (Hex)</label>
-                    <input type="color" value="#ed4245" style="height: 50px;">
+                    <input type="text" id="input-title" value="Bienvenue sur le serveur !">
+                    
+                    <label>Description du message</label>
+                    <textarea id="input-desc" rows="4">Nous sommes ravis de te voir ici {user}. N'oublie pas de lire le règlement !</textarea>
                 </div>
 
-                <button class="btn-save">Enregistrer la configuration</button>
-            </div>
+                <label>Salon de bienvenue</label>
+                <select id="welcome-chan">
+                    <option value="">Sélectionner un salon...</option>
+                </select>
 
-            <div class="module-card">
-                <div class="module-title"><i class="fas fa-user-minus"></i> Départ des Membres</div>
-                <label>Message de départ</label>
-                <textarea placeholder="{user} a quitté le serveur."></textarea>
-                <button class="btn-save">Enregistrer</button>
+                <button class="btn-save" onclick="saveConfig()">Valider et Enregistrer</button>
             </div>
         </div>
     </div>
 
     <script>
-        const sidebar = document.getElementById('sidebar');
-        const burger = document.getElementById('burger');
+        // Toggle Sidebar
+        document.getElementById('burger').onclick = () => document.getElementById('sidebar').classList.toggle('closed');
 
-        burger.onclick = () => sidebar.classList.toggle('closed');
+        // Système d'édition par clic
+        const trigger = document.getElementById('embed-trigger');
+        const editZone = document.getElementById('edit-zone');
+        const pTitle = document.getElementById('preview-title');
+        const pDesc = document.getElementById('preview-desc');
+        const iTitle = document.getElementById('input-title');
+        const iDesc = document.getElementById('input-desc');
 
-        function setType(module, type) {
-            const btns = document.querySelectorAll('.toggle-btn');
-            const simpleFields = document.getElementById(module + '-simple-fields');
-            const embedFields = document.getElementById(module + '-embed-fields');
+        trigger.onclick = () => {
+            editZone.classList.toggle('hidden-inputs');
+        };
 
-            if (type === 'embed') {
-                btns[0].classList.remove('active');
-                btns[1].classList.add('active');
-                simpleFields.style.display = 'none';
-                embedFields.style.display = 'block';
-            } else {
-                btns[1].classList.remove('active');
-                btns[0].classList.add('active');
-                simpleFields.style.display = 'block';
-                embedFields.style.display = 'none';
-            }
+        // Mise à jour de l'aperçu en temps réel
+        iTitle.oninput = () => pTitle.innerText = iTitle.value || "Titre vide";
+        iDesc.oninput = () => pDesc.innerText = iDesc.value || "Description vide";
+
+        // Sauvegarde et Validation
+        async function saveConfig() {
+            const data = {
+                title: iTitle.value,
+                description: iDesc.value,
+                channel: document.getElementById('welcome-chan').value
+            };
+
+            console.log("Envoi des données :", data);
+
+            // Simulation d'envoi API
+            const toast = document.getElementById('toast');
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+                editZone.classList.add('hidden-inputs'); // Referme la zone d'édition
+            }, 3000);
         }
 
-        // Simuler le chargement des salons
+        // Chargement des salons depuis le bot
         async function loadChans() {
             try {
                 const res = await fetch('/api/get_server_info');
                 const data = await res.json();
                 if (data.channels) {
-                    document.getElementById('welcome-chan').innerHTML = data.channels.map(c => 
+                    document.getElementById('welcome-chan').innerHTML += data.channels.map(c => 
                         `<option value="${c.id}"># ${c.name}</option>`
                     ).join('');
                 }
-            } catch(e) { console.log("Erreur API"); }
+            } catch(e) { console.log("Liaison bot indisponible"); }
         }
         window.onload = loadChans;
     </script>
 </body>
 </html>
-
