@@ -8,48 +8,63 @@
     <style>
         :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord: #2b2d31; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: white; display: flex; height: 100vh; }
+        body { background: var(--bg); color: white; display: flex; height: 100vh; overflow: hidden; }
         
-        /* SIDEBAR VISIBLE */
-        #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); flex-shrink: 0; display: flex; flex-direction: column; }
-        .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; transition: 0.2s; }
-        .nav-item:hover { color: white; background: #080808; }
+        /* SIDEBAR ANIMÉE */
+        #sidebar { 
+            width: 260px; background: #000; border-right: 1px solid var(--border); 
+            display: flex; flex-direction: column; transition: transform 0.3s ease; z-index: 1000;
+        }
+        .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 4px solid var(--accent); }
 
-        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        header { height: 60px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; font-weight: 900; position: sticky; top: 0; z-index: 10; }
-        
+        /* RESPONSIVE MOBILE SIDEBAR */
+        @media (max-width: 900px) {
+            #sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
+            #sidebar.open { transform: translateX(0); }
+        }
+
+        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; }
+        header { 
+            height: 60px; background: var(--panel); border-bottom: 1px solid var(--border); 
+            display: flex; align-items: center; padding: 0 20px; font-weight: 900; gap: 15px;
+        }
+        .menu-btn { display: none; font-size: 20px; cursor: pointer; color: var(--accent); }
+        @media (max-width: 900px) { .menu-btn { display: block; } }
+
         .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; width: 100%; }
         .content-section.active { display: flex; }
 
         /* EMBED PREVIEW */
-        .preview-container { width: 100%; max-width: 500px; margin-bottom: 25px; }
-        .discord-embed { background: var(--discord); border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; position: relative; }
-        .thumb-preview { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: #000; border: 1px dashed #444; cursor: pointer; overflow: hidden; }
-        .banner-preview { width: 100%; height: 140px; margin-top: 10px; background: #000; border: 1px dashed #444; cursor: pointer; overflow: hidden; }
+        .discord-embed { 
+            width: 100%; max-width: 480px; background: var(--discord); border-left: 4px solid var(--accent); 
+            padding: 16px; border-radius: 4px; position: relative; margin-bottom: 25px; 
+        }
+        .thumb-preview { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: #000; border: 1px dashed #444; }
+        .banner-preview { width: 100%; height: 140px; margin-top: 10px; background: #000; border: 1px dashed #444; }
         .img-zone img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* CONFIG CARD */
-        .card { width: 100%; max-width: 500px; background: var(--panel); border-radius: 12px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
-        h3 { font-size: 12px; color: var(--accent); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        /* CARDS */
+        .card { width: 100%; max-width: 480px; background: var(--panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
+        h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
 
-        /* DROPDOWN MULTI-SELECT */
+        /* MULTISELECT DROPDOWN */
         .multiselect { position: relative; margin-bottom: 15px; }
-        .select-box { width: 100%; background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-        .dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0a0a0a; border: 1px solid var(--border); border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .select-box { background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .dropdown-content { 
+            display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0a0a0a; 
+            border: 1px solid var(--border); border-radius: 8px; max-height: 180px; overflow-y: auto; z-index: 100; 
+        }
         .dropdown-content.show { display: block; }
-        .option { display: flex; align-items: center; padding: 10px; gap: 10px; cursor: pointer; transition: 0.1s; border-bottom: 1px solid #111; }
-        .option:hover { background: #161616; }
-        .option input { width: 18px; height: 18px; accent-color: var(--accent); }
+        .option { display: flex; align-items: center; padding: 10px; gap: 10px; border-bottom: 1px solid #111; cursor: pointer; }
+        .option input { accent-color: var(--accent); width: 18px; height: 18px; }
 
-        /* BUTTONS */
-        .btn { border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-bottom: 10px; text-transform: uppercase; }
+        .btn { border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-bottom: 10px; }
         .btn-save { background: var(--accent); }
         .btn-test { background: #5865F2; }
 
-        /* GALLERY */
-        #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; width: 100%; max-width: 500px; }
+        #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; width: 100%; max-width: 480px; }
         .gallery-card { aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; }
         .gallery-card img { width: 100%; height: 100%; object-fit: cover; }
     </style>
@@ -58,47 +73,46 @@
     <nav id="sidebar">
         <div style="padding: 25px; font-size: 22px; font-weight: 900; color: var(--accent);">BAGBOT</div>
         <div class="nav-item active" onclick="show('accueil', this)"><i class="fas fa-home"></i> ACCUEIL</div>
-        <div class="nav-item" onclick="show('admin', this)"><i class="fas fa-user-shield"></i> ADMIN ROLES</div>
+        <div class="nav-item" onclick="show('admin', this)"><i class="fas fa-user-shield"></i> ADMIN</div>
         <div class="nav-item" onclick="show('images', this)"><i class="fas fa-images"></i> GALERIE</div>
     </nav>
 
-    <main>
-        <header id="bot-name">DASHBOARD</header>
+    <main onclick="closeSidebar()">
+        <header>
+            <i class="fas fa-bars menu-btn" onclick="event.stopPropagation(); toggleSidebar()"></i>
+            <span id="bot-name">DASHBOARD</span>
+        </header>
 
         <section id="accueil" class="content-section active">
-            <div class="preview-container">
-                <div style="color: #888; font-size: 13px; margin-bottom: 5px;">Aperçu : <span id="p-ping" style="color:#5865f2">@User</span></div>
-                <div class="discord-embed">
-                    <div class="thumb-preview img-zone" onclick="triggerUp('thumb')"><div id="box-thumb"></div></div>
-                    <div id="p-title" style="font-weight: bold; margin-bottom: 5px;">Titre</div>
-                    <div id="p-desc" style="font-size: 14px; white-space: pre-wrap; color: #dcddde;">Message...</div>
-                    <div class="banner-preview img-zone" onclick="triggerUp('banner')"><div id="box-banner"></div></div>
-                </div>
+            <div class="discord-embed">
+                <div class="thumb-preview img-zone" onclick="triggerUp('thumb')"><div id="box-thumb"></div></div>
+                <div id="p-title" style="font-weight: bold; margin-bottom: 5px;">Titre</div>
+                <div id="p-desc" style="font-size: 14px; white-space: pre-wrap; color: #dcddde;">Message de bienvenue...</div>
+                <div class="banner-preview img-zone" onclick="triggerUp('banner')"><div id="box-banner"></div></div>
             </div>
 
             <div class="card">
                 <h3>Contenu</h3>
-                <input type="text" id="in-title" placeholder="Titre de l'embed" oninput="sync()">
-                <textarea id="in-desc" rows="4" placeholder="Description ({user}, {server}...)" oninput="sync()"></textarea>
+                <input type="text" id="in-title" placeholder="Titre..." oninput="sync()">
+                <textarea id="in-desc" rows="3" placeholder="Description ({user}...)" oninput="sync()"></textarea>
                 
                 <h3>Salon</h3>
                 <select id="chan-list"></select>
 
                 <h3>Déclencheur (Rôles)</h3>
                 <div class="multiselect">
-                    <div class="select-box" onclick="toggleDrop('drop-trigger')">Sélectionner les rôles <i class="fas fa-chevron-down"></i></div>
+                    <div class="select-box" onclick="toggleDrop('drop-trigger')">Rôles sélectionnés <i class="fas fa-chevron-down"></i></div>
                     <div id="drop-trigger" class="dropdown-content"></div>
                 </div>
 
-                <button class="btn btn-save" onclick="save()">SAUVEGARDER</button>
-                <button class="btn btn-test" onclick="test()">TESTER L'ENVOI</button>
+                <button class="btn btn-save" onclick="save()">ENREGISTRER</button>
+                <button class="btn btn-test" onclick="test()">TESTER</button>
             </div>
         </section>
 
         <section id="admin" class="content-section">
             <div class="card">
-                <h3>Rôles accès Dashboard</h3>
-                <p style="font-size:12px; color:#666; margin-bottom:15px;">Seuls les membres avec ces rôles pourront se connecter.</p>
+                <h3>Accès Dashboard</h3>
                 <div class="multiselect">
                     <div class="select-box" onclick="toggleDrop('drop-admin')">Rôles autorisés <i class="fas fa-chevron-down"></i></div>
                     <div id="drop-admin" class="dropdown-content"></div>
@@ -109,8 +123,8 @@
 
         <section id="images" class="content-section">
             <input type="file" id="file-in" onchange="up()" style="display:none">
-            <button class="btn btn-save" style="max-width:500px" onclick="triggerUp('gallery')">UPLOADER UNE IMAGE</button>
-            <div id="gallery"></div>
+            <button class="btn btn-save" style="max-width:480px" onclick="triggerUp('gallery')">UPLOADER</button>
+            <div id="gallery" style="margin-top:20px;"></div>
         </section>
     </main>
 
@@ -118,11 +132,16 @@
         const API = window.location.origin;
         let targetImg = '';
 
+        // TOGGLE SIDEBAR MOBILE
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
+
         function show(id, el) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             el.classList.add('active');
+            closeSidebar();
             if(id === 'images') loadG();
         }
 
@@ -158,14 +177,12 @@
         }
 
         async function save() {
-            const triggers = Array.from(document.querySelectorAll('#drop-trigger input:checked')).map(i => i.value);
-            const admins = Array.from(document.querySelectorAll('#drop-admin input:checked')).map(i => i.value);
             const p = {
                 title: document.getElementById('in-title').value,
                 desc: document.getElementById('in-desc').value,
                 target_channel: document.getElementById('chan-list').value,
-                trigger_roles: triggers,
-                admin_roles: admins,
+                trigger_roles: Array.from(document.querySelectorAll('#drop-trigger input:checked')).map(i => i.value),
+                admin_roles: Array.from(document.querySelectorAll('#drop-admin input:checked')).map(i => i.value),
                 thumb: document.querySelector('.thumb-preview').dataset.path || null,
                 banner: document.querySelector('.banner-preview').dataset.path || null
             };
@@ -192,15 +209,15 @@
             document.getElementById('bot-name').innerText = d.bot.name.toUpperCase();
             document.getElementById('chan-list').innerHTML = d.channels.map(c => `<option value="${c.id}" ${d.config.target_channel == c.id ? 'selected':''}># ${c.name}</option>`).join('');
             
-            const makeRoles = (container, saved) => {
-                document.getElementById(container).innerHTML = d.all_roles.map(r => `
-                    <div class="option">
-                        <input type="checkbox" value="${r}" ${saved.includes(r) ? 'checked' : ''}>
+            const createRoles = (box, saved) => {
+                document.getElementById(box).innerHTML = d.all_roles.map(r => `
+                    <div class="option" onclick="this.querySelector('input').click()">
+                        <input type="checkbox" value="${r}" ${saved.includes(r) ? 'checked' : ''} onclick="event.stopPropagation()">
                         <span>${r}</span>
                     </div>`).join('');
             };
-            makeRoles('drop-trigger', d.config.trigger_roles || []);
-            makeRoles('drop-admin', d.config.admin_roles || []);
+            createRoles('drop-trigger', d.config.trigger_roles || []);
+            createRoles('drop-admin', d.config.admin_roles || []);
 
             if(d.config) {
                 document.getElementById('in-title').value = d.config.title || "";
