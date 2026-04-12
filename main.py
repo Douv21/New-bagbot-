@@ -11,8 +11,8 @@ UPLOAD_FOLDER = 'public/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-TOKEN = "TON_TOKEN_ICI"
-GUILD_ID = "TON_ID_SERVEUR"
+TOKEN = "TON_TOKEN"
+GUILD_ID = "TON_ID"
 
 @app.route('/')
 def index(): return send_from_directory('public', 'index.html')
@@ -40,9 +40,11 @@ def test_message():
                 fname = val.split('/')[-1]
                 path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
                 if os.path.exists(path):
+                    # On crée le fichier mais on ne l'envoie QUE via l'embed
                     files.append(discord.File(path, filename=fname))
                     if key == 'thumb': embed.set_thumbnail(url=f"attachment://{fname}")
                     else: embed.set_image(url=f"attachment://{fname}")
+        
         await channel.send(embed=embed, files=files)
 
     asyncio.run_coroutine_threadsafe(send_task(), bot.loop)
