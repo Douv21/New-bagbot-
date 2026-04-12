@@ -6,22 +6,19 @@ from discord.ext import commands
 from flask import Flask, session, request, jsonify, redirect
 from dotenv import load_dotenv
 
-# --- CHARGEMENT DU .ENV ---
+# --- CONFIGURATION ---
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 GUILD_ID = int(os.getenv("GUILD_ID")) if os.getenv("GUILD_ID") else 0
-# Récupération de l'URI depuis le .env
 REDIRECT_URI = os.getenv("REDIRECT_URI")
 
-# --- INITIALISATION FLASK ---
+# --- INITIALISATION ---
 app = Flask(__name__, static_folder='public', static_url_path='/')
 app.secret_key = os.urandom(24)
 
-# --- INITIALISATION BOT ---
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 def load_config():
     if not os.path.exists('config.json'):
@@ -29,7 +26,7 @@ def load_config():
     with open('config.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
-# --- ROUTES DASHBOARD ---
+# --- ROUTES ---
 @app.route('/')
 def index():
     return app.send_static_file('index.html')
@@ -58,24 +55,34 @@ def save():
         json.dump(request.json, f, indent=4)
     return jsonify({"status": "ok"})
 
-# --- SYSTÈME LOGIN OAUTH2 ---
+@app.route('/api/test_welcome', methods=['POST'])
+def test_welcome():
+    config = load_config().get('welcome', {})
+    channel = bot.get_channel(int(config.get('channel', 0)))
+    if not channel: return jsonify({"error": "Salon invalide"}), 400
+    
+    u, g, c = session.get('user_name', 'User'), channel.guild.name, str(channel.guild.member_count)
+    def rep(t): return t.replace('{user}', u).replace('{guild}', g).replace('{count}', c) if t else ""
+
+    embed = discord.Embed(title=rep(config.get('title')), description=rep(config.get('desc')), color=0xed4245)
+    if config.get('banner'): embed.set_image(url=config.get('banner'))
+    if config.get('thumbnail'): embed.set_thumbnail(url=config.get('thumbnail'))
+    if config.get('footer'): embed.set_footer(text=rep(config.get('footer')))
+
+    bot.loop.create_task(channel.send(embed=embed))
+    return jsonify({"status": "ok"})
+
 @app.route('/api/login')
 def login():
-    # Utilise l'URI du .env pour construire le lien Discord
-    url = (f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}"
-           f"&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify")
+    url = f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify"
     return redirect(url)
 
 @app.route('/api/callback')
 def callback():
-    # Route de retour après l'autorisation Discord
-    session['user_id'] = "admin_access"
-    session['user_name'] = "Administrateur"
+    session['user_id'], session['user_name'] = "admin", "Administrateur"
     return redirect('/')
 
-# --- LANCEMENT ---
 if __name__ == "__main__":
-    # Lancement de Flask sur 0.0.0.0 pour l'accès mobile
     threading.Thread(target=lambda: app.run(host='0.0.0.0', port=49501, use_reloader=False)).start()
     bot.run(TOKEN)
     
