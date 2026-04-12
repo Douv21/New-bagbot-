@@ -20,15 +20,13 @@ try:
 except ValueError:
     GUILD_ID = 0
 
-# Flask Setup - Utilisation de static_url_path pour Termux
 app = Flask(__name__, static_folder='public', static_url_path='/')
 app.secret_key = os.urandom(24)
 
-# Discord Bot Setup
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# --- GESTION JSON ---
+# --- GESTION CONFIGURATION ---
 def load_config():
     default_cfg = {
         "welcome": {
@@ -38,7 +36,7 @@ def load_config():
             "channel": "",
             "banner": "",
             "thumbnail": "",
-            "trigger_roles": []
+            "trigger_roles": ["@JOIN"] # Ajout par défaut du rôle virtuel @JOIN
         },
         "admin_roles": []
     }
@@ -47,9 +45,11 @@ def load_config():
     try:
         with open('config.json', 'r', encoding='utf-8') as f:
             data = json.load(f)
-            # Sécurité pour éviter les clés manquantes après une mise à jour
+            # Vérification de l'intégrité des clés pour éviter les erreurs JS
             if "welcome" not in data: data["welcome"] = default_cfg["welcome"]
-            if "admin_roles" not in data: data["admin_roles"] = []
+            for key in default_cfg["welcome"]:
+                if key not in data["welcome"]:
+                    data["welcome"][key] = default_cfg["welcome"][key]
             return data
     except Exception:
         return default_cfg
@@ -63,21 +63,22 @@ def index():
 def get_data():
     guild = bot.get_guild(GUILD_ID)
     if not guild:
-        return jsonify({"error": "Guild non trouvée. Vérifie l'ID dans le .env"}), 404
+        return jsonify({"error": "Serveur introuvable"}), 404
 
-    # Scan des images
     img_dir = 'public/uploads'
     if not os.path.exists(img_dir):
         os.makedirs(img_dir)
     images = [f"/uploads/{f}" for f in os.listdir(img_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
 
+    # On ajoute "@JOIN" à la liste des rôles pour le déclenchement auto
+    roles_list = ["@JOIN"] + [r.name for r in guild.roles if not r.managed and r.name != "@everyone"]
+
     return jsonify({
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
-        "roles": [r.name for r in guild.roles if not r.managed and r.name != "@everyone"],
+        "roles": roles_list,
         "config": load_config(),
         "images": images,
-        "guild_name": guild.name,
-        "user_name": session.get('user_name', 'Administrateur')
+        "guild_name": guild.name
     })
 
 @app.route('/api/save', methods=['POST'])
@@ -94,18 +95,16 @@ def save():
 def delete_image():
     try:
         img_path = request.json.get('path')
-        if not img_path or ".." in img_path:
-            return jsonify({"error": "Chemin invalide"}), 400
-        
+        if not img_path or ".." in img_path: return jsonify({"error": "Invalid path"}), 400
         full_path = os.path.join('public', img_path.lstrip('/'))
         if os.path.exists(full_path):
             os.remove(full_path)
             return jsonify({"status": "deleted"})
-        return jsonify({"error": "Fichier non trouvé"}), 404
+        return jsonify({"error": "Not found"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# --- LANCEMENT ---
+# --- RUN ---
 def run_flask():
     app.run(host='0.0.0.0', port=49501, use_reloader=False)
 
@@ -113,9 +112,5 @@ if __name__ == "__main__":
     t = threading.Thread(target=run_flask)
     t.daemon = True
     t.start()
+    bot.run(TOKEN)
     
-    try:
-        bot.run(TOKEN)
-    except Exception as e:
-        print(f"Erreur fatale Bot Discord : {e}")
-        
