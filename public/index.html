@@ -2,102 +2,189 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>BagBot Ultimate Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BagBot Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; }
-        body { background: var(--bg); color: white; display: flex; margin: 0; font-family: sans-serif; height: 100vh; }
-        
+        :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord: #2b2d31; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: white; display: flex; height: 100vh; overflow: hidden; }
+
         /* SIDEBAR FIXE */
         #sidebar { width: 260px; min-width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-
-        .sidebar-header { padding: 30px; font-weight: bold; color: var(--accent); font-size: 20px; border-bottom: 1px solid var(--border); }
-        .nav-item { padding: 18px 30px; cursor: pointer; color: #888; font-weight: bold; border-right: 3px solid transparent; }
+        .sidebar-header { padding: 30px; font-weight: 900; color: var(--accent); font-size: 20px; border-bottom: 1px solid var(--border); }
+        .nav-item { padding: 18px 30px; cursor: pointer; color: #888; font-weight: bold; transition: 0.2s; border-right: 3px solid transparent; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right-color: var(--accent); }
 
-        .content-section { display: none; padding: 30px; flex-direction: column; align-items: center; }
+        main { flex: 1; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 40px 20px; }
+        .content-section { display: none; width: 100%; max-width: 700px; flex-direction: column; align-items: center; }
         .content-section.active { display: flex; }
 
-        .card { width: 100%; max-width: 600px; background: var(--panel); padding: 25px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
+        /* CARDS & FORMS */
+        .card { width: 100%; background: var(--panel); padding: 25px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 25px; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 14px; border-radius: 8px; margin-bottom: 15px; }
         
-        /* ROLES ADMIN & DASHBOARD */
-        .role-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
-        .role-row input { width: 18px; height: 18px; accent-color: var(--accent); }
+        /* ALIGNEMENT RÔLES */
+        .role-option { display: flex; align-items: center; gap: 15px; padding: 12px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
+        .role-option input { width: 18px; height: 18px; accent-color: var(--accent); }
 
-        .btn { padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; width: 100%; color: white; text-transform: uppercase; margin-top: 10px; }
+        /* EMBED PREVIEW */
+        .discord-embed { width: 100%; max-width: 500px; background: var(--discord); border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; margin-bottom: 20px; }
+        .banner-preview { width: 100%; height: 120px; background: rgba(0,0,0,0.3); border: 2px dashed #444; border-radius: 8px; margin-top: 10px; cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .banner-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+        .btn { padding: 16px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; width: 100%; color: white; text-transform: uppercase; }
         .btn-save { background: var(--accent); }
+
+        /* MODAL GALERIE */
+        #modal-gal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; padding: 20px; }
+        .modal-inner { background: var(--panel); max-width: 500px; margin: 40px auto; padding: 25px; border-radius: 15px; border: 1px solid var(--border); }
+        .gal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; max-height: 300px; overflow-y: auto; }
+        .gal-item img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 5px; cursor: pointer; border: 2px solid transparent; }
+        .gal-item img:hover { border-color: var(--accent); }
     </style>
 </head>
 <body>
-    <div id="login-screen" style="display:none; position:fixed; inset:0; background:black; z-index:9999; display:flex; align-items:center; justify-content:center;">
-        <button class="btn btn-save" style="width:auto; padding:20px 40px;" onclick="window.location.href='/api/login'">Se connecter avec Discord</button>
+    <div id="login-screen" style="display:none; position:fixed; inset:0; background:#000; z-index:9999; flex-direction:column; align-items:center; justify-content:center;">
+        <h1 style="color:var(--accent); margin-bottom:20px;">BAGBOT PANEL</h1>
+        <button class="btn btn-save" style="width:auto; padding:20px 40px;" onclick="window.location.href='/api/login'">Connexion via Discord</button>
     </div>
 
     <nav id="sidebar">
         <div class="sidebar-header">BAGBOT</div>
         <div class="nav-item active" onclick="show('BIENVENUE', this)">BIENVENUE</div>
-        <div class="nav-item" onclick="show('ADMIN', this)">ADMIN DASHBOARD</div>
-        <div class="nav-item" onclick="show('GALERIE', this)">GALERIE IMAGES</div>
+        <div class="nav-item" onclick="show('ADMIN', this)">ADMIN ACCÈS</div>
+        <div class="nav-item" onclick="show('GALERIE', this)">GALERIE</div>
     </nav>
 
     <main>
         <section id="section-BIENVENUE" class="content-section active">
-            </section>
+            <div class="discord-embed">
+                <div id="p-title" style="font-weight:bold;">Titre</div>
+                <div id="p-desc" style="font-size:14px; color:#ccc; margin-top:5px;">Description...</div>
+                <div class="banner-preview" onclick="openGal('banner')">
+                    <img id="img-banner" style="display:none">
+                    <span id="banner-plus"><i class="fas fa-plus"></i> Ajouter une bannière</span>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Message de Bienvenue</h3>
+                <input type="text" id="w-title" placeholder="Titre" oninput="sync()">
+                <textarea id="w-desc" placeholder="Description" rows="3" oninput="sync()"></textarea>
+                <select id="w-chan"></select>
+                <button class="btn btn-save" onclick="save()">Sauvegarder</button>
+                <button class="btn" style="background:#5865f2; margin-top:10px;" onclick="fetch('/api/test_welcome',{method:'POST'})">Tester Discord</button>
+            </div>
+        </section>
 
         <section id="section-ADMIN" class="content-section">
             <div class="card">
-                <h3>Rôles autorisés sur le Dashboard</h3>
-                <p style="font-size:12px; color:#888; margin-bottom:15px;">Sélectionnez les rôles qui peuvent accéder à ce panel. Votre ID est en accès permanent.</p>
+                <h3>Rôles autorisés au Dashboard</h3>
+                <p style="font-size:12px; color:#888; margin-bottom:15px;">Sélectionnez les rôles qui peuvent se connecter ici.</p>
                 <div id="admin-roles-list"></div>
-                <button class="btn btn-save" onclick="saveAdminRoles()">Sauvegarder les accès</button>
+                <button class="btn btn-save" style="margin-top:15px;" onclick="saveAdmin()">Mettre à jour les accès</button>
             </div>
         </section>
 
         <section id="section-GALERIE" class="content-section">
-            </section>
+            <div class="card">
+                <h3>Téléverser une image</h3>
+                <input type="file" id="up-file" onchange="upload('admin')">
+                <div id="admin-gal" class="gal-grid"></div>
+            </div>
+        </section>
     </main>
 
+    <div id="modal-gal">
+        <div class="modal-inner">
+            <h3>Choisir une image</h3>
+            <div id="modal-list" class="gal-grid"></div>
+            <button class="btn" style="margin-top:15px; background:#444;" onclick="document.getElementById('modal-gal').style.display='none'">Fermer</button>
+        </div>
+    </div>
+
     <script>
-        let configData = {};
+        let fullConfig = {};
+        function show(id, el) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('section-'+id).classList.add('active');
+            el.classList.add('active');
+            if(id === 'GALERIE') loadGal('admin-gal');
+        }
 
         async function init() {
             const res = await fetch('/api/get_server_info');
-            if (res.status === 401) {
-                document.getElementById('login-screen').style.display = 'flex';
-                return;
-            }
+            if(res.status === 401) { document.getElementById('login-screen').style.display='flex'; return; }
             const data = await res.json();
-            configData = data.config;
+            fullConfig = data.config;
 
-            // Liste des rôles pour l'accès Dashboard
-            const adminContainer = document.getElementById('admin-roles-list');
-            adminContainer.innerHTML = data.all_roles.map(r => `
-                <div class="role-row" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked;">
-                    <input type="checkbox" value="${r}" class="admin-ck" ${configData.admin_roles?.includes(r) ? 'checked' : ''}>
+            document.getElementById('w-chan').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            document.getElementById('admin-roles-list').innerHTML = data.all_roles.map(r => `
+                <div class="role-option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked;">
+                    <input type="checkbox" value="${r}" class="admin-ck" ${fullConfig.admin_roles?.includes(r)?'checked':''}>
                     <span>${r}</span>
                 </div>
             `).join('');
-            
-            // ... (Initialiser le reste comme avant)
+
+            if(fullConfig.welcome) {
+                document.getElementById('w-title').value = fullConfig.welcome.title || "";
+                document.getElementById('w-desc').value = fullConfig.welcome.desc || "";
+                if(fullConfig.welcome.banner) {
+                    const img = document.getElementById('img-banner');
+                    img.src = fullConfig.welcome.banner;
+                    img.style.display = 'block';
+                    document.getElementById('banner-plus').style.display = 'none';
+                }
+            }
+            sync();
         }
 
-        async function saveAdminRoles() {
-            const selected = Array.from(document.querySelectorAll('.admin-ck:checked')).map(i => i.value);
-            configData.admin_roles = selected;
-            await fetch('/api/save_config', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(configData)
-            });
-            alert("Accès mis à jour !");
+        async function loadGal(id) {
+            const res = await fetch('/api/images');
+            const data = await res.json();
+            document.getElementById(id).innerHTML = data.images.map(img => `
+                <div class="gal-item"><img src="${img}" onclick="selectImg('${img}')"></div>
+            `).join('');
         }
 
-        function show(name, el) {
-            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('section-' + name).classList.add('active');
-            el.classList.add('active');
+        function openGal() { document.getElementById('modal-gal').style.display='block'; loadGal('modal-list'); }
+        function selectImg(path) {
+            const img = document.getElementById('img-banner');
+            img.src = path; img.style.display = 'block';
+            img.dataset.path = path;
+            document.getElementById('banner-plus').style.display = 'none';
+            document.getElementById('modal-gal').style.display='none';
+        }
+
+        async function upload(target) {
+            const fd = new FormData();
+            fd.append('file', document.getElementById(target==='admin'?'up-file':'up-modal').files[0]);
+            const res = await fetch('/api/upload', {method:'POST', body:fd});
+            const data = await res.json();
+            if(target === 'admin') loadGal('admin-gal'); else selectImg(data.path);
+        }
+
+        function sync() {
+            document.getElementById('p-title').innerText = document.getElementById('w-title').value || "Titre";
+            document.getElementById('p-desc').innerText = document.getElementById('w-desc').value || "Description...";
+        }
+
+        async function save() {
+            fullConfig.welcome = {
+                title: document.getElementById('w-title').value,
+                desc: document.getElementById('w-desc').value,
+                channel: document.getElementById('w-chan').value,
+                banner: document.getElementById('img-banner').dataset.path || ""
+            };
+            await fetch('/api/save_config', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(fullConfig)});
+            alert("Sauvegardé !");
+        }
+
+        async function saveAdmin() {
+            fullConfig.admin_roles = Array.from(document.querySelectorAll('.admin-ck:checked')).map(i => i.value);
+            await fetch('/api/save_config', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(fullConfig)});
+            alert("Accès admin mis à jour !");
         }
 
         window.onload = init;
