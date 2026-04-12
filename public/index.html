@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot | Accueil</title>
+    <title>BagBot | Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -11,21 +11,23 @@
             --accent: #ed4245; --embed-bg: #2b2d31; --text-muted: #949ba4; --border: #1e1e1e;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg-dark); color: white; display: flex; height: 100vh; overflow: hidden; }
 
-        /* SIDEBAR & NAV */
+        /* SIDEBAR */
         #sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; height: 100%; transition: 0.3s ease; z-index: 1000; }
         .sidebar-header { padding: 30px 20px; font-weight: 900; font-size: 24px; color: var(--accent); letter-spacing: 1px; }
-        .nav-item { padding: 15px 25px; display: flex; align-items: center; gap: 15px; color: var(--accent); background: rgba(237, 66, 69, 0.05); font-weight: 700; border-right: 3px solid var(--accent); }
+        .nav-item { padding: 15px 25px; display: flex; align-items: center; gap: 15px; color: var(--text-muted); font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .nav-item.active { color: var(--accent); background: rgba(237, 66, 69, 0.05); border-right: 3px solid var(--accent); }
 
-        main { flex: 1; margin-left: 260px; display: flex; flex-direction: column; transition: 0.3s; }
+        main { flex: 1; margin-left: 260px; display: flex; flex-direction: column; transition: 0.3s; width: 100%; }
         header { height: 70px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 25px; justify-content: space-between; }
         .menu-toggle { display: none; font-size: 20px; cursor: pointer; }
 
-        .content-wrapper { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; flex: 1; }
+        .content-section.active { display: flex; }
 
-        /* EMBED DISCORD */
+        /* EMBED & CARDS */
         .discord-embed { width: 100%; max-width: 520px; background: var(--embed-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px; margin-bottom: 25px; }
         .embed-author { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
         .embed-author img { width: 24px; height: 24px; border-radius: 50%; }
@@ -38,21 +40,25 @@
         .banner-box { width: 100%; height: 160px; margin-top: 15px; }
         .img-zone img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* CONFIGURATION CARD */
         .config-card { width: 100%; max-width: 520px; background: var(--bg-panel); border-radius: 12px; border: 1px solid var(--border); padding: 20px; }
         label { display: block; font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
         
-        /* VARIABLES HELP SECTION */
+        /* VARIABLES */
         .variables-help { background: #000; border: 1px solid #222; border-radius: 8px; padding: 12px; margin-bottom: 15px; }
         .var-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .var-item { font-size: 12px; color: var(--text-muted); cursor: pointer; padding: 5px; border-radius: 4px; border: 1px solid transparent; }
-        .var-item:hover { background: #111; border-color: var(--accent); color: white; }
-        .var-tag { color: var(--accent); font-weight: bold; font-family: monospace; }
+        .var-item { font-size: 11px; color: var(--text-muted); cursor: pointer; padding: 5px; }
+        .var-tag { color: var(--accent); font-weight: bold; }
+
+        /* GALLERY PAGE */
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; width: 100%; max-width: 800px; }
+        .gallery-card { background: var(--bg-panel); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); position: relative; }
+        .gallery-card img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+        .delete-btn { position: absolute; top: 5px; right: 5px; background: rgba(237, 66, 69, 0.9); border: none; color: white; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; font-size: 12px; }
 
         .btn-save { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; }
 
-        /* MODALE IMAGE (EPURÉE) */
+        /* MODALE */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; padding: 20px; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
         .modal-content { background: var(--bg-panel); border-radius: 15px; padding: 20px; width: 100%; max-width: 400px; }
@@ -68,7 +74,8 @@
 
     <nav id="sidebar">
         <div class="sidebar-header">BAGBOT</div>
-        <div class="nav-item"><i class="fas fa-home"></i> Accueil</div>
+        <div class="nav-item active" onclick="showSection('accueil', this)"><i class="fas fa-home"></i> Accueil</div>
+        <div class="nav-item" onclick="showSection('images', this)"><i class="fas fa-images"></i> Images</div>
     </nav>
 
     <main>
@@ -80,7 +87,7 @@
             </div>
         </header>
 
-        <div class="content-wrapper">
+        <section id="accueil" class="content-section active">
             <div class="discord-embed">
                 <div class="embed-author">
                     <img id="prev-auth" src=""> <span id="bot-name-prev">Bot</span>
@@ -102,37 +109,39 @@
             <div class="config-card">
                 <label>Titre</label>
                 <input type="text" id="in-title" placeholder="Titre..." oninput="sync()">
-                
-                <label>Message de bienvenue</label>
-                <textarea id="in-desc" rows="4" oninput="sync()" placeholder="Utilisez les variables..."></textarea>
+                <label>Message</label>
+                <textarea id="in-desc" rows="4" oninput="sync()" placeholder="Message..."></textarea>
                 
                 <div class="variables-help">
-                    <label style="color:var(--accent)">Dictionnaire de Variables</label>
                     <div class="var-grid">
-                        <div class="var-item" onclick="addVar('{user}')"><span class="var-tag">{user}</span> : Mentionne l'utilisateur</div>
-                        <div class="var-item" onclick="addVar('{user_name}')"><span class="var-tag">{user_name}</span> : Nom sans mention</div>
-                        <div class="var-item" onclick="addVar('{server}')"><span class="var-tag">{server}</span> : Nom du serveur</div>
-                        <div class="var-item" onclick="addVar('{count}')"><span class="var-tag">{count}</span> : Nombre de membres</div>
+                        <div class="var-item" onclick="addVar('{user}')"><span class="var-tag">{user}</span> : Mention</div>
+                        <div class="var-item" onclick="addVar('{user_name}')"><span class="var-tag">{user_name}</span> : Nom</div>
+                        <div class="var-item" onclick="addVar('{server}')"><span class="var-tag">{server}</span> : Serveur</div>
+                        <div class="var-item" onclick="addVar('{count}')"><span class="var-tag">{count}</span> : Membres</div>
                     </div>
                 </div>
 
-                <label>Salon</label>
-                <select id="chan-list"></select>
+                <label>Salon Discord</label>
+                <select id="chan-list">
+                    <option>Chargement...</option>
+                </select>
                 <button class="btn-save">ENREGISTRER</button>
             </div>
-        </div>
+        </section>
+
+        <section id="images" class="content-section">
+            <h2 style="margin-bottom: 20px;">Ma Galerie</h2>
+            <div class="gallery-grid" id="main-gallery"></div>
+        </section>
     </main>
 
     <div id="imgModal" class="modal">
         <div class="modal-content">
             <h3 style="margin-bottom: 15px; color: var(--accent);">Source de l'image</h3>
-            <label>URL de l'image</label>
-            <input type="text" id="url-input" placeholder="https://...">
-            <label>Ou téléverser un fichier</label>
+            <input type="text" id="url-input" placeholder="Lien URL...">
             <input type="file" id="file-input" style="display:none" onchange="upload()">
-            <button class="btn-save" style="background:#222; margin-bottom:10px" onclick="document.getElementById('file-input').click()">PARCOURIR...</button>
-            
-            <button class="btn-save" style="margin-top:20px" onclick="applyImg()">APPLIQUER</button>
+            <button class="btn-save" style="background:#222; margin-bottom:10px" onclick="document.getElementById('file-input').click()">TÉLÉVERSER DEPUIS MOBILE</button>
+            <button class="btn-save" onclick="applyImg()">APPLIQUER</button>
             <button class="btn-save" style="background:transparent; color:#666" onclick="closeModal()">ANNULER</button>
         </div>
     </div>
@@ -140,9 +149,20 @@
     <script>
         let currentTarget = '';
 
-        function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); document.querySelector('.overlay').classList.toggle('active'); }
-        function closeModal() { document.getElementById('imgModal').classList.remove('active'); }
-        
+        function toggleMenu() { 
+            document.getElementById('sidebar').classList.toggle('open'); 
+            document.querySelector('.overlay').classList.toggle('active'); 
+        }
+
+        function showSection(id, el) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            if(id === 'images') loadMainGallery();
+            if(window.innerWidth <= 900) toggleMenu();
+        }
+
         function sync() {
             document.getElementById('p-title').innerText = document.getElementById('in-title').value || "Titre";
             document.getElementById('p-desc').innerText = document.getElementById('in-desc').value || "Description...";
@@ -150,23 +170,17 @@
 
         function openImgModal(target) {
             currentTarget = target;
-            document.getElementById('url-input').value = "";
             document.getElementById('imgModal').classList.add('active');
         }
 
-        function addVar(tag) {
-            const area = document.getElementById('in-desc');
-            area.value += tag;
-            sync();
-        }
+        function closeModal() { document.getElementById('imgModal').classList.remove('active'); }
 
         async function upload() {
-            const file = document.getElementById('file-input').files[0];
-            const fd = new FormData(); fd.append('file', file);
+            const fd = new FormData(); fd.append('file', document.getElementById('file-input').files[0]);
             const res = await fetch('/api/upload', {method:'POST', body:fd});
             const data = await res.json();
             document.getElementById('url-input').value = data.url;
-            alert("Image téléversée avec succès ! Cliquez sur APPLIQUER.");
+            alert("Image prête !");
         }
 
         function applyImg() {
@@ -175,15 +189,45 @@
             closeModal();
         }
 
-        async function init() {
-            const res = await fetch('/api/get_server_info'); const data = await res.json();
-            document.getElementById('bot-name').innerText = data.bot.name;
-            document.querySelectorAll('#bot-name-prev').forEach(e => e.innerText = data.bot.name);
-            document.getElementById('bot-avatar').src = data.bot.avatar;
-            document.getElementById('prev-auth').src = data.bot.avatar;
-            document.getElementById('prev-foot').src = data.bot.avatar;
-            document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+        async function loadMainGallery() {
+            const res = await fetch('/api/images');
+            const data = await res.json();
+            const container = document.getElementById('main-gallery');
+            container.innerHTML = data.images.map(u => `
+                <div class="gallery-card">
+                    <img src="${u}">
+                    <button class="delete-btn" onclick="deleteImage('${u}')"><i class="fas fa-trash"></i></button>
+                </div>
+            `).join('');
         }
+
+        async function deleteImage(url) {
+            if(!confirm("Supprimer cette image ?")) return;
+            await fetch('/api/images/delete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({url: url})
+            });
+            loadMainGallery();
+        }
+
+        async function init() {
+            try {
+                const res = await fetch('/api/get_server_info');
+                const data = await res.json();
+                if(data.error) return;
+
+                document.getElementById('bot-name').innerText = data.bot.name;
+                document.getElementById('bot-avatar').src = data.bot.avatar;
+                document.getElementById('prev-auth').src = data.bot.avatar;
+                document.getElementById('bot-name-prev').innerText = data.bot.name;
+
+                const select = document.getElementById('chan-list');
+                select.innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        function addVar(v) { document.getElementById('in-desc').value += v; sync(); }
 
         window.onload = init;
     </script>
