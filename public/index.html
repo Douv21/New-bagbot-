@@ -13,35 +13,44 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding-top: var(--safe-top); }
         .layout { display: flex; flex: 1; overflow: hidden; }
+        
+        /* SIDEBAR */
         #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 5000; transition: 0.3s; }
         .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 4px solid var(--accent); }
         @media (max-width: 900px) { #sidebar { position: fixed; transform: translateX(-100%); height: 100%; } #sidebar.open { transform: translateX(0); } }
 
-        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        /* HEADER & MENU */
+        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
         header { height: 70px; min-height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding-left: 70px; font-weight: 900; position: sticky; top: 0; z-index: 100; }
         .menu-toggle { display: none; position: fixed; left: 15px; top: calc(15px + var(--safe-top)); font-size: 28px; color: var(--accent); cursor: pointer; z-index: 9999; background: #111; padding: 8px; border-radius: 10px; border: 1px solid var(--border); }
         @media (max-width: 900px) { .menu-toggle { display: block; } }
 
-        /* EMBED COMPLET */
+        /* DISCORD PREVIEW */
+        .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; }
+        .content-section.active { display: flex; }
         .discord-embed { width: 100%; max-width: 480px; background: var(--discord); border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; position: relative; margin-bottom: 20px; }
-        .embed-thumb { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: #000; border: 1px dashed #444; border-radius: 4px; overflow: hidden; cursor: pointer; }
-        .banner-preview { width: 100%; height: 140px; margin-top: 15px; background: #000; border: 1px dashed #444; border-radius: 4px; overflow: hidden; cursor: pointer; }
+        .embed-thumb { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: #000; border: 1px dashed #444; border-radius: 4px; overflow: hidden; }
+        .banner-preview { width: 100%; height: 140px; margin-top: 15px; background: #000; border: 1px dashed #444; border-radius: 4px; overflow: hidden; }
         .img-fill { width: 100%; height: 100%; object-fit: cover; }
 
+        /* CARDS & INPUTS */
         .card { width: 100%; max-width: 480px; background: var(--panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
-        h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
-        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 14px; border-radius: 8px; margin-bottom: 15px; }
-
+        h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 14px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
+        
         .multiselect { position: relative; margin-bottom: 15px; }
-        .select-box { background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; }
+        .select-box { background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0d0d0d; border: 1px solid var(--border); z-index: 8000; max-height: 200px; overflow-y: auto; }
         .dropdown-content.show { display: block; }
         .option { padding: 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
 
         .btn { border: none; padding: 16px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; text-transform: uppercase; }
         .btn-save { background: var(--accent); }
-        footer { background: #000; border-top: 1px solid var(--border); padding: 15px; text-align: center; font-size: 12px; color: #555; font-weight: bold; }
+        
+        /* FOOTER */
+        footer { background: #000; border-top: 1px solid var(--border); padding: 15px; text-align: center; font-size: 11px; color: #444; font-weight: bold; letter-spacing: 1px; }
+
         #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 4000; }
         #overlay.show { display: block; }
     </style>
@@ -54,7 +63,7 @@
         <nav id="sidebar">
             <div style="padding: 30px 25px; font-size: 24px; font-weight: 900; color: var(--accent);">BAGBOT</div>
             <div class="nav-item active" onclick="show('welcome', this)"><i class="fas fa-door-open"></i> BIENVENUE</div>
-            <div class="nav-item" onclick="show('leave', this)"><i class="fas fa-door-closed"></i> DEPART</div>
+            <div class="nav-item" onclick="show('leave', this)"><i class="fas fa-door-closed"></i> DÉPART</div>
             <div class="nav-item" onclick="show('admin', this)"><i class="fas fa-user-shield"></i> ADMIN</div>
             <div class="nav-item" onclick="show('images', this)"><i class="fas fa-images"></i> GALERIE</div>
         </nav>
@@ -65,14 +74,14 @@
             <section id="welcome" class="content-section active">
                 <div class="discord-embed">
                     <div class="embed-thumb" onclick="triggerUp('w-thumb')"><div id="w-box-thumb"></div></div>
-                    <div id="w-p-title" style="font-weight:bold; padding-right:90px;">Titre</div>
-                    <div id="w-p-desc" style="font-size:14px; color:#dcddde; margin-top:5px;">Message...</div>
+                    <div id="w-p-title" style="font-weight:bold; padding-right:90px;"></div>
+                    <div id="w-p-desc" style="font-size:14px; color:#dcddde; margin-top:5px; white-space: pre-wrap;"></div>
                     <div class="banner-preview" onclick="triggerUp('w-banner')"><div id="w-box-banner"></div></div>
                 </div>
                 <div class="card">
-                    <h3>Message de Bienvenue</h3>
-                    <input type="text" id="w-title" placeholder="Titre..." oninput="sync('welcome')">
-                    <textarea id="w-desc" rows="3" placeholder="Texte..." oninput="sync('welcome')"></textarea>
+                    <h3>Configuration Bienvenue</h3>
+                    <input type="text" id="w-title" placeholder="Titre (ex: Bienvenue {user})" oninput="sync('welcome')">
+                    <textarea id="w-desc" rows="3" placeholder="Message (ex: Bienvenue sur {server})" oninput="sync('welcome')"></textarea>
                     <h3>Salon</h3>
                     <select id="w-chan"></select>
                     <h3>Rôle Déclencheur (Facultatif)</h3>
@@ -87,61 +96,48 @@
             <section id="leave" class="content-section">
                 <div class="discord-embed" style="border-left-color: #555;">
                     <div class="embed-thumb" onclick="triggerUp('l-thumb')"><div id="l-box-thumb"></div></div>
-                    <div id="l-p-title" style="font-weight:bold; padding-right:90px;">Titre</div>
-                    <div id="l-p-desc" style="font-size:14px; color:#dcddde; margin-top:5px;">Message...</div>
+                    <div id="l-p-title" style="font-weight:bold; padding-right:90px;"></div>
+                    <div id="l-p-desc" style="font-size:14px; color:#dcddde; margin-top:5px; white-space: pre-wrap;"></div>
                     <div class="banner-preview" onclick="triggerUp('l-banner')"><div id="l-box-banner"></div></div>
                 </div>
                 <div class="card">
-                    <h3>Message de Départ</h3>
-                    <input type="text" id="l-title" placeholder="Titre..." oninput="sync('leave')">
-                    <textarea id="l-desc" rows="3" placeholder="Texte..." oninput="sync('leave')"></textarea>
+                    <h3>Configuration Départ</h3>
+                    <input type="text" id="l-title" placeholder="Titre (ex: Au revoir {user_name})" oninput="sync('leave')">
+                    <textarea id="l-desc" rows="3" placeholder="Message..." oninput="sync('leave')"></textarea>
                     <h3>Salon</h3>
                     <select id="l-chan"></select>
                     <button class="btn btn-save" onclick="save()">ENREGISTRER</button>
                 </div>
             </section>
 
-            <section id="admin" class="content-section">
-                <div class="card">
-                    <h3>Accès Panel</h3>
-                    <div class="multiselect">
-                        <div class="select-box" onclick="toggleDrop('drop-admin')">Rôles autorisés <i class="fas fa-chevron-down"></i></div>
-                        <div id="drop-admin" class="dropdown-content"></div>
-                    </div>
-                    <button class="btn btn-save" onclick="save()">SAUVEGARDER</button>
-                </div>
-            </section>
-
-            <section id="images" class="content-section">
-                <input type="file" id="file-in" onchange="up()" style="display:none">
-                <button class="btn btn-save" onclick="triggerUp('gallery')">UPLOADER IMAGE</button>
-                <div id="gallery" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:20px; width:100%; max-width:480px;"></div>
-            </section>
+            <section id="admin" class="content-section"><div class="card"><h3>Accès Panel</h3><div class="multiselect"><div class="select-box" onclick="toggleDrop('drop-admin')">Rôles autorisés <i class="fas fa-chevron-down"></i></div><div id="drop-admin" class="dropdown-content"></div></div><button class="btn btn-save" onclick="save()">SAUVEGARDER</button></div></section>
+            <section id="images" class="content-section"><input type="file" id="file-in" onchange="up()" style="display:none"><button class="btn btn-save" onclick="triggerUp('gallery')">UPLOADER IMAGE</button><div id="gallery" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:20px; width:100%; max-width:480px;"></div></section>
         </main>
     </div>
-    <footer>&copy; 2026 BAGBOT DASHBOARD</footer>
+    <footer>&copy; 2026 BAGBOT DASHBOARD - DESIGN BY GEMINI</footer>
 
     <script>
-        let CONFIG = {};
-        let currentTarget = '';
-        const API = window.location.origin;
+        let CONFIG = {}; let currentTarget = ''; const API = window.location.origin;
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
         function toggleDrop(id) { document.getElementById(id).classList.toggle('show'); }
-
-        function show(id, el) {
-            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            el.classList.add('active');
-            if(window.innerWidth <= 900) toggleSidebar();
-            if(id === 'images') loadG();
+        function show(id, el) { 
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active')); 
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
+            document.getElementById(id).classList.add('active'); el.classList.add('active');
+            if(window.innerWidth <= 900) toggleSidebar(); if(id === 'images') loadG();
         }
 
         function sync(type) {
             const prefix = type === 'welcome' ? 'w' : 'l';
-            document.getElementById(`${prefix}-p-title`).innerText = document.getElementById(`${prefix}-title`).value || "Titre";
-            document.getElementById(`${prefix}-p-desc`).innerText = document.getElementById(`${prefix}-desc`).value || "Message...";
+            const tVal = document.getElementById(`${prefix}-title`).value || (type==='welcome'?"Bienvenue {user}":"Au revoir {user_name}");
+            const dVal = document.getElementById(`${prefix}-desc`).value || (type==='welcome'?"Bienvenue sur {server} !":"Il nous a quitté...");
+            
+            const fake = {"{user}": "@Pseudo", "{user_name}": "Pseudo", "{server}": "Mon Serveur", "{count}": "150"};
+            let resT = tVal, resD = dVal;
+            for(let k in fake) { resT = resT.split(k).join(fake[k]); resD = resD.split(k).join(fake[k]); }
+            document.getElementById(`${prefix}-p-title`).innerText = resT;
+            document.getElementById(`${prefix}-p-desc`).innerText = resD;
         }
 
         function triggerUp(target) { currentTarget = target; document.getElementById('file-in').click(); }
@@ -149,74 +145,48 @@
             const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]);
             const res = await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
             const data = await res.json();
-            if(currentTarget !== 'gallery') setImg(data.url, currentTarget);
-            else loadG();
+            if(currentTarget !== 'gallery') setImg(data.url, currentTarget); else loadG();
         }
 
         async function loadG() {
-            const res = await fetch(`${API}/api/images`);
-            const d = await res.json();
-            document.getElementById('gallery').innerHTML = d.images.map(img => `
-                <img src="${API+img}" style="width:100%; border-radius:8px; cursor:pointer" onclick="setImg('${img}')">
-            `).join('');
+            const res = await fetch(`${API}/api/images`); const d = await res.json();
+            document.getElementById('gallery').innerHTML = d.images.map(img => `<img src="${API+img}" style="width:100%; border-radius:8px; cursor:pointer" onclick="setImg('${img}')">`).join('');
         }
 
         function setImg(path, target) {
             target = target || currentTarget;
             const box = document.getElementById(target.replace('-', '-box-'));
-            if(box) {
-                box.innerHTML = `<img src="${API+path}" class="img-fill">`;
-                box.dataset.path = path;
-            }
+            if(box) { box.innerHTML = `<img src="${API+path}" class="img-fill">`; box.dataset.path = path; }
         }
 
         async function save() {
-            CONFIG.welcome = {
-                title: document.getElementById('w-title').value,
-                desc: document.getElementById('w-desc').value,
-                channel: document.getElementById('w-chan').value,
-                banner: document.getElementById('w-box-banner').dataset.path,
-                thumb: document.getElementById('w-box-thumb').dataset.path,
-                trigger_roles: Array.from(document.querySelectorAll('#drop-trigger input:checked')).map(i => i.value)
-            };
-            CONFIG.leave = {
-                title: document.getElementById('l-title').value,
-                desc: document.getElementById('l-desc').value,
-                channel: document.getElementById('l-chan').value,
-                banner: document.getElementById('l-box-banner').dataset.path,
-                thumb: document.getElementById('l-box-thumb').dataset.path
-            };
+            CONFIG.welcome = { title: document.getElementById('w-title').value, desc: document.getElementById('w-desc').value, channel: document.getElementById('w-chan').value, banner: document.getElementById('w-box-banner').dataset.path, thumb: document.getElementById('w-box-thumb').dataset.path, trigger_roles: Array.from(document.querySelectorAll('#drop-trigger input:checked')).map(i => i.value) };
+            CONFIG.leave = { title: document.getElementById('l-title').value, desc: document.getElementById('l-desc').value, channel: document.getElementById('l-chan').value, banner: document.getElementById('l-box-banner').dataset.path, thumb: document.getElementById('l-box-thumb').dataset.path };
             CONFIG.admin_roles = Array.from(document.querySelectorAll('#drop-admin input:checked')).map(i => i.value);
             await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
-            alert("Sauvegardé !");
+            alert("Configuration sauvegardée avec succès !");
         }
 
         async function init() {
-            const res = await fetch(`${API}/api/get_server_info`);
-            const data = await res.json();
+            const res = await fetch(`${API}/api/get_server_info`); const data = await res.json();
             CONFIG = data.config;
             const chans = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            document.getElementById('w-chan').innerHTML = chans;
-            document.getElementById('l-chan').innerHTML = chans;
+            document.getElementById('w-chan').innerHTML = chans; document.getElementById('l-chan').innerHTML = chans;
 
             const makeRoles = (id, saved) => {
-                document.getElementById(id).innerHTML = data.all_roles.map(r => `
-                    <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
-                        <input type="checkbox" value="${r}" ${saved.includes(r)?'checked':''}> <span>${r}</span>
-                    </div>`).join('');
+                document.getElementById(id).innerHTML = data.all_roles.map(r => `<div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();"><input type="checkbox" value="${r}" ${saved.includes(r)?'checked':''}> <span>${r}</span></div>`).join('');
             };
             makeRoles('drop-admin', CONFIG.admin_roles || []);
-            makeRoles('drop-trigger', CONFIG.welcome.trigger_roles || []);
+            makeRoles('drop-trigger', (CONFIG.welcome && CONFIG.welcome.trigger_roles) ? CONFIG.welcome.trigger_roles : []);
 
-            const fill = (p, obj) => {
-                if(!obj) return;
-                document.getElementById(`${p}-title`).value = obj.title || "";
-                document.getElementById(`${p}-desc`).value = obj.desc || "";
-                document.getElementById(`${p}-chan`).value = obj.channel || "";
-                if(obj.banner) setImg(obj.banner, `${p}-banner`);
-                if(obj.thumb) setImg(obj.thumb, `${p}-thumb`);
-            };
-            fill('w', CONFIG.welcome); fill('l', CONFIG.leave);
+            if(CONFIG.welcome) {
+                document.getElementById('w-title').value = CONFIG.welcome.title || ""; document.getElementById('w-desc').value = CONFIG.welcome.desc || ""; document.getElementById('w-chan').value = CONFIG.welcome.channel || "";
+                if(CONFIG.welcome.banner) setImg(CONFIG.welcome.banner, 'w-banner'); if(CONFIG.welcome.thumb) setImg(CONFIG.welcome.thumb, 'w-thumb');
+            }
+            if(CONFIG.leave) {
+                document.getElementById('l-title').value = CONFIG.leave.title || ""; document.getElementById('l-desc').value = CONFIG.leave.desc || ""; document.getElementById('l-chan').value = CONFIG.leave.channel || "";
+                if(CONFIG.leave.banner) setImg(CONFIG.leave.banner, 'l-banner'); if(CONFIG.leave.thumb) setImg(CONFIG.leave.thumb, 'l-thumb');
+            }
             sync('welcome'); sync('leave');
         }
         window.onload = init;
