@@ -12,48 +12,27 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; padding-top: var(--safe-top); }
-        
         .layout { display: flex; flex: 1; overflow: hidden; }
-
-        /* SIDEBAR */
-        #sidebar { 
-            width: 260px; background: #000; border-right: 1px solid var(--border); 
-            display: flex; flex-direction: column; z-index: 5000; transition: 0.3s;
-        }
+        #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 5000; transition: 0.3s; }
         .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 4px solid var(--accent); }
+        @media (max-width: 900px) { #sidebar { position: fixed; transform: translateX(-100%); height: 100%; } #sidebar.open { transform: translateX(0); } }
 
-        @media (max-width: 900px) {
-            #sidebar { position: fixed; transform: translateX(-100%); height: 100%; }
-            #sidebar.open { transform: translateX(0); }
-        }
-
-        /* MAIN CONTENT */
-        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg); }
-        header { 
-            height: 70px; min-height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); 
-            display: flex; align-items: center; padding-left: 70px; font-weight: 900; position: sticky; top: 0; z-index: 100;
-        }
-
-        .menu-toggle { 
-            display: none; position: fixed; left: 15px; top: calc(15px + var(--safe-top));
-            font-size: 28px; color: var(--accent); cursor: pointer; z-index: 9999;
-            background: #111; padding: 8px; border-radius: 10px; border: 1px solid var(--border);
-        }
+        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        header { height: 70px; min-height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding-left: 70px; font-weight: 900; position: sticky; top: 0; z-index: 100; }
+        .menu-toggle { display: none; position: fixed; left: 15px; top: calc(15px + var(--safe-top)); font-size: 28px; color: var(--accent); cursor: pointer; z-index: 9999; background: #111; padding: 8px; border-radius: 10px; border: 1px solid var(--border); }
         @media (max-width: 900px) { .menu-toggle { display: block; } }
 
-        /* EMBED PREVIEW */
-        .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; }
-        .content-section.active { display: flex; }
+        /* EMBED COMPLET */
         .discord-embed { width: 100%; max-width: 480px; background: var(--discord); border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; position: relative; margin-bottom: 20px; }
-        .banner-preview { width: 100%; height: 140px; margin-top: 10px; background: #000; border: 1px dashed #444; border-radius: 4px; overflow: hidden; }
-        .banner-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .embed-thumb { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: #000; border: 1px dashed #444; border-radius: 4px; overflow: hidden; cursor: pointer; }
+        .banner-preview { width: 100%; height: 140px; margin-top: 15px; background: #000; border: 1px dashed #444; border-radius: 4px; overflow: hidden; cursor: pointer; }
+        .img-fill { width: 100%; height: 100%; object-fit: cover; }
 
         .card { width: 100%; max-width: 480px; background: var(--panel); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
         h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 14px; border-radius: 8px; margin-bottom: 15px; }
 
-        /* MULTISELECT */
         .multiselect { position: relative; margin-bottom: 15px; }
         .select-box { background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; }
         .dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0d0d0d; border: 1px solid var(--border); z-index: 8000; max-height: 200px; overflow-y: auto; }
@@ -62,13 +41,7 @@
 
         .btn { border: none; padding: 16px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; text-transform: uppercase; }
         .btn-save { background: var(--accent); }
-
-        /* FOOTER CORRIGÉ */
-        footer { 
-            background: #000; border-top: 1px solid var(--border); padding: 15px; 
-            text-align: center; font-size: 12px; color: #555; font-weight: bold;
-        }
-
+        footer { background: #000; border-top: 1px solid var(--border); padding: 15px; text-align: center; font-size: 12px; color: #555; font-weight: bold; }
         #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 4000; }
         #overlay.show { display: block; }
     </style>
@@ -91,9 +64,10 @@
 
             <section id="welcome" class="content-section active">
                 <div class="discord-embed">
-                    <div id="w-p-title" style="font-weight:bold">Titre</div>
-                    <div id="w-p-desc" style="font-size:14px; color:#dcddde">Message...</div>
-                    <div class="banner-preview" id="w-banner-box"></div>
+                    <div class="embed-thumb" onclick="triggerUp('w-thumb')"><div id="w-box-thumb"></div></div>
+                    <div id="w-p-title" style="font-weight:bold; padding-right:90px;">Titre</div>
+                    <div id="w-p-desc" style="font-size:14px; color:#dcddde; margin-top:5px;">Message...</div>
+                    <div class="banner-preview" onclick="triggerUp('w-banner')"><div id="w-box-banner"></div></div>
                 </div>
                 <div class="card">
                     <h3>Message de Bienvenue</h3>
@@ -101,15 +75,21 @@
                     <textarea id="w-desc" rows="3" placeholder="Texte..." oninput="sync('welcome')"></textarea>
                     <h3>Salon</h3>
                     <select id="w-chan"></select>
+                    <h3>Rôle Déclencheur (Facultatif)</h3>
+                    <div class="multiselect">
+                        <div class="select-box" onclick="toggleDrop('drop-trigger')">Sélectionner <i class="fas fa-chevron-down"></i></div>
+                        <div id="drop-trigger" class="dropdown-content"></div>
+                    </div>
                     <button class="btn btn-save" onclick="save()">ENREGISTRER</button>
                 </div>
             </section>
 
             <section id="leave" class="content-section">
                 <div class="discord-embed" style="border-left-color: #555;">
-                    <div id="l-p-title" style="font-weight:bold">Titre</div>
-                    <div id="l-p-desc" style="font-size:14px; color:#dcddde">Message...</div>
-                    <div class="banner-preview" id="l-banner-box"></div>
+                    <div class="embed-thumb" onclick="triggerUp('l-thumb')"><div id="l-box-thumb"></div></div>
+                    <div id="l-p-title" style="font-weight:bold; padding-right:90px;">Titre</div>
+                    <div id="l-p-desc" style="font-size:14px; color:#dcddde; margin-top:5px;">Message...</div>
+                    <div class="banner-preview" onclick="triggerUp('l-banner')"><div id="l-box-banner"></div></div>
                 </div>
                 <div class="card">
                     <h3>Message de Départ</h3>
@@ -134,22 +114,20 @@
 
             <section id="images" class="content-section">
                 <input type="file" id="file-in" onchange="up()" style="display:none">
-                <button class="btn btn-save" onclick="triggerUp()">UPLOADER IMAGE</button>
+                <button class="btn btn-save" onclick="triggerUp('gallery')">UPLOADER IMAGE</button>
                 <div id="gallery" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:20px; width:100%; max-width:480px;"></div>
             </section>
         </main>
     </div>
-
-    <footer>&copy; 2026 BAGBOT DASHBOARD - TOUS DROITS RÉSERVÉS</footer>
+    <footer>&copy; 2026 BAGBOT DASHBOARD</footer>
 
     <script>
         let CONFIG = {};
+        let currentTarget = '';
         const API = window.location.origin;
 
-        function toggleSidebar() { 
-            document.getElementById('sidebar').classList.toggle('open'); 
-            document.getElementById('overlay').classList.toggle('show');
-        }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
+        function toggleDrop(id) { document.getElementById(id).classList.toggle('show'); }
 
         function show(id, el) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
@@ -166,30 +144,13 @@
             document.getElementById(`${prefix}-p-desc`).innerText = document.getElementById(`${prefix}-desc`).value || "Message...";
         }
 
-        async function save() {
-            CONFIG.welcome = {
-                title: document.getElementById('w-title').value,
-                desc: document.getElementById('w-desc').value,
-                channel: document.getElementById('w-chan').value,
-                banner: document.getElementById('w-banner-box').dataset.path
-            };
-            CONFIG.leave = {
-                title: document.getElementById('l-title').value,
-                desc: document.getElementById('l-desc').value,
-                channel: document.getElementById('l-chan').value,
-                banner: document.getElementById('l-banner-box').dataset.path
-            };
-            CONFIG.admin_roles = Array.from(document.querySelectorAll('#drop-admin input:checked')).map(i => i.value);
-
-            await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
-            alert("Configuration enregistrée !");
-        }
-
-        function triggerUp() { document.getElementById('file-in').click(); }
+        function triggerUp(target) { currentTarget = target; document.getElementById('file-in').click(); }
         async function up() {
             const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]);
-            await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
-            loadG();
+            const res = await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
+            const data = await res.json();
+            if(currentTarget !== 'gallery') setImg(data.url, currentTarget);
+            else loadG();
         }
 
         async function loadG() {
@@ -200,45 +161,62 @@
             `).join('');
         }
 
-        function setImg(path) {
-            const activeSection = document.querySelector('.content-section.active').id;
-            if(activeSection === 'welcome' || activeSection === 'leave') {
-                const prefix = activeSection === 'welcome' ? 'w' : 'l';
-                const box = document.getElementById(`${prefix}-banner-box`);
-                box.innerHTML = `<img src="${API+path}">`;
+        function setImg(path, target) {
+            target = target || currentTarget;
+            const box = document.getElementById(target.replace('-', '-box-'));
+            if(box) {
+                box.innerHTML = `<img src="${API+path}" class="img-fill">`;
                 box.dataset.path = path;
             }
         }
 
-        function toggleDrop(id) { document.getElementById(id).classList.toggle('show'); }
+        async function save() {
+            CONFIG.welcome = {
+                title: document.getElementById('w-title').value,
+                desc: document.getElementById('w-desc').value,
+                channel: document.getElementById('w-chan').value,
+                banner: document.getElementById('w-box-banner').dataset.path,
+                thumb: document.getElementById('w-box-thumb').dataset.path,
+                trigger_roles: Array.from(document.querySelectorAll('#drop-trigger input:checked')).map(i => i.value)
+            };
+            CONFIG.leave = {
+                title: document.getElementById('l-title').value,
+                desc: document.getElementById('l-desc').value,
+                channel: document.getElementById('l-chan').value,
+                banner: document.getElementById('l-box-banner').dataset.path,
+                thumb: document.getElementById('l-box-thumb').dataset.path
+            };
+            CONFIG.admin_roles = Array.from(document.querySelectorAll('#drop-admin input:checked')).map(i => i.value);
+            await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
+            alert("Sauvegardé !");
+        }
 
         async function init() {
             const res = await fetch(`${API}/api/get_server_info`);
             const data = await res.json();
             CONFIG = data.config;
-
             const chans = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
             document.getElementById('w-chan').innerHTML = chans;
             document.getElementById('l-chan').innerHTML = chans;
 
-            document.getElementById('drop-admin').innerHTML = data.all_roles.map(r => `
-                <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked">
-                    <input type="checkbox" value="${r}" ${CONFIG.admin_roles.includes(r)?'checked':''}> <span>${r}</span>
-                </div>`).join('');
+            const makeRoles = (id, saved) => {
+                document.getElementById(id).innerHTML = data.all_roles.map(r => `
+                    <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
+                        <input type="checkbox" value="${r}" ${saved.includes(r)?'checked':''}> <span>${r}</span>
+                    </div>`).join('');
+            };
+            makeRoles('drop-admin', CONFIG.admin_roles || []);
+            makeRoles('drop-trigger', CONFIG.welcome.trigger_roles || []);
 
-            // Remplissage auto
-            if(CONFIG.welcome) {
-                document.getElementById('w-title').value = CONFIG.welcome.title || "";
-                document.getElementById('w-desc').value = CONFIG.welcome.desc || "";
-                document.getElementById('w-chan').value = CONFIG.welcome.channel || "";
-                if(CONFIG.welcome.banner) setImg(CONFIG.welcome.banner);
-            }
-            if(CONFIG.leave) {
-                document.getElementById('l-title').value = CONFIG.leave.title || "";
-                document.getElementById('l-desc').value = CONFIG.leave.desc || "";
-                document.getElementById('l-chan').value = CONFIG.leave.channel || "";
-                if(CONFIG.leave.banner) setImg(CONFIG.leave.banner);
-            }
+            const fill = (p, obj) => {
+                if(!obj) return;
+                document.getElementById(`${p}-title`).value = obj.title || "";
+                document.getElementById(`${p}-desc`).value = obj.desc || "";
+                document.getElementById(`${p}-chan`).value = obj.channel || "";
+                if(obj.banner) setImg(obj.banner, `${p}-banner`);
+                if(obj.thumb) setImg(obj.thumb, `${p}-thumb`);
+            };
+            fill('w', CONFIG.welcome); fill('l', CONFIG.leave);
             sync('welcome'); sync('leave');
         }
         window.onload = init;
