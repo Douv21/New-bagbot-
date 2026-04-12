@@ -5,6 +5,11 @@ import threading
 import json
 import os
 import asyncio
+from dotenv import load_dotenv
+
+# --- CHARGEMENT DU .ENV ---
+load_dotenv()
+TOKEN = os.getenv("DISCORD_TOKEN")
 
 # --- CONFIGURATION ET DOSSIERS ---
 app = Flask(__name__)
@@ -33,6 +38,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 @bot.event
 async def on_ready():
     print(f"✅ BagBot est en ligne : {bot.user.name}")
+    print(f"Connecté à {len(bot.guilds)} serveur(s)")
 
 # --- ROUTES API POUR LE PANEL ---
 
@@ -40,7 +46,7 @@ async def on_ready():
 def get_server_info():
     config = load_config()
     
-    # Vérification si le bot est prêt et a accès à un serveur
+    # On vérifie si le bot est totalement opérationnel
     if not bot.is_ready() or not bot.guilds:
         return jsonify({
             "status": "loading", 
@@ -50,11 +56,19 @@ def get_server_info():
         })
     
     try:
+        # On cible le premier serveur où se trouve le bot
         guild = bot.guilds[0]
-        # Récupération des salons textuels uniquement
-        channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
-        # Récupération des rôles (on ignore @everyone)
-        roles = [r.name for r in guild.roles if r.name != "@everyone"]
+        
+        # Récupération propre des salons textuels
+        channels = []
+        for c in guild.text_channels:
+            channels.append({"id": str(c.id), "name": c.name})
+            
+        # Récupération propre des rôles
+        roles = []
+        for r in guild.roles:
+            if r.name != "@everyone":
+                roles.append(r.name)
         
         return jsonify({
             "status": "success",
@@ -63,7 +77,7 @@ def get_server_info():
             "config": config
         })
     except Exception as e:
-        print(f"Erreur get_server_info: {e}")
+        print(f"Erreur API get_server_info: {e}")
         return jsonify({"status": "error", "message": str(e)})
 
 @app.route('/api/save_config', methods=['POST'])
@@ -122,7 +136,6 @@ def test_welcome():
 
         guild = bot.guilds[0]
         
-        # Logique de remplacement des variables
         def replace_vars(text):
             if not text: return ""
             return text.replace("{user}", bot.user.name).replace("{server}", guild.name).replace("{count}", str(guild.member_count))
@@ -132,8 +145,6 @@ def test_welcome():
         footer_text = replace_vars(config.get('footer', 'BagBot'))
 
         embed = discord.Embed(title=title, description=desc, color=0xed4245)
-        
-        # URLs pour les images (gestion local vs http)
         base_url = f"http://{request.host}"
         
         if config.get('thumb'):
@@ -153,10 +164,7 @@ def test_welcome():
         bot.loop.create_task(channel.send(embed=embed))
         return jsonify({"status": "success"})
     except Exception as e:
-        print(f"Erreur test_welcome: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
-
-# --- SERVEUR DE FICHIERS STATIQUES ---
 
 @app.route('/')
 def index():
@@ -166,21 +174,19 @@ def index():
 def serve_public(path):
     return send_from_directory('public', path)
 
-# --- LANCEMENT MULTI-THREAD ---
-
 def run_flask():
-    # On désactive le reloader pour éviter les conflits de threads avec Discord
     app.run(host='0.0.0.0', port=49501, debug=False, use_reloader=False)
 
 if __name__ == '__main__':
-    # Lancement de Flask dans un thread séparé
     t = threading.Thread(target=run_flask)
     t.daemon = True
     t.start()
     
-    # Lancement du Bot Discord
     try:
-        bot.run("TON_TOKEN_ICI")
+        if TOKEN:
+            bot.run(TOKEN)
+        else:
+            print("❌ ERREUR : Aucun token trouvé dans le fichier .env")
     except Exception as e:
-        print(f"❌ Impossible de lancer le bot : {e}")
+        print(f"❌ Erreur critique : {e}")
         
