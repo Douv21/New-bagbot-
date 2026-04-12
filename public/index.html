@@ -3,58 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BagBot Designer</title>
+    <title>BagBot Designer Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --accent: #ed4245; --bg: #000000; --sidebar-w: 240px; --border: #2b2d31; }
+        :root { --accent: #ed4245; --bg: #0b0b0b; --card: #18191c; --border: #2b2d31; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); color: white; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        body { background: var(--bg); color: white; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* Sidebar fixe */
-        #sidebar { width: var(--sidebar-w); background: #080808; border-right: 1px solid var(--border); flex-shrink: 0; }
-        .sidebar-header { padding: 25px 20px; font-weight: 900; color: var(--accent); font-size: 22px; }
-        .nav-item { padding: 15px 20px; color: white; background: rgba(237,66,69,0.1); border-left: 4px solid var(--accent); display: flex; align-items: center; gap: 10px; }
+        /* SIDEBAR */
+        #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); flex-shrink: 0; display: flex; flex-direction: column; z-index: 100; transition: 0.3s; }
+        .sidebar-header { padding: 30px 20px; font-size: 24px; font-weight: 900; color: var(--accent); letter-spacing: 1px; }
+        .nav-item { padding: 15px 20px; display: flex; align-items: center; gap: 12px; color: #949ba4; cursor: pointer; border-left: 4px solid transparent; }
+        .nav-item.active { background: rgba(237, 66, 69, 0.1); color: white; border-left-color: var(--accent); }
 
-        /* Contenu principal */
-        .main { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        /* MAIN CONTENT */
+        .main { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg); }
+        .top-bar { height: 60px; padding: 0 20px; display: flex; align-items: center; border-bottom: 1px solid var(--border); background: #050505; gap: 15px; }
+        .content { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+
+        /* EMBED CARD - DESIGN FIXE */
+        .embed-preview { width: 100%; max-width: 500px; background: var(--card); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px; position: relative; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         
-        /* Embed fixe */
-        .embed-card { width: 100%; max-width: 480px; background: #1e1f22; border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; position: relative; margin-top: 20px; }
-        .thumb-zone { position: absolute; top: 16px; right: 16px; width: 80px; height: 80px; border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .embed-header { display: flex; justify-content: space-between; gap: 15px; }
+        .embed-text { flex: 1; }
+        .title-input { background: transparent; border: none; color: white; font-size: 18px; font-weight: bold; width: 100%; outline: none; margin-bottom: 8px; }
+        .desc-input { background: transparent; border: none; color: #dbdee1; font-size: 14px; width: 100%; outline: none; resize: none; min-height: 80px; line-height: 1.4; }
         
-        input, textarea, select { width: 100%; background: transparent; border: none; color: white; outline: none; margin-bottom: 10px; }
-        .title-in { font-size: 18px; font-weight: bold; width: calc(100% - 90px); }
+        /* Thumbnail fixe à droite */
+        .thumb-preview { width: 80px; height: 80px; background: rgba(0,0,0,0.3); border: 2px dashed #444; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
+        .thumb-preview img { width: 100%; height: 100%; object-fit: cover; }
 
-        .btn-send { width: 100%; max-width: 480px; background: var(--accent); color: white; padding: 15px; border: none; border-radius: 4px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+        /* CONTROLS */
+        .form-group { width: 100%; max-width: 500px; margin-bottom: 20px; }
+        .label { font-size: 11px; font-weight: 800; color: #949ba4; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .select-custom { width: 100%; background: #111214; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 4px; outline: none; appearance: none; }
+
+        .btn-deploy { width: 100%; max-width: 500px; background: var(--accent); color: white; padding: 16px; border: none; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn-deploy:hover { background: #c03537; }
+
+        @media (max-width: 768px) { #sidebar { position: absolute; left: -260px; height: 100%; } #sidebar.open { left: 0; } }
     </style>
 </head>
 <body>
+
     <div id="sidebar">
         <div class="sidebar-header">BAGBOT</div>
-        <div class="nav-item"><i class="fas fa-envelope"></i> Embeds/Message</div>
-    </div>
-    <div class="main">
-        <div class="embed-card">
-            <div class="thumb-zone"><i class="fas fa-plus"></i></div>
-            <input type="text" class="title-in" value="Titre de l'Embed">
-            <textarea rows="4" placeholder="Description..."></textarea>
-        </div>
-        <label style="align-self: flex-start; max-width: 480px; margin: 20px auto 5px; font-size: 12px; color: #949ba4;">SALON</label>
-        <select id="chan-list" style="width: 100%; max-width: 480px; background: #111214; padding: 12px; border: 1px solid var(--border); border-radius: 4px;"></select>
-        <button class="btn-send">DÉPLOYER</button>
+        <div class="nav-item active"><i class="fas fa-magic"></i> Designer</div>
+        <div class="nav-item"><i class="fas fa-file-alt"></i> Mes Logs</div>
+        <div class="nav-item"><i class="fas fa-cog"></i> Paramètres</div>
     </div>
 
+    <div class="main">
+        <div class="top-bar">
+            <i class="fas fa-bars" id="menu-toggle" style="cursor:pointer; color: var(--accent);"></i>
+            <span style="font-weight: bold; font-size: 14px; color: #eee;">ÉDITEUR DE MESSAGE</span>
+        </div>
+
+        <div class="content">
+            <div class="embed-preview">
+                <div class="embed-header">
+                    <div class="embed-text">
+                        <input type="text" class="title-input" placeholder="Titre de l'Embed..." value="Titre de l'Embed">
+                        <textarea class="desc-input" placeholder="Entrez le contenu de votre message..."></textarea>
+                    </div>
+                    <div class="thumb-preview" onclick="document.getElementById('file-thumb').click()">
+                        <i class="fas fa-plus" id="plus-icon"></i>
+                        <img id="prev-img" style="display:none">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="label">Salon de destination</label>
+                <select id="chan-list" class="select-custom">
+                    <option>Chargement des salons...</option>
+                </select>
+            </div>
+
+            <button class="btn-deploy">
+                <i class="fas fa-paper-plane" style="margin-right: 8px;"></i> DÉPLOYER LE MESSAGE
+            </button>
+        </div>
+    </div>
+
+    <input type="file" id="file-thumb" style="display:none" onchange="previewImage(this)">
+
     <script>
-        async function load() {
+        // Menu Mobile
+        document.getElementById('menu-toggle').onclick = () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        };
+
+        // Chargement des données du Bot
+        async function fetchBotData() {
             try {
                 const res = await fetch('/api/get_server_info');
                 const data = await res.json();
-                document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                if (data.channels) {
+                    document.getElementById('chan-list').innerHTML = data.channels.map(c => 
+                        `<option value="${c.id}"># ${c.name}</option>`
+                    ).join('');
+                }
             } catch(e) {
-                document.getElementById('chan-list').innerHTML = "<option>Bot hors ligne</option>";
+                document.getElementById('chan-list').innerHTML = "<option>Erreur : Bot Hors Ligne</option>";
             }
         }
-        window.onload = load;
+
+        // Preview Image
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('prev-img').src = e.target.result;
+                    document.getElementById('prev-img').style.display = 'block';
+                    document.getElementById('plus-icon').style.display = 'none';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        window.onload = fetchBotData;
     </script>
 </body>
 </html>
