@@ -17,10 +17,8 @@ REDIRECT_URI = os.getenv("REDIRECT_URI")
 app = Flask(__name__, static_folder='public', static_url_path='/')
 app.secret_key = os.urandom(24)
 
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
-# --- GESTION CONFIG ---
 def load_config():
     if not os.path.exists('config.json'):
         return {
@@ -30,7 +28,7 @@ def load_config():
     with open('config.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
-# --- ROUTES API ---
+# --- ROUTES ---
 @app.route('/')
 def index():
     return app.send_static_file('index.html')
@@ -56,33 +54,10 @@ def get_data():
 @app.route('/api/save', methods=['POST'])
 def save():
     if 'user_id' not in session: return jsonify({"error": "Auth"}), 401
-    try:
-        data = request.json
-        with open('config.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
-        return jsonify({"status": "ok"})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/test_welcome', methods=['POST'])
-def test_welcome():
-    if 'user_id' not in session: return jsonify({"error": "Auth"}), 401
-    cfg = load_config().get('welcome', {})
-    channel = bot.get_channel(int(cfg.get('channel', 0)))
-    if not channel: return jsonify({"error": "Salon non trouvé"}), 400
-    
-    u, g, c = session.get('user_name', 'User'), channel.guild.name, str(channel.guild.member_count)
-    def rep(t): return t.replace('{user}', u).replace('{guild}', g).replace('{count}', c) if t else ""
-
-    embed = discord.Embed(title=rep(cfg.get('title')), description=rep(cfg.get('desc')), color=0xed4245)
-    if cfg.get('banner'): embed.set_image(url=cfg.get('banner'))
-    if cfg.get('thumbnail'): embed.set_thumbnail(url=cfg.get('thumbnail'))
-    if cfg.get('footer'): embed.set_footer(text=rep(cfg.get('footer')))
-
-    bot.loop.create_task(channel.send(embed=embed))
+    with open('config.json', 'w', encoding='utf-8') as f:
+        json.dump(request.json, f, indent=4, ensure_ascii=False)
     return jsonify({"status": "ok"})
 
-# --- OAUTH2 ---
 @app.route('/api/login')
 def login():
     return redirect(f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify")
