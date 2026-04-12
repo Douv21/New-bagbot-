@@ -28,8 +28,6 @@ def load_config():
             return json.load(f)
     return {}
 
-# --- ROUTES API ---
-
 @app.route('/')
 def index():
     return send_from_directory('public', 'index.html')
@@ -45,7 +43,7 @@ def get_info():
             "config": load_config()
         })
     except:
-        return jsonify({"error": "Erreur serveur"}), 500
+        return jsonify({"error": "Serveur non prêt"}), 500
 
 @app.route('/api/test_message', methods=['POST'])
 def test_message():
@@ -59,19 +57,30 @@ def test_message():
 
             def rep(text):
                 return text.replace("{user}", bot.user.mention)\
-                           .replace("{user_name}", bot.user.name)\
                            .replace("{server}", channel.guild.name)\
                            .replace("{count}", str(channel.guild.member_count))\
-                           .replace("{channel}", channel.mention)\
-                           .replace("{everyone}", "@everyone")\
-                           .replace("{here}", "@here")
+                           .replace("{channel}", channel.mention)
 
             embed = discord.Embed(title=rep(data.get('title', '')), description=rep(data.get('desc', '')), color=0xed4245)
-            if data.get('thumb'): embed.set_thumbnail(url=data['thumb'])
-            if data.get('banner'): embed.set_image(url=data['banner'])
-            await channel.send(embed=embed)
+            
+            files_to_send = []
+            # Gestion des images (Conversion chemin local -> Fichier Discord)
+            for key in ['thumb', 'banner']:
+                val = data.get(key)
+                if val and val.startswith('/uploads/'):
+                    filename = val.split('/')[-1]
+                    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    if os.path.exists(path):
+                        d_file = discord.File(path, filename=filename)
+                        files_to_send.append(d_file)
+                        if key == 'thumb': embed.set_thumbnail(url=f"attachment://{filename}")
+                        else: embed.set_image(url=f"attachment://{filename}")
+                elif val and val.startswith('http'):
+                    if key == 'thumb': embed.set_thumbnail(url=val)
+                    else: embed.set_image(url=val)
 
-        # Correction de l'erreur Context Manager
+            await channel.send(embed=embed, files=files_to_send)
+
         asyncio.run_coroutine_threadsafe(send_task(), bot.loop)
         return jsonify({"status": "success"})
     except Exception as e:
@@ -86,8 +95,7 @@ def api_save():
 def upload_file():
     file = request.files['file']
     filename = secure_filename(file.filename)
-    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file.save(path)
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     return jsonify({"url": f"/uploads/{filename}"})
 
 @app.route('/api/images', methods=['GET'])
@@ -95,17 +103,6 @@ def list_images():
     files = os.listdir(UPLOAD_FOLDER)
     return jsonify({"images": [f"/uploads/{f}" for f in files]})
 
-@app.route('/api/images/delete', methods=['POST'])
-def delete_image():
-    data = request.json
-    filename = data['url'].split('/')[-1]
-    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    if os.path.exists(path):
-        os.remove(path)
-        return jsonify({"status": "success"})
-    return jsonify({"error": "Non trouvé"}), 404
-
-# --- BOT & RUN ---
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
