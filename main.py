@@ -36,14 +36,15 @@ def index():
 def get_info():
     try:
         guild = bot.get_guild(int(GUILD_ID))
+        if not guild: return jsonify({"error": "Guild non trouvée"}), 404
         channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
         return jsonify({
             "channels": channels, 
             "bot": {"name": bot.user.name, "avatar": str(bot.user.display_avatar.url)}, 
             "config": load_config()
         })
-    except:
-        return jsonify({"error": "Serveur non prêt"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/test_message', methods=['POST'])
 def test_message():
@@ -67,37 +68,32 @@ def test_message():
             
             files_to_send = []
             
-            # Traitement de la miniature (Thumb)
-            thumb_val = data.get('thumb')
-            if thumb_val:
-                if thumb_val.startswith('/uploads/'):
-                    fname = thumb_val.split('/')[-1]
-                    fpath = os.path.join(app.config['UPLOAD_FOLDER'], fname)
-                    if os.path.exists(fpath):
-                        files_to_send.append(discord.File(fpath, filename=fname))
-                        embed.set_thumbnail(url=f"attachment://{fname}")
-                else:
-                    embed.set_thumbnail(url=thumb_val)
+            # --- LOGIQUE ANTI-DOUBLON ---
+            # On joint le fichier mais on dit à l'embed de l'utiliser comme source interne
+            for key in ['thumb', 'banner']:
+                val = data.get(key)
+                if val and val.startswith('/uploads/'):
+                    filename = val.split('/')[-1]
+                    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    if os.path.exists(path):
+                        # On crée le fichier Discord
+                        d_file = discord.File(path, filename=filename)
+                        files_to_send.append(d_file)
+                        # On l'assigne à l'embed via attachment:// (C'est ça qui évite le doublon)
+                        if key == 'thumb':
+                            embed.set_thumbnail(url=f"attachment://{filename}")
+                        else:
+                            embed.set_image(url=f"attachment://{filename}")
+                elif val and val.startswith('http'):
+                    if key == 'thumb': embed.set_thumbnail(url=val)
+                    else: embed.set_image(url=val)
 
-            # Traitement de la bannière (Banner)
-            banner_val = data.get('banner')
-            if banner_val:
-                if banner_val.startswith('/uploads/'):
-                    fname = banner_val.split('/')[-1]
-                    fpath = os.path.join(app.config['UPLOAD_FOLDER'], fname)
-                    if os.path.exists(fpath):
-                        files_to_send.append(discord.File(fpath, filename=fname))
-                        embed.set_image(url=f"attachment://{fname}")
-                else:
-                    embed.set_image(url=banner_val)
-
-            # L'envoi groupé avec files= évite l'affichage séparé si attachment:// est utilisé
+            # Important : Envoyer TOUS les fichiers dans une liste unique
             await channel.send(embed=embed, files=files_to_send)
 
         asyncio.run_coroutine_threadsafe(send_task(), bot.loop)
         return jsonify({"status": "success"})
     except Exception as e:
-        print(f"Erreur: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/save_config', methods=['POST'])
