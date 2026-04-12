@@ -3,141 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot | Dashboard</title>
+    <title>BagBot | Dashboard Elite</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --bg: #050505;
-            --sidebar-width: 260px;
-            --accent: #ed4245;
+            --sidebar-bg: #000000;
             --card-bg: #0f0f0f;
+            --accent: #ed4245;
             --border: #1e1e1e;
+            --discord-bg: #2b2d31;
+            --text-muted: #888;
         }
 
-        /* RESET & BASE */
-        * { box-sizing: border-box; }
-        body { 
-            margin: 0; background: var(--bg); color: white; 
-            font-family: 'Inter', sans-serif; display: flex; height: 100vh; 
-        }
+        body { background-color: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
 
-        /* SIDEBAR FIXE */
-        #sidebar { 
-            width: var(--sidebar-width); background: #000; 
-            border-right: 1px solid var(--border); display: flex; flex-direction: column;
-            flex-shrink: 0; z-index: 1000;
-        }
-        .brand { padding: 30px; font-size: 22px; font-weight: 900; color: var(--accent); text-align: center; border-bottom: 1px solid var(--border); }
-        .nav-item { padding: 18px 25px; display: flex; align-items: center; gap: 12px; color: #888; cursor: pointer; transition: 0.2s; }
-        .nav-item.active { color: var(--accent); background: rgba(237, 66, 69, 0.1); border-right: 3px solid var(--accent); }
+        /* --- SIDEBAR & NAV --- */
+        #sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: 0.3s; z-index: 1000; }
+        .hamburger { display: none; position: fixed; top: 15px; left: 15px; z-index: 1100; background: var(--accent); border: none; color: white; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+        .brand { padding: 30px; font-size: 24px; font-weight: 900; color: var(--accent); text-align: center; border-bottom: 1px solid var(--border); }
+        .nav-item { padding: 18px 30px; display: flex; align-items: center; gap: 15px; color: var(--text-muted); cursor: pointer; font-weight: 600; }
+        .nav-item.active { color: var(--accent); background: rgba(237, 66, 69, 0.1); border-right: 4px solid var(--accent); }
 
-        /* CONTENU PRINCIPAL */
-        main { flex-grow: 1; overflow-y: auto; padding: 40px; }
-        .section { display: none; max-width: 850px; margin: 0 auto; }
+        /* --- CONTENT --- */
+        main { flex-grow: 1; padding: 40px; overflow-y: auto; }
+        .section { display: none; max-width: 900px; margin: 0 auto; animation: fadeIn 0.4s; }
         .section.active { display: block; }
+        .card { background: var(--card-bg); border-radius: 15px; border: 1px solid var(--border); padding: 25px; margin-bottom: 25px; }
 
-        /* DISCORD EMBED MOCKUP (IMAGE 8 FIX) */
-        .discord-mockup { 
-            background: #2b2d31; border-left: 4px solid var(--accent); 
-            border-radius: 4px; padding: 15px; width: 100%; max-width: 520px; margin-bottom: 30px; 
-        }
-        .embed-header { display: flex; justify-content: space-between; gap: 10px; }
-        .embed-title { color: #00a8fc; font-weight: bold; font-size: 16px; margin-bottom: 8px; }
-        .embed-desc { color: #dbdee1; font-size: 14px; white-space: pre-wrap; line-height: 1.4; }
-        .embed-thumb { width: 80px; height: 80px; border-radius: 4px; background: #1e1f22; flex-shrink: 0; cursor: pointer; overflow: hidden; border: 1px dashed #444; }
+        /* --- DISCORD UI --- */
+        .discord-mockup { background: var(--discord-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; max-width: 500px; margin-bottom: 25px; }
+        .embed-main { display: flex; justify-content: space-between; gap: 10px; }
+        .embed-title { color: #00a8fc; font-weight: bold; margin-bottom: 5px; }
+        .embed-desc { font-size: 14px; color: #dbdee1; white-space: pre-wrap; }
+        .embed-thumb { width: 80px; height: 80px; border-radius: 8px; background: #1e1f22; border: 1px dashed #444; cursor: pointer; overflow: hidden; flex-shrink: 0; position: relative; }
         .embed-thumb img { width: 100%; height: 100%; object-fit: cover; }
-        .embed-banner { width: 100%; height: 160px; margin-top: 12px; border-radius: 4px; background: #1e1f22; cursor: pointer; overflow: hidden; border: 1px dashed #444; }
+        .embed-banner { width: 100%; height: 180px; border-radius: 8px; background: #1e1f22; border: 2px dashed #444; margin-top: 15px; cursor: pointer; overflow: hidden; position: relative; }
         .embed-banner img { width: 100%; height: 100%; object-fit: cover; }
-        .embed-footer { margin-top: 10px; font-size: 12px; color: #b9bbbe; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; }
+        .embed-footer { margin-top: 10px; font-size: 12px; color: #b9bbbe; display: flex; align-items: center; gap: 5px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 5px; }
 
-        /* CARDS & INPUTS */
-        .card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 25px; margin-bottom: 20px; }
-        label { display: block; margin: 15px 0 5px; color: #888; font-size: 11px; font-weight: bold; text-transform: uppercase; }
-        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; }
-        
-        .btn { width: 100%; padding: 14px; background: var(--accent); border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        /* --- FORMULAIRE & GRID --- */
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        label { display: block; margin: 15px 0 5px; color: var(--text-muted); font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; box-sizing: border-box; }
+        .variables-hint { background: rgba(237, 66, 69, 0.05); padding: 10px; border-radius: 8px; font-size: 12px; color: #ccc; margin-bottom: 15px; border: 1px solid var(--border); }
+        .var-tag { color: var(--accent); font-weight: bold; margin-right: 10px; }
+
+        .btn { width: 100%; padding: 15px; background: var(--accent); border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; transition: 0.2s; }
         .btn-test { background: #4e5058; }
 
-        /* ROLES LIST FIX (IMAGE 7) */
-        .role-item { 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 12px 15px; border-bottom: 1px solid #1a1a1a; cursor: pointer; 
-        }
-        .role-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; margin: 0; }
+        /* --- ADMIN ROLES LIST (FIXED) --- */
+        #admin-roles-list { background: #000; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
+        .role-item { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: 0.2s; }
+        .role-item:hover { background: #0a0a0a; }
+        .role-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+        .role-name { font-size: 14px; color: #eee; }
 
-        /* MODAL */
-        #gallery-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
-        .modal-content { background: var(--card-bg); width: 90%; max-width: 550px; padding: 25px; border-radius: 15px; border: 1px solid var(--border); }
-        .img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-height: 300px; overflow-y: auto; margin: 15px 0; }
-        .img-grid img { width: 100%; height: 70px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid transparent; }
+        /* --- MODAL GALERIE --- */
+        #gallery-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-content { background: var(--card-bg); width: 90%; max-width: 600px; padding: 25px; border-radius: 20px; border: 1px solid var(--border); }
+        .img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; max-height: 300px; overflow-y: auto; margin: 15px 0; }
+        .img-grid img { width: 100%; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
         .img-grid img:hover { border-color: var(--accent); }
 
-        /* MOBILE OPTIMIZATION */
         @media (max-width: 768px) {
-            body { flex-direction: column; }
-            #sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
-            .brand { padding: 15px; }
-            main { padding: 20px; }
+            #sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); }
+            #sidebar.open { transform: translateX(0); }
+            .hamburger { display: block; }
+            main { padding: 80px 20px 20px; }
+            .grid-inputs { grid-template-columns: 1fr; }
         }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } }
     </style>
 </head>
 <body>
+
+    <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
 
     <nav id="sidebar">
         <div class="brand">BAGBOT</div>
         <div class="nav-item active" onclick="showSection('welcome', this)"><i class="fas fa-home"></i> BIENVENUE</div>
         <div class="nav-item" onclick="showSection('admin', this)"><i class="fas fa-user-shield"></i> ACCÈS PANEL</div>
-        <div class="nav-item" onclick="location.href='/api/login'"><i class="fas fa-sign-out-alt"></i> QUITTER</div>
+        <div class="nav-item" onclick="location.href='/api/login'"><i class="fas fa-sign-out-alt"></i> DÉCONNEXION</div>
     </nav>
 
     <main>
         <div id="welcome" class="section active">
             <div class="discord-mockup">
-                <div class="embed-header">
-                    <div style="flex-grow:1">
-                        <div id="pv-title" class="embed-title">Titre de l'embed</div>
-                        <div id="pv-desc" class="embed-desc">Description de bienvenue...</div>
+                <div class="embed-main">
+                    <div class="embed-text">
+                        <div id="pv-title" class="embed-title">Titre</div>
+                        <div id="pv-desc" class="embed-desc">Description...</div>
                     </div>
                     <div class="embed-thumb" onclick="openGallery('thumb')">
                         <img id="pv-thumb-img" style="display:none">
-                        <div id="thumb-hint" style="text-align:center; padding-top:28px; font-size:9px; color:#555">THUMB</div>
+                        <div id="thumb-hint" style="text-align:center; padding-top:25px; font-size:10px; color:#444">THUMBNAIL</div>
                     </div>
                 </div>
                 <div class="embed-banner" onclick="openGallery('banner')">
                     <img id="pv-banner-img" style="display:none">
-                    <div id="banner-hint" style="text-align:center; padding-top:70px; color:#555">CLIQUEZ POUR AJOUTER UNE BANNIÈRE</div>
+                    <div id="banner-hint" style="text-align:center; padding-top:80px; color:#444">BANNIÈRE</div>
                 </div>
                 <div class="embed-footer">
-                    <span id="pv-footer-txt">Bas de page de l'embed</span>
+                    <i class="fas fa-info-circle"></i> <span id="pv-footer-txt">Bas de page</span>
                 </div>
             </div>
 
             <div class="card">
-                <h3><i class="fas fa-cog"></i> Configuration</h3>
-                <label>Titre</label>
-                <input type="text" id="w-title" placeholder="Bienvenue {user} !" oninput="sync()">
-                
-                <label>Message de description</label>
-                <textarea id="w-desc" rows="4" placeholder="Ton message..." oninput="sync()"></textarea>
-                
-                <label>Texte de bas de page (Footer)</label>
-                <input type="text" id="w-footer" oninput="sync()">
+                <h2><i class="fas fa-pen-fancy"></i> Configuration</h2>
+                <div class="variables-hint">
+                    Variables : <span class="var-tag">{user}</span> <span class="var-tag">{guild}</span> <span class="var-tag">{count}</span>
+                </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top:10px;">
-                    <div><label>Salon</label><select id="w-chan"></select></div>
-                    <div><label>Rôle Trigger</label><select id="w-trigger"></select></div>
+                <label>Titre</label><input type="text" id="w-title" oninput="sync()">
+                <label>Description</label><textarea id="w-desc" rows="4" oninput="sync()"></textarea>
+                <label>Footer</label><input type="text" id="w-footer" oninput="sync()">
+                
+                <div class="grid-inputs">
+                    <div><label>Salon d'envoi</label><select id="w-chan"></select></div>
+                    <div><label>Rôle Déclencheur</label><select id="w-trigger"></select></div>
                 </div>
 
                 <button class="btn" onclick="saveConfig()"><i class="fas fa-save"></i> ENREGISTRER</button>
-                <button class="btn btn-test" onclick="testWelcome()"><i class="fas fa-paper-plane"></i> ENVOYER UN TEST DISCORD</button>
+                <button class="btn btn-test" onclick="testWelcome()"><i class="fas fa-paper-plane"></i> ENVOYER UN TEST</button>
             </div>
         </div>
 
         <div id="admin" class="section">
             <div class="card">
-                <h3><i class="fas fa-lock"></i> Rôles autorisés</h3>
+                <h2><i class="fas fa-lock"></i> Rôles autorisés</h2>
                 <div id="admin-roles-list"></div>
-                <button class="btn" onclick="saveConfig()">VALIDER LES DROITS</button>
+                <button class="btn" onclick="saveConfig()"><i class="fas fa-check"></i> VALIDER LES DROITS</button>
             </div>
         </div>
     </main>
@@ -145,31 +142,31 @@
     <div id="gallery-modal">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center">
-                <h3 style="margin:0">Galerie d'images</h3>
+                <h3>Images & Galerie</h3>
                 <i class="fas fa-times" onclick="closeGallery()" style="cursor:pointer"></i>
             </div>
             
-            <label>Lien URL direct</label>
-            <div style="display:flex; gap:8px;">
-                <input type="text" id="ext-url" placeholder="https://image.com/img.png">
-                <button class="btn" style="width:auto; margin:0; padding:10px 20px" onclick="useUrl()">OK</button>
+            <label>Lien par URL</label>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="external-url" placeholder="https://...">
+                <button class="btn" style="width:auto; margin:0; padding:10px" onclick="useExternalLink()">OK</button>
             </div>
 
-            <div style="margin: 20px 0; border-top: 1px solid var(--border);"></div>
-            
+            <div style="margin: 15px 0; border-top: 1px solid var(--border);"></div>
+
             <div style="display:flex; justify-content:space-between; align-items:center">
-                <label style="margin:0">Mes Téléversements</label>
-                <button class="btn" style="background:#5865f2; width:auto; margin:0; padding:8px 15px; font-size:12px" onclick="document.getElementById('file-up').click()">+ UPLOAD</button>
+                <label style="margin:0">Galerie</label>
+                <button class="btn" style="background:#5865f2; width:auto; font-size:11px; margin:0; padding:8px" onclick="document.getElementById('upload-file').click()">+ UPLOAD</button>
+                <input type="file" id="upload-file" style="display:none" onchange="handleUpload()">
             </div>
-            <input type="file" id="file-up" style="display:none" onchange="handleUpload()">
             
             <div id="gallery-grid" class="img-grid"></div>
-            <button class="btn" style="background:#333" onclick="closeGallery()">ANNULER</button>
+            <button class="btn" style="background:#333" onclick="closeGallery()">FERMER</button>
         </div>
     </div>
 
     <script>
-        let serverData = { channels: [], roles: [], config: {}, images: [], user_name: "Membre" };
+        let serverData = { channels: [], roles: [], config: {}, images: [] };
         let activeTarget = '';
 
         async function init() {
@@ -177,21 +174,22 @@
             if(!res.ok) { location.href='/api/login'; return; }
             serverData = await res.json();
 
-            // Remplissage salons
+            // Salons
             document.getElementById('w-chan').innerHTML = serverData.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+
+            // Rôle Déclencheur
+            document.getElementById('w-trigger').innerHTML = '<option value="">Immédiat (Join)</option>' + 
+                                                              serverData.roles.map(r => `<option value="${r}">${r}</option>`).join('');
             
-            // Remplissage rôles trigger
-            document.getElementById('w-trigger').innerHTML = '<option value="">Dès l\'arrivée</option>' + 
-                serverData.roles.map(r => `<option value="${r}">${r}</option>`).join('');
-            
-            // Liste des rôles Admin (Fix Image 7)
-            document.getElementById('admin-roles-list').innerHTML = serverData.roles.map(r => `
-                <div class="role-item" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked">
-                    <span>${r}</span>
-                    <input type="checkbox" value="${r}" class="adm-ck" ${serverData.config.admin_roles?.includes(r)?'checked':''}>
+            // ADMIN ROLES (Correction alignement)
+            const adminList = document.getElementById('admin-roles-list');
+            adminList.innerHTML = serverData.roles.map(r => `
+                <div class="role-item" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
+                    <span class="role-name">${r}</span>
+                    <input type="checkbox" value="${r}" class="adm-ck" ${serverData.config.admin_roles?.includes(r)?'checked':''}> 
                 </div>`).join('');
 
-            // Chargement Config
+            // Config Load
             const w = serverData.config.welcome || {};
             document.getElementById('w-title').value = w.title || "";
             document.getElementById('w-desc').value = w.desc || "";
@@ -206,30 +204,27 @@
             renderGallery();
         }
 
-        // Aperçu dynamique (Variables)
-        function sync() {
-            const user = serverData.user_name || "Utilisateur";
-            const replace = (s) => s.replace(/{user}/g, user).replace(/{guild}/g, "Serveur").replace(/{count}/g, "123");
-            
-            document.getElementById('pv-title').innerText = replace(document.getElementById('w-title').value) || "Titre";
-            document.getElementById('pv-desc').innerText = replace(document.getElementById('w-desc').value) || "Description...";
-            document.getElementById('pv-footer-txt').innerText = replace(document.getElementById('w-footer').value) || "Footer";
-        }
-
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
         function showSection(id, el) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             el.classList.add('active');
+            if(window.innerWidth < 768) toggleSidebar();
         }
 
-        // Gestion images
+        function sync() {
+            document.getElementById('pv-title').innerText = document.getElementById('w-title').value || "Titre";
+            document.getElementById('pv-desc').innerText = document.getElementById('w-desc').value || "Description...";
+            document.getElementById('pv-footer-txt').innerText = document.getElementById('w-footer').value || "Footer";
+        }
+
         function openGallery(t) { activeTarget = t; document.getElementById('gallery-modal').style.display='flex'; }
         function closeGallery() { document.getElementById('gallery-modal').style.display='none'; }
-        function renderGallery() { document.getElementById('gallery-grid').innerHTML = serverData.images.map(img => `<img src="${img}" onclick="selectImg('${img}')">`).join(''); }
-        function selectImg(url) { setImg(activeTarget, url); closeGallery(); }
-        function useUrl() { const u = document.getElementById('ext-url').value; if(u) selectImg(u); }
-        
+        function renderGallery() { document.getElementById('gallery-grid').innerHTML = serverData.images.map(img => `<img src="${img}" onclick="selectImage('${img}')">`).join(''); }
+
+        function useExternalLink() { const url = document.getElementById('external-url').value; if(url) { selectImage(url); document.getElementById('external-url').value=''; } }
+        function selectImage(url) { setImg(activeTarget, url); closeGallery(); }
         function setImg(target, url) {
             const img = document.getElementById('pv-' + target + '-img');
             const hint = document.getElementById(target + '-hint');
@@ -238,7 +233,7 @@
         }
 
         async function handleUpload() {
-            const fd = new FormData(); fd.append('file', document.getElementById('file-up').files[0]);
+            const fd = new FormData(); fd.append('file', document.getElementById('upload-file').files[0]);
             const r = await fetch('/api/upload', {method:'POST', body:fd});
             const d = await r.json();
             serverData.images.push(d.url);
@@ -259,13 +254,13 @@
                 admin_roles: Array.from(document.querySelectorAll('.adm-ck:checked')).map(i => i.value)
             };
             await fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
-            alert("✅ Configuration sauvegardée !");
+            alert("Sauvegardé !");
         }
 
         async function testWelcome() {
-            const r = await fetch('/api/test_welcome', {method:'POST'});
-            if(r.ok) alert("🚀 Test envoyé sur Discord !"); 
-            else alert("❌ Erreur. Vérifie le salon sélectionné.");
+            const res = await fetch('/api/test_welcome', { method: 'POST' });
+            if(res.ok) alert("Test envoyé !");
+            else alert("Erreur d'envoi. Vérifiez le salon et le fichier main.py");
         }
 
         window.onload = init;
