@@ -73,8 +73,7 @@ def callback():
     if res.status_code == 200:
         member_data = res.json()
         u_id = str(member_data['user']['id']).strip()
-        
-        print(f"[LOGIN] {member_data['user']['username']} connecté.")
+        u_name = member_data['user']['username']
         
         is_admin = False
         if u_id == OWNER_ID:
@@ -91,6 +90,7 @@ def callback():
         if is_admin:
             session['admin'] = True
             session['user_id'] = u_id
+            session['user_name'] = u_name # On stocke le nom pour l'aperçu
             return redirect('/')
     
     return "Accès refusé.", 403
@@ -108,7 +108,6 @@ def get_info():
     
     guild = bot.get_guild(int(GUILD_ID))
     if not guild:
-        print("[ERREUR] Guild non trouvée. Vérifiez GUILD_ID.")
         return jsonify({"error": "Guild introuvable", "all_roles": [], "channels": []}), 200
     
     channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
@@ -119,7 +118,10 @@ def get_info():
         "all_roles": sorted(all_roles),
         "bot": {"name": bot.user.name, "avatar": str(bot.user.display_avatar.url)}, 
         "config": load_config(),
-        "is_owner": str(session.get('user_id')) == OWNER_ID
+        "is_owner": str(session.get('user_id')) == OWNER_ID,
+        "user_connected": session.get('user_name', 'Utilisateur'), # Nom pour le JS
+        "server_name": guild.name,
+        "member_count": guild.member_count
     })
 
 @app.route('/api/save_roles', methods=['POST'])
@@ -164,7 +166,7 @@ def test_message():
     async def send_task():
         channel = bot.get_channel(int(data.get('channel')))
         if not channel: return
-        def rep(t): return t.replace("{user}", bot.user.mention).replace("{server}", channel.guild.name).replace("{count}", str(channel.guild.member_count)).replace("{channel}", channel.mention).replace("{everyone}", "@everyone").replace("{here}", "@here")
+        def rep(t): return t.replace("{user}", session.get('user_name', 'Membres')).replace("{server}", channel.guild.name).replace("{count}", str(channel.guild.member_count)).replace("{channel}", channel.mention).replace("{everyone}", "@everyone").replace("{here}", "@here")
         embed = discord.Embed(title=rep(data.get('title', '')), description=rep(data.get('desc', '')), color=0xed4245)
         
         files = []
@@ -196,3 +198,4 @@ def run_flask():
 if __name__ == "__main__":
     threading.Thread(target=run_flask).start()
     bot.run(TOKEN)
+    
