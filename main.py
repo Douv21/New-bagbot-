@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from flask import Flask, send_from_directory, jsonify, request
-from flask_cors import CORS  # Optionnel : aide pour l'accès distant
+from flask_cors import CORS
 import threading, os, json
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
@@ -11,7 +11,7 @@ TOKEN = os.getenv("TOKEN")
 GUILD_ID = os.getenv("GUILD_ID")
 
 app = Flask(__name__, static_folder='public', static_url_path='')
-CORS(app) # Autorise les requêtes de l'extérieur
+CORS(app)
 UPLOAD_FOLDER = 'public/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -36,9 +36,7 @@ def index():
 def get_info():
     try:
         guild = bot.get_guild(int(GUILD_ID))
-        if not guild: return jsonify({"error": "Serveur non trouvé"}), 404
-        
-        # On s'assure de récupérer tous les salons textuels
+        if not guild: return jsonify({"error": "Guild not found"}), 404
         channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
         return jsonify({
             "channels": channels, 
@@ -53,26 +51,41 @@ async def test_message():
     data = request.json
     try:
         channel_id = data.get('channel')
-        channel = bot.get_channel(int(channel_id))
+        if not channel_id: return jsonify({"error": "ID Salon manquant"}), 400
         
-        # Ré-insertion des variables disparues
-        title = data.get('title', '').replace("{user}", bot.user.name)
-        desc = data.get('desc', '')
-        desc = desc.replace("{user}", bot.user.mention)
-        desc = desc.replace("{server}", channel.guild.name)
-        desc = desc.replace("{count}", str(channel.guild.member_count))
+        channel = bot.get_channel(int(channel_id))
+        if not channel: return jsonify({"error": "Salon introuvable"}), 404
 
-        embed = discord.Embed(title=title, description=desc, color=0xed4245)
+        # Remplacement de TOUTES les variables possibles
+        title = data.get('title', '')
+        desc = data.get('desc', '')
+
+        def replace_all(text):
+            return text.replace("{user}", bot.user.mention)\
+                       .replace("{user_name}", bot.user.name)\
+                       .replace("{user_id}", str(bot.user.id))\
+                       .replace("{server}", channel.guild.name)\
+                       .replace("{server_id}", str(channel.guild.id))\
+                       .replace("{count}", str(channel.guild.member_count))\
+                       .replace("{channel}", channel.mention)\
+                       .replace("{everyone}", "@everyone")\
+                       .replace("{here}", "@here")
+
+        embed = discord.Embed(title=replace_all(title), description=replace_all(desc), color=0xed4245)
+        
         if data.get('thumb'): embed.set_thumbnail(url=data['thumb'])
         if data.get('banner'): embed.set_image(url=data['banner'])
             
         await channel.send(content="🧪 **Test BagBot**", embed=embed)
         return jsonify({"status": "success"})
     except Exception as e:
-        print(f"Erreur Test: {e}")
+        print(f"❌ ERREUR TEST DISCORD : {e}")
         return jsonify({"error": str(e)}), 500
 
-# ... (Gardez les routes api/upload et api/images/delete identiques au précédent)
+@app.route('/api/save_config', methods=['POST'])
+def api_save():
+    save_config(request.json)
+    return jsonify({"status": "success"})
 
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
@@ -94,14 +107,13 @@ def delete_image():
     if os.path.exists(path):
         os.remove(path)
         return jsonify({"status": "success"})
-    return jsonify({"error": "404"}), 404
+    return jsonify({"error": "Not found"}), 404
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 def run_flask():
-    # host='0.0.0.0' est CRUCIAL pour l'accès à distance
-    app.run(host='0.0.0.0', port=49501, debug=False, use_reloader=False)
+    app.run(host='0.0.0.0', port=49501, debug=False)
 
 if __name__ == "__main__":
     threading.Thread(target=run_flask).start()
