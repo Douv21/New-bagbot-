@@ -2,428 +2,165 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot | Dashboard Ultimate</title>
+    <title>BagBot Panel | Full Embed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg: #050505;
-            --sidebar-bg: #000000;
-            --card-bg: #0f0f0f;
-            --accent: #ed4245;
-            --border: #1e1e1e;
-            --text-muted: #888;
-            --discord-embed: #2b2d31;
-        }
+        :root { --bg: #050505; --card: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord: #2b2d31; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; }
+        
+        #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .nav-item { padding: 20px 30px; cursor: pointer; color: #888; font-weight: bold; transition: 0.2s; border-right: 4px solid transparent; }
+        .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right-color: var(--accent); }
 
-        body {
-            background-color: var(--bg);
-            color: white;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* --- SIDEBAR --- */
-        #sidebar {
-            width: 280px;
-            background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-
-        .brand {
-            padding: 30px;
-            font-size: 24px;
-            font-weight: 900;
-            color: var(--accent);
-            letter-spacing: 2px;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .nav-links {
-            padding: 20px 0;
-            flex-grow: 1;
-        }
-
-        .nav-item {
-            padding: 15px 30px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: var(--text-muted);
-            text-decoration: none;
-            cursor: pointer;
-            transition: 0.3s;
-            font-weight: 600;
-        }
-
-        .nav-item i { width: 20px; text-align: center; }
-
-        .nav-item:hover { color: white; background: rgba(255,255,255,0.05); }
-
-        .nav-item.active {
-            color: var(--accent);
-            background: rgba(237, 66, 69, 0.1);
-            border-right: 4px solid var(--accent);
-        }
-
-        /* --- MAIN CONTENT --- */
-        main {
-            flex-grow: 1;
-            padding: 40px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .section { display: none; width: 100%; max-width: 900px; animation: fadeIn 0.3s ease; }
+        main { flex-grow: 1; padding: 40px; overflow-y: auto; }
+        .section { display: none; max-width: 900px; margin: 0 auto; }
         .section.active { display: block; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card { background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-top: 10px; box-sizing: border-box; }
 
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-        }
-
-        h2 { margin-top: 0; font-size: 20px; display: flex; align-items: center; gap: 10px; }
-
-        /* --- DISCORD PREVIEW --- */
-        .discord-mockup {
-            background: #313338;
-            border-radius: 8px;
-            padding: 15px;
-            max-width: 550px;
-            margin-bottom: 30px;
-            border-left: 4px solid var(--accent);
-        }
-
-        .bot-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        .bot-avatar { width: 40px; height: 40px; background: var(--accent); border-radius: 50%; }
-        .bot-name { font-weight: bold; color: white; }
-        .bot-tag { background: #5865f2; font-size: 10px; padding: 2px 4px; border-radius: 3px; }
-
-        .embed-title { font-weight: bold; font-size: 1.1em; margin-bottom: 8px; color: #00a8fc; }
-        .embed-desc { color: #dbdee1; font-size: 14px; line-height: 1.4; white-space: pre-wrap; }
-        
-        .embed-banner {
-            width: 100%;
-            height: 200px;
-            background: #2b2d31;
-            border-radius: 8px;
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            overflow: hidden;
-            border: 2px dashed #444;
-        }
+        /* Discord Embed Mockup */
+        .discord-ui { background: var(--discord); border-left: 4px solid var(--accent); padding: 15px; border-radius: 4px; max-width: 520px; position: relative; }
+        .embed-top { display: flex; justify-content: space-between; }
+        .embed-thumb { width: 80px; height: 80px; background: #202225; border-radius: 8px; cursor: pointer; overflow: hidden; border: 1px dashed #444; flex-shrink: 0; }
+        .embed-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .embed-banner { width: 100%; height: 180px; background: #202225; border-radius: 8px; margin-top: 15px; cursor: pointer; overflow: hidden; border: 1px dashed #444; }
         .embed-banner img { width: 100%; height: 100%; object-fit: cover; }
-        .embed-banner:hover { border-color: var(--accent); }
+        .embed-footer { font-size: 12px; color: #b9bbbe; margin-top: 10px; display: flex; align-items: center; gap: 5px; }
 
-        /* --- FORMS --- */
-        label { display: block; margin: 15px 0 5px; color: var(--text-muted); font-size: 13px; font-weight: bold; text-transform: uppercase; }
-        input, textarea, select {
-            width: 100%;
-            background: #000;
-            border: 1px solid var(--border);
-            color: white;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-        textarea { resize: vertical; }
-        input:focus { border-color: var(--accent); outline: none; }
-
-        .btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
-            width: 100%;
-        }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-test { background: #4e5058; }
-
-        /* --- ROLE LIST --- */
-        .role-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-            background: #000;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            max-height: 250px;
-            overflow-y: auto;
-        }
-        .role-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px;
-            background: var(--card-bg);
-            border-radius: 4px;
-            cursor: pointer;
-            border: 1px solid transparent;
-        }
-        .role-item:hover { border-color: #333; }
-        .role-item input { width: auto; margin: 0; }
-
-        /* --- MODAL --- */
-        #gallery-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-content {
-            background: var(--card-bg);
-            width: 90%;
-            max-width: 800px;
-            border-radius: 15px;
-            padding: 30px;
-            border: 1px solid var(--border);
-        }
-        .img-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .img-grid img {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: 0.2s;
-        }
-        .img-grid img:hover { transform: scale(1.05); border-color: var(--accent); }
-
-        #login-overlay {
-            position: fixed;
-            inset: 0;
-            background: black;
-            z-index: 10000;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
+        .btn { width: 100%; padding: 15px; background: var(--accent); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        
+        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-box { background: var(--card); padding: 25px; border-radius: 15px; width: 500px; border: 1px solid var(--border); }
+        .img-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; max-height: 300px; overflow-y: auto; padding: 10px; }
+        .img-grid img { width: 100%; height: 80px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 2px solid transparent; }
+        .img-grid img:hover { border-color: var(--accent); }
     </style>
 </head>
 <body>
-
-    <div id="login-overlay">
-        <div class="brand" style="border:none">BAGBOT</div>
-        <button class="btn" style="width:auto" onclick="location.href='/api/login'">
-            <i class="fab fa-discord"></i> Se connecter avec Discord
-        </button>
-    </div>
-
     <nav id="sidebar">
-        <div class="brand">BAGBOT</div>
-        <div class="nav-links">
-            <div class="nav-item active" onclick="showTab('welcome', this)">
-                <i class="fas fa-home"></i> Bienvenue
-            </div>
-            <div class="nav-item" onclick="showTab('autoroles', this)">
-                <i class="fas fa-user-plus"></i> Auto-Rôles
-            </div>
-            <div class="nav-item" onclick="showTab('gallery', this)">
-                <i class="fas fa-images"></i> Galerie
-            </div>
-            <div class="nav-item" onclick="showTab('admin', this)">
-                <i class="fas fa-user-shield"></i> Administration
-            </div>
-        </div>
+        <div style="padding: 30px; font-weight: 900; color: var(--accent); font-size: 24px;">BAGBOT</div>
+        <div class="nav-item active" onclick="show('welcome', this)"><i class="fas fa-home"></i> BIENVENUE</div>
+        <div class="nav-item" onclick="show('admin', this)"><i class="fas fa-lock"></i> ADMIN</div>
     </nav>
 
     <main>
         <div id="welcome" class="section active">
-            <div class="discord-mockup">
-                <div class="bot-header">
-                    <div class="bot-avatar"></div>
-                    <span class="bot-name">BagBot</span>
-                    <span class="bot-tag">BOT</span>
+            <div class="discord-ui">
+                <div class="embed-top">
+                    <div style="flex-grow: 1;">
+                        <div id="pv-title" style="font-weight:bold; font-size: 1.1em; color:#00a8fc">Titre</div>
+                        <div id="pv-desc" style="color:#dbdee1; margin-top:8px; font-size:14px; white-space:pre-wrap;">Description...</div>
+                    </div>
+                    <div class="embed-thumb" onclick="openGal('thumb')">
+                        <img id="pv-thumb" style="display:none">
+                        <div id="thumb-hint" style="font-size:10px; text-align:center; padding-top:25px; color:#444;">THUMB</div>
+                    </div>
                 </div>
-                <div id="p-title" class="embed-title">Titre du message</div>
-                <div id="p-desc" class="embed-desc">Description du message de bienvenue...</div>
-                <div class="embed-banner" onclick="openGallery()">
-                    <img id="p-img" style="display:none">
-                    <span id="p-hint"><i class="fas fa-cloud-upload-alt"></i> Cliquer pour choisir une bannière</span>
+                <div class="embed-banner" onclick="openGal('banner')">
+                    <img id="pv-banner" style="display:none">
+                    <div id="banner-hint" style="text-align:center; padding-top:80px; color:#444;">CLIQUE POUR BANNIÈRE</div>
+                </div>
+                <div class="embed-footer">
+                    <img id="pv-foot-img" src="" style="width:18px; height:18px; border-radius:50%; display:none">
+                    <span id="pv-foot-txt">Bas de page</span>
                 </div>
             </div>
 
             <div class="card">
-                <h2><i class="fas fa-edit"></i> Configuration de l'Embed</h2>
-                <label>Titre</label>
-                <input type="text" id="w-title" placeholder="Bienvenue {user} !" oninput="sync()">
-                
-                <label>Description</label>
-                <textarea id="w-desc" rows="4" placeholder="Heureux de te voir parmi nous..." oninput="sync()"></textarea>
-                
-                <label>Salon d'envoi</label>
-                <select id="w-chan"></select>
-
-                <button class="btn" onclick="save()">
-                    <i class="fas fa-save"></i> Enregistrer la configuration
-                </button>
-                <button class="btn btn-test" onclick="testWelcome()">
-                    <i class="fas fa-paper-plane"></i> Envoyer un test sur Discord
-                </button>
-            </div>
-        </div>
-
-        <div id="autoroles" class="section">
-            <div class="card">
-                <h2><i class="fas fa-user-plus"></i> Auto-Rôles</h2>
-                <p style="color:var(--text-muted)">Rôles attribués immédiatement quand un membre rejoint.</p>
-                <div id="auto-roles-list" class="role-grid"></div>
-                <button class="btn" onclick="save()">Mettre à jour les rôles</button>
-            </div>
-        </div>
-
-        <div id="gallery" class="section">
-            <div class="card">
-                <h2><i class="fas fa-images"></i> Gestion des images</h2>
-                <input type="file" id="upload-input" style="display:none" onchange="handleUpload()">
-                <button class="btn" style="background:#5865f2" onclick="document.getElementById('upload-input').click()">
-                    <i class="fas fa-plus"></i> Ajouter une image à la galerie
-                </button>
-                <div id="full-gallery" class="img-grid"></div>
+                <label>Titre</label><input type="text" id="w-title" oninput="sync()">
+                <label>Description</label><textarea id="w-desc" rows="3" oninput="sync()"></textarea>
+                <label>Footer (Bas de page)</label><input type="text" id="w-foot" oninput="sync()">
+                <label>Salon d'envoi</label><select id="w-chan"></select>
+                <label>Rôle Déclencheur (Facultatif)</label><select id="w-trigger"><option value="">Immédiat (Join)</option></select>
+                <button class="btn" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
             </div>
         </div>
 
         <div id="admin" class="section">
             <div class="card">
-                <h2><i class="fas fa-lock"></i> Accès au Dashboard</h2>
-                <p style="color:var(--text-muted)">Sélectionnez les rôles autorisés à utiliser ce panel.</p>
-                <div id="admin-roles-list" class="role-grid"></div>
-                <button class="btn" onclick="save()">Enregistrer les permissions</button>
+                <h3>Permissions Admin</h3>
+                <div id="admin-roles" style="background:#000; border-radius:8px; padding:10px; max-height:300px; overflow-y:auto;"></div>
+                <button class="btn" onclick="save()">METTRE À JOUR</button>
             </div>
         </div>
     </main>
 
-    <div id="gallery-modal">
-        <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; align-items:center">
-                <h2>Choisir une bannière</h2>
-                <i class="fas fa-times" onclick="closeGallery()" style="cursor:pointer; font-size:20px"></i>
+    <div id="modal">
+        <div class="modal-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3>Ma Galerie</h3>
+                <input type="file" id="file-input" style="display:none" onchange="upload()">
+                <button class="btn" style="width:auto; font-size:12px;" onclick="document.getElementById('file-input').click()">+ UPLOAD</button>
             </div>
             <div id="modal-grid" class="img-grid"></div>
+            <button class="btn" style="background:#444" onclick="closeGal()">ANNULER</button>
         </div>
     </div>
 
     <script>
-        let serverData = {};
+        let server = {};
+        let targetImg = ''; // 'thumb' ou 'banner'
 
         async function init() {
             const res = await fetch('/api/get_data');
-            if(res.status === 401) {
-                document.getElementById('login-overlay').style.display = 'flex';
-                return;
-            }
-            serverData = await res.json();
+            if(!res.ok) return location.href='/api/login';
+            server = await res.json();
             
-            // Salons
-            document.getElementById('w-chan').innerHTML = serverData.channels.map(c => 
-                `<option value="${c.id}"># ${c.name}</option>`
-            ).join('');
+            document.getElementById('w-chan').innerHTML = server.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            document.getElementById('w-trigger').innerHTML += server.roles.map(r => `<option value="${r}">${r}</option>`).join('');
+            
+            document.getElementById('admin-roles').innerHTML = server.roles.map(r => `
+                <div style="display:flex; gap:10px; padding:8px; border-bottom:1px solid #1a1a1a;">
+                    <input type="checkbox" value="${r}" class="adm-ck" ${server.config.admin_roles?.includes(r)?'checked':''}> ${r}
+                </div>`).join('');
 
-            // Rôles
-            const setupRoles = (containerId, configKey) => {
-                document.getElementById(containerId).innerHTML = serverData.roles.map(r => `
-                    <div class="role-item" onclick="toggleRole(this)">
-                        <input type="checkbox" value="${r}" class="${configKey}-ck" 
-                        ${serverData.config[configKey]?.includes(r) ? 'checked' : ''}>
-                        <span>${r}</span>
-                    </div>
-                `).join('');
-            };
-            setupRoles('auto-roles-list', 'auto_roles');
-            setupRoles('admin-roles-list', 'admin_roles');
-
-            // Données Welcome
-            const w = serverData.config.welcome || {};
+            const w = server.config.welcome || {};
             document.getElementById('w-title').value = w.title || "";
             document.getElementById('w-desc').value = w.desc || "";
+            document.getElementById('w-foot').value = w.footer || "";
             document.getElementById('w-chan').value = w.channel || "";
-            if(w.banner) setBanner(w.banner);
-
+            document.getElementById('w-trigger').value = w.trigger_role || "";
+            
+            if(w.banner) setImg('banner', w.banner);
+            if(w.thumbnail) setImg('thumb', w.thumbnail);
+            
             sync();
-            renderGalleries();
-        }
-
-        function showTab(tabId, el) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            el.classList.add('active');
+            updateGrid();
         }
 
         function sync() {
-            document.getElementById('p-title').innerText = document.getElementById('w-title').value || "Titre du message";
-            document.getElementById('p-desc').innerText = document.getElementById('w-desc').value || "Description du message...";
+            document.getElementById('pv-title').innerText = document.getElementById('w-title').value || "Titre";
+            document.getElementById('pv-desc').innerText = document.getElementById('w-desc').value || "Description...";
+            document.getElementById('pv-foot-txt').innerText = document.getElementById('w-foot').value || "Bas de page";
         }
 
-        function toggleRole(el) {
-            const ck = el.querySelector('input');
-            ck.checked = !ck.checked;
+        function updateGrid() {
+            document.getElementById('modal-grid').innerHTML = server.images.map(i => `<img src="${i}" onclick="selectImg('${i}')">`).join('');
         }
 
-        function renderGalleries() {
-            const html = serverData.images.map(img => `<img src="${img}" onclick="setBanner('${img}')">`).join('');
-            document.getElementById('modal-grid').innerHTML = html;
-            document.getElementById('full-gallery').innerHTML = html;
+        function openGal(t) { targetImg = t; document.getElementById('modal').style.display='flex'; }
+        function closeGal() { document.getElementById('modal').style.display='none'; }
+
+        function selectImg(path) {
+            setImg(targetImg, path);
+            closeGal();
         }
 
-        function setBanner(url) {
-            const img = document.getElementById('p-img');
-            img.src = url;
-            img.style.display = 'block';
-            img.dataset.path = url;
-            document.getElementById('p-hint').style.display = 'none';
-            closeGallery();
+        function setImg(type, path) {
+            const el = document.getElementById('pv-' + type);
+            const hint = document.getElementById(type + '-hint');
+            el.src = path; el.style.display = 'block';
+            el.dataset.path = path;
+            if(hint) hint.style.display = 'none';
         }
 
-        function openGallery() { document.getElementById('gallery-modal').style.display = 'flex'; }
-        function closeGallery() { document.getElementById('gallery-modal').style.display = 'none'; }
-
-        async function handleUpload() {
-            const file = document.getElementById('upload-input').files[0];
-            const fd = new FormData();
-            fd.append('file', file);
-            await fetch('/api/upload', { method: 'POST', body: fd });
-            init();
+        async function upload() {
+            const fd = new FormData(); fd.append('file', document.getElementById('file-input').files[0]);
+            const r = await fetch('/api/upload', {method:'POST', body:fd});
+            const d = await r.json();
+            server.images.push(d.url);
+            updateGrid();
         }
 
         async function save() {
@@ -431,24 +168,23 @@
                 welcome: {
                     title: document.getElementById('w-title').value,
                     desc: document.getElementById('w-desc').value,
+                    footer: document.getElementById('w-foot').value,
                     channel: document.getElementById('w-chan').value,
-                    banner: document.getElementById('p-img').dataset.path || ""
+                    trigger_role: document.getElementById('w-trigger').value,
+                    banner: document.getElementById('pv-banner').dataset.path || "",
+                    thumbnail: document.getElementById('pv-thumb').dataset.path || ""
                 },
-                auto_roles: Array.from(document.querySelectorAll('.auto_roles-ck:checked')).map(i => i.value),
-                admin_roles: Array.from(document.querySelectorAll('.admin_roles-ck:checked')).map(i => i.value)
+                admin_roles: Array.from(document.querySelectorAll('.adm-ck:checked')).map(i => i.value)
             };
-            await fetch('/api/save', { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify(config) 
-            });
-            alert("Configuration sauvegardée avec succès !");
+            await fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
+            alert("Sauvegardé !");
         }
 
-        async function testWelcome() {
-            const res = await fetch('/api/test_welcome', { method: 'POST' });
-            if(res.ok) alert("Test envoyé ! Vérifiez Discord.");
-            else alert("Erreur lors de l'envoi.");
+        function show(id, el) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
         }
 
         window.onload = init;
