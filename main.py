@@ -59,32 +59,45 @@ def test_message():
                 return text.replace("{user}", bot.user.mention)\
                            .replace("{server}", channel.guild.name)\
                            .replace("{count}", str(channel.guild.member_count))\
-                           .replace("{channel}", channel.mention)
+                           .replace("{channel}", channel.mention)\
+                           .replace("{everyone}", "@everyone")\
+                           .replace("{here}", "@here")
 
             embed = discord.Embed(title=rep(data.get('title', '')), description=rep(data.get('desc', '')), color=0xed4245)
             
             files_to_send = []
-            for key in ['thumb', 'banner']:
-                val = data.get(key)
-                if val and val.startswith('/uploads/'):
-                    filename = val.split('/')[-1]
-                    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    if os.path.exists(path):
-                        # Correction : On attache le fichier proprement
-                        d_file = discord.File(path, filename=filename)
-                        files_to_send.append(d_file)
-                        if key == 'thumb': embed.set_thumbnail(url=f"attachment://{filename}")
-                        else: embed.set_image(url=f"attachment://{filename}")
-                elif val and val.startswith('http'):
-                    if key == 'thumb': embed.set_thumbnail(url=val)
-                    else: embed.set_image(url=val)
+            
+            # Traitement de la miniature (Thumb)
+            thumb_val = data.get('thumb')
+            if thumb_val:
+                if thumb_val.startswith('/uploads/'):
+                    fname = thumb_val.split('/')[-1]
+                    fpath = os.path.join(app.config['UPLOAD_FOLDER'], fname)
+                    if os.path.exists(fpath):
+                        files_to_send.append(discord.File(fpath, filename=fname))
+                        embed.set_thumbnail(url=f"attachment://{fname}")
+                else:
+                    embed.set_thumbnail(url=thumb_val)
 
-            # Envoi du message avec l'embed et les fichiers liés
+            # Traitement de la bannière (Banner)
+            banner_val = data.get('banner')
+            if banner_val:
+                if banner_val.startswith('/uploads/'):
+                    fname = banner_val.split('/')[-1]
+                    fpath = os.path.join(app.config['UPLOAD_FOLDER'], fname)
+                    if os.path.exists(fpath):
+                        files_to_send.append(discord.File(fpath, filename=fname))
+                        embed.set_image(url=f"attachment://{fname}")
+                else:
+                    embed.set_image(url=banner_val)
+
+            # L'envoi groupé avec files= évite l'affichage séparé si attachment:// est utilisé
             await channel.send(embed=embed, files=files_to_send)
 
         asyncio.run_coroutine_threadsafe(send_task(), bot.loop)
         return jsonify({"status": "success"})
     except Exception as e:
+        print(f"Erreur: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/save_config', methods=['POST'])
