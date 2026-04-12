@@ -6,6 +6,7 @@ import json
 import os
 from dotenv import load_dotenv
 
+# --- INITIALISATION ---
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
@@ -25,6 +26,7 @@ def load_config():
                 return {"welcome": {}, "admin_roles": []}
     return {"welcome": {}, "admin_roles": []}
 
+# --- BOT DISCORD ---
 intents = discord.Intents.default()
 intents.members = True 
 intents.guilds = True
@@ -36,18 +38,11 @@ def get_server_info():
     config = load_config()
     if not bot.is_ready() or not bot.guilds:
         return jsonify({"status": "loading", "config": config})
-    
     try:
         guild = bot.guilds[0]
         channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
         roles = [r.name for r in guild.roles if r.name != "@everyone"]
-        
-        return jsonify({
-            "status": "success",
-            "channels": channels,
-            "all_roles": roles,
-            "config": config
-        })
+        return jsonify({"status": "success", "channels": channels, "all_roles": roles, "config": config})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
@@ -65,7 +60,7 @@ def test_welcome():
     try:
         config = load_config().get('welcome', {})
         chan_id = config.get('channel')
-        if not chan_id: return jsonify({"status": "error", "message": "Salon non configuré"}), 400
+        if not chan_id: return jsonify({"status": "error", "message": "Pas de salon"}), 400
         
         channel = bot.get_channel(int(chan_id))
         guild = bot.guilds[0]
@@ -75,22 +70,22 @@ def test_welcome():
             return text.replace("{user}", bot.user.name).replace("{server}", guild.name).replace("{count}", str(guild.member_count))
 
         embed = discord.Embed(
-            title=replace_vars(config.get('title')),
-            description=replace_vars(config.get('desc')),
+            title=replace_vars(config.get('title', 'Bienvenue')),
+            description=replace_vars(config.get('desc', '')),
             color=0xed4245
         )
         
         base_url = f"http://{request.host}"
-        for key, func in [('thumb', embed.set_thumbnail), ('banner', embed.set_image)]:
-            val = config.get(key)
-            if val:
-                url = val if val.startswith('http') else f"{base_url}{val}"
-                func(url=url)
-        
+        if config.get('thumb'):
+            url = config['thumb'] if config['thumb'].startswith('http') else f"{base_url}{config['thumb']}"
+            embed.set_thumbnail(url=url)
+        if config.get('banner'):
+            url = config['banner'] if config['banner'].startswith('http') else f"{base_url}{config['banner']}"
+            embed.set_image(url=url)
+            
         f_text = replace_vars(config.get('footer', 'BagBot'))
-        f_icon = config.get('footer_icon')
-        if f_icon:
-            f_url = f_icon if f_icon.startswith('http') else f"{base_url}{f_icon}"
+        if config.get('footer_icon'):
+            f_url = config['footer_icon'] if config['footer_icon'].startswith('http') else f"{base_url}{config['footer_icon']}"
             embed.set_footer(text=f_text, icon_url=f_url)
         else:
             embed.set_footer(text=f_text)
@@ -126,6 +121,6 @@ def index(): return send_from_directory('public', 'index.html')
 def serve_public(path): return send_from_directory('public', path)
 
 if __name__ == '__main__':
-    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=49501, debug=False, use_reloader=False), daemon=True).start()
+    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=49501), daemon=True).start()
     bot.run(TOKEN)
     
