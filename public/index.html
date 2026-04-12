@@ -8,27 +8,46 @@
     <style>
         :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord: #2b2d31; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: white; display: flex; height: 100vh; overflow: hidden; }
+        body { background: var(--bg); color: white; display: flex; height: 100vh; overflow: hidden; width: 100vw; }
         
-        #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: 0.3s ease; flex-shrink: 0; }
+        /* SIDEBAR STRUCTURE */
+        #sidebar { 
+            width: 260px; background: #000; border-right: 1px solid var(--border); 
+            display: flex; flex-direction: column; flex-shrink: 0; z-index: 1000;
+            transition: all 0.3s ease;
+        }
         .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 4px solid var(--accent); }
 
+        /* OVERLAY POUR MOBILE */
+        #overlay { 
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 999; 
+        }
+
+        /* RESPONSIVE MOBILE */
         @media (max-width: 900px) {
-            #sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); z-index: 2000; }
-            #sidebar.open { transform: translateX(0); }
-            #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1999; }
+            #sidebar { position: fixed; left: -260px; height: 100%; }
+            #sidebar.open { left: 0; }
             #overlay.show { display: block; }
         }
 
-        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        header { height: 60px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; font-weight: 900; gap: 20px; position: sticky; top: 0; z-index: 100; }
-        .menu-toggle { display: none; font-size: 22px; cursor: pointer; color: var(--accent); }
-        @media (max-width: 900px) { .menu-toggle { display: block; } }
+        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; width: 100%; }
+        header { 
+            height: 60px; background: var(--panel); border-bottom: 1px solid var(--border); 
+            display: flex; align-items: center; padding: 0 20px; font-weight: 900; gap: 20px;
+            position: sticky; top: 0; z-index: 100;
+        }
+        
+        /* BOUTON HAMBURGER FORCÉ */
+        .menu-toggle { 
+            display: block; font-size: 24px; cursor: pointer; color: var(--accent); 
+        }
+        @media (min-width: 901px) { .menu-toggle { display: none; } }
 
         .content-section { display: none; flex-direction: column; align-items: center; padding: 20px; width: 100%; }
         .content-section.active { display: flex; }
 
+        /* EMBED & CARDS */
         .discord-embed { width: 100%; max-width: 480px; background: var(--discord); border-left: 4px solid var(--accent); padding: 16px; border-radius: 4px; position: relative; margin-bottom: 25px; }
         .thumb-preview { width: 80px; height: 80px; position: absolute; right: 16px; top: 16px; background: #000; border: 1px dashed #444; overflow: hidden; }
         .banner-preview { width: 100%; height: 140px; margin-top: 10px; background: #000; border: 1px dashed #444; overflow: hidden; }
@@ -38,31 +57,31 @@
         h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
 
-        /* MULTISELECT CORRIGÉ */
+        /* MULTISELECT DROPDOWN CORRIGÉ */
         .multiselect { position: relative; margin-bottom: 15px; }
-        .select-box { background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; }
-        .dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0a0a0a; border: 1px solid var(--border); border-radius: 8px; max-height: 220px; overflow-y: auto; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .select-box { background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0a0a0a; border: 1px solid var(--border); border-radius: 8px; max-height: 250px; overflow-y: auto; z-index: 2000; }
         .dropdown-content.show { display: block; }
         
-        .option { display: flex; align-items: center; padding: 12px 15px; gap: 15px; border-bottom: 1px solid #111; cursor: pointer; width: 100%; text-align: left; }
+        .option { display: flex; align-items: center; padding: 12px 15px; gap: 15px; border-bottom: 1px solid #111; cursor: pointer; width: 100%; }
         .option:hover { background: #111; }
-        .option input { width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; pointer-events: none; }
+        .option input { width: 20px; height: 20px; accent-color: var(--accent); flex-shrink: 0; }
         .option span { font-size: 14px; color: #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .btn { border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; color: white; margin-bottom: 10px; text-transform: uppercase; }
         .btn-save { background: var(--accent); }
         .btn-test { background: #5865F2; }
 
-        /* GALERIE AVEC SUPPRESSION */
+        /* GALERIE */
         #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; width: 100%; max-width: 480px; }
         .gallery-card { aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; position: relative; }
         .gallery-card img { width: 100%; height: 100%; object-fit: cover; }
-        .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; width: 25px; height: 25px; border-radius: 5px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; font-size: 12px; }
-        .del-btn:hover { background: var(--accent); }
+        .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.8); color: white; border: none; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
-    <div id="overlay" onclick="toggleMenu()"></div>
+    <div id="overlay" onclick="toggleSidebar()"></div>
+    
     <nav id="sidebar">
         <div style="padding: 25px; font-size: 22px; font-weight: 900; color: var(--accent);">BAGBOT</div>
         <div class="nav-item active" onclick="show('accueil', this)"><i class="fas fa-home"></i> ACCUEIL</div>
@@ -72,7 +91,7 @@
 
     <main>
         <header>
-            <i class="fas fa-bars menu-toggle" onclick="toggleMenu()"></i>
+            <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
             <span id="bot-name">DASHBOARD</span>
         </header>
 
@@ -80,7 +99,7 @@
             <div class="discord-embed">
                 <div class="thumb-preview img-zone" onclick="triggerUp('thumb')"><div id="box-thumb"></div></div>
                 <div id="p-title" style="font-weight: bold; margin-bottom: 5px;">Titre</div>
-                <div id="p-desc" style="font-size: 14px; white-space: pre-wrap; color: #dcddde;">Message...</div>
+                <div id="p-desc" style="font-size: 14px; white-space: pre-wrap; color: #dcddde;">Bienvenue...</div>
                 <div class="banner-preview img-zone" onclick="triggerUp('banner')"><div id="box-banner"></div></div>
             </div>
             <div class="card">
@@ -101,19 +120,18 @@
 
         <section id="admin" class="content-section">
             <div class="card">
-                <h3>Sélection des rôles autorisés</h3>
-                <p style="font-size:12px; color:#666; margin-bottom:15px;">Seuls ces rôles pourront accéder au Dashboard.</p>
+                <h3>Accès Dashboard</h3>
                 <div class="multiselect">
                     <div class="select-box" onclick="toggleDrop('drop-admin')">Rôles autorisés <i class="fas fa-chevron-down"></i></div>
                     <div id="drop-admin" class="dropdown-content"></div>
                 </div>
-                <button class="btn btn-save" onclick="save()">VALIDER LES RÔLES</button>
+                <button class="btn btn-save" onclick="save()">VALIDER</button>
             </div>
         </section>
 
         <section id="images" class="content-section">
             <input type="file" id="file-in" onchange="up()" style="display:none">
-            <button class="btn btn-save" style="max-width:480px" onclick="triggerUp('gallery')">UPLOADER UNE IMAGE</button>
+            <button class="btn btn-save" style="max-width:480px" onclick="triggerUp('gallery')">UPLOADER</button>
             <div id="gallery" style="margin-top:20px"></div>
         </section>
     </main>
@@ -121,26 +139,41 @@
     <script>
         const API = window.location.origin;
         let targetImg = '';
-        let serverData = {};
 
-        function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('show');
+        }
+
         function show(id, el) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             el.classList.add('active');
-            if(window.innerWidth <= 900) toggleMenu();
+            if(window.innerWidth <= 900 && document.getElementById('sidebar').classList.contains('open')) {
+                toggleSidebar();
+            }
             if(id === 'images') loadG();
         }
-        function toggleDrop(id) { document.getElementById(id).classList.toggle('show'); }
+
+        function toggleDrop(id) { 
+            const drop = document.getElementById(id);
+            const isVisible = drop.classList.contains('show');
+            document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+            if(!isVisible) drop.classList.add('show');
+        }
+
         function sync() {
             document.getElementById('p-title').innerText = document.getElementById('in-title').value || "Titre";
             document.getElementById('p-desc').innerText = document.getElementById('in-desc').value || "Description...";
         }
+
         function triggerUp(t) { targetImg = t; document.getElementById('file-in').click(); }
 
         async function up() {
-            const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]);
+            const file = document.getElementById('file-in').files[0];
+            if(!file) return;
+            const fd = new FormData(); fd.append('file', file);
             const res = await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
             const data = await res.json();
             if(targetImg !== 'gallery') {
@@ -160,14 +193,15 @@
         }
 
         async function deleteImg(path) {
-            if(!confirm("Supprimer cette image ?")) return;
+            if(!confirm("Supprimer ?")) return;
             await fetch(`${API}/api/delete_image`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({path}) });
             loadG();
         }
 
         function setBanner(path) {
-            document.getElementById('box-banner').innerHTML = `<img src="${API+path}">`;
-            document.getElementById('box-banner').parentElement.dataset.path = path;
+            const target = (targetImg === 'thumb') ? 'thumb' : 'banner';
+            document.getElementById('box-'+target).innerHTML = `<img src="${API+path}">`;
+            document.getElementById('box-'+target).parentElement.dataset.path = path;
             show('accueil', document.querySelector('.nav-item'));
         }
 
@@ -195,21 +229,19 @@
             };
             const res = await fetch(`${API}/api/test_message`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(p) });
             const d = await res.json();
-            alert("Discord : " + d.status);
+            alert("Status: " + d.status);
         }
 
         async function init() {
             const res = await fetch(`${API}/api/get_server_info`);
             const d = await res.json();
-            serverData = d;
             document.getElementById('bot-name').innerText = d.bot.name.toUpperCase();
             document.getElementById('chan-list').innerHTML = d.channels.map(c => `<option value="${c.id}" ${d.config.target_channel == c.id ? 'selected':''}># ${c.name}</option>`).join('');
             
             const createRoles = (boxId, saved) => {
-                const box = document.getElementById(boxId);
-                box.innerHTML = d.all_roles.map(r => `
-                    <div class="option" onclick="const ck = this.querySelector('input'); ck.checked = !ck.checked; event.stopPropagation();">
-                        <input type="checkbox" value="${r}" ${saved.includes(r) ? 'checked' : ''}>
+                document.getElementById(boxId).innerHTML = d.all_roles.map(r => `
+                    <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
+                        <input type="checkbox" value="${r}" ${saved.includes(r) ? 'checked' : ''} onclick="event.stopPropagation()">
                         <span>${r}</span>
                     </div>`).join('');
             };
