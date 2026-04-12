@@ -38,11 +38,11 @@
         .embed-desc { font-size: 14px; color: #dbdee1; white-space: pre-wrap; }
         .embed-thumb { width: 80px; height: 80px; border-radius: 8px; background: #1e1f22; border: 1px dashed #444; cursor: pointer; overflow: hidden; flex-shrink: 0; position: relative; }
         .embed-thumb img { width: 100%; height: 100%; object-fit: cover; }
-        .embed-banner { width: 100%; height: 180px; border-radius: 8px; background: #1e1f22; border: 1px dashed #444; margin-top: 15px; cursor: pointer; overflow: hidden; position: relative; }
+        .embed-banner { width: 100%; height: 180px; border-radius: 8px; background: #1e1f22; border: 2px dashed #444; margin-top: 15px; cursor: pointer; overflow: hidden; position: relative; }
         .embed-banner img { width: 100%; height: 100%; object-fit: cover; }
         .embed-footer { margin-top: 10px; font-size: 12px; color: #b9bbbe; display: flex; align-items: center; gap: 5px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 5px; }
 
-        /* --- FORMULAIRE --- */
+        /* --- FORMULAIRE & GRID --- */
         .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         label { display: block; margin: 15px 0 5px; color: var(--text-muted); font-size: 11px; font-weight: 800; text-transform: uppercase; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; box-sizing: border-box; }
@@ -50,15 +50,21 @@
         .var-tag { color: var(--accent); font-weight: bold; margin-right: 10px; }
 
         .btn { width: 100%; padding: 15px; background: var(--accent); border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; transition: 0.2s; }
-        .btn:hover { filter: brightness(1.2); }
         .btn-test { background: #4e5058; }
+
+        /* --- ADMIN ROLES LIST (FIXED) --- */
+        #admin-roles-list { background: #000; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
+        .role-item { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: 0.2s; }
+        .role-item:hover { background: #0a0a0a; }
+        .role-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+        .role-name { font-size: 14px; color: #eee; }
 
         /* --- MODAL GALERIE --- */
         #gallery-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; }
-        .modal-content { background: var(--card-bg); width: 90%; max-width: 650px; padding: 30px; border-radius: 20px; border: 1px solid var(--border); }
-        .img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; max-height: 350px; overflow-y: auto; margin: 20px 0; padding: 5px; }
-        .img-grid img { width: 100%; height: 90px; object-fit: cover; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-        .img-grid img:hover { border-color: var(--accent); transform: scale(1.05); }
+        .modal-content { background: var(--card-bg); width: 90%; max-width: 600px; padding: 25px; border-radius: 20px; border: 1px solid var(--border); }
+        .img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; max-height: 300px; overflow-y: auto; margin: 15px 0; }
+        .img-grid img { width: 100%; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
+        .img-grid img:hover { border-color: var(--accent); }
 
         @media (max-width: 768px) {
             #sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); }
@@ -105,35 +111,29 @@
             </div>
 
             <div class="card">
-                <h2><i class="fas fa-pen-fancy"></i> Configuration de l'Embed</h2>
+                <h2><i class="fas fa-pen-fancy"></i> Configuration</h2>
                 <div class="variables-hint">
                     Variables : <span class="var-tag">{user}</span> <span class="var-tag">{guild}</span> <span class="var-tag">{count}</span>
                 </div>
 
-                <label>Titre</label><input type="text" id="w-title" placeholder="Bienvenue {user} !" oninput="sync()">
-                <label>Description</label><textarea id="w-desc" rows="4" placeholder="Tape ton message principal..." oninput="sync()"></textarea>
-                <label>Footer</label><input type="text" id="w-footer" placeholder="On est {count} membres !" oninput="sync()">
+                <label>Titre</label><input type="text" id="w-title" oninput="sync()">
+                <label>Description</label><textarea id="w-desc" rows="4" oninput="sync()"></textarea>
+                <label>Footer</label><input type="text" id="w-footer" oninput="sync()">
                 
                 <div class="grid-inputs">
-                    <div>
-                        <label>Salon d'envoi</label>
-                        <select id="w-chan"></select>
-                    </div>
-                    <div>
-                        <label>Rôle Déclencheur</label>
-                        <select id="w-trigger"><option value="">Immédiat (Join)</option></select>
-                    </div>
+                    <div><label>Salon d'envoi</label><select id="w-chan"></select></div>
+                    <div><label>Rôle Déclencheur</label><select id="w-trigger"></select></div>
                 </div>
 
                 <button class="btn" onclick="saveConfig()"><i class="fas fa-save"></i> ENREGISTRER</button>
-                <button class="btn btn-test" onclick="testWelcome()"><i class="fas fa-paper-plane"></i> ENVOYER UN TEST DISCORD</button>
+                <button class="btn btn-test" onclick="testWelcome()"><i class="fas fa-paper-plane"></i> ENVOYER UN TEST</button>
             </div>
         </div>
 
         <div id="admin" class="section">
             <div class="card">
-                <h2><i class="fas fa-lock"></i> Rôles autorisés au Dashboard</h2>
-                <div id="admin-roles-list" style="max-height: 400px; overflow-y:auto; background:#000; border-radius:10px; border:1px solid var(--border)"></div>
+                <h2><i class="fas fa-lock"></i> Rôles autorisés</h2>
+                <div id="admin-roles-list"></div>
                 <button class="btn" onclick="saveConfig()"><i class="fas fa-check"></i> VALIDER LES DROITS</button>
             </div>
         </div>
@@ -142,72 +142,69 @@
     <div id="gallery-modal">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center">
-                <h3>Gestion des Images</h3>
-                <i class="fas fa-times" onclick="closeGallery()" style="cursor:pointer; font-size:20px;"></i>
+                <h3>Images & Galerie</h3>
+                <i class="fas fa-times" onclick="closeGallery()" style="cursor:pointer"></i>
             </div>
             
-            <label>Lien direct (URL)</label>
+            <label>Lien par URL</label>
             <div style="display:flex; gap:10px;">
-                <input type="text" id="external-url" placeholder="https://image.com/photo.png">
-                <button class="btn" style="width:auto; margin-top:10px;" onclick="useExternalLink()">UTILISER</button>
+                <input type="text" id="external-url" placeholder="https://...">
+                <button class="btn" style="width:auto; margin:0; padding:10px" onclick="useExternalLink()">OK</button>
             </div>
 
-            <div style="margin: 20px 0; border-top: 1px solid var(--border);"></div>
+            <div style="margin: 15px 0; border-top: 1px solid var(--border);"></div>
 
             <div style="display:flex; justify-content:space-between; align-items:center">
-                <label>Ma Galerie</label>
+                <label style="margin:0">Galerie</label>
+                <button class="btn" style="background:#5865f2; width:auto; font-size:11px; margin:0; padding:8px" onclick="document.getElementById('upload-file').click()">+ UPLOAD</button>
                 <input type="file" id="upload-file" style="display:none" onchange="handleUpload()">
-                <button class="btn" style="background:#5865f2; width:auto; font-size:12px; margin:0" onclick="document.getElementById('upload-file').click()">+ UPLOAD</button>
             </div>
             
             <div id="gallery-grid" class="img-grid"></div>
-            
-            <button class="btn" style="background:#333" onclick="closeGallery()">ANNULER</button>
+            <button class="btn" style="background:#333" onclick="closeGallery()">FERMER</button>
         </div>
     </div>
 
     <script>
         let serverData = { channels: [], roles: [], config: {}, images: [] };
-        let activeTarget = ''; // 'thumb' ou 'banner'
+        let activeTarget = '';
 
         async function init() {
-            try {
-                const res = await fetch('/api/get_data');
-                if(!res.ok) { location.href='/api/login'; return; }
-                serverData = await res.json();
+            const res = await fetch('/api/get_data');
+            if(!res.ok) { location.href='/api/login'; return; }
+            serverData = await res.json();
 
-                // Salons
-                document.getElementById('w-chan').innerHTML = serverData.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            // Salons
+            document.getElementById('w-chan').innerHTML = serverData.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
 
-                // Rôles Déclencheur
-                document.getElementById('w-trigger').innerHTML = '<option value="">Immédiat (Join)</option>' + 
-                                                                  serverData.roles.map(r => `<option value="${r}">${r}</option>`).join('');
-                
-                // Rôles Admin
-                document.getElementById('admin-roles-list').innerHTML = serverData.roles.map(r => `
-                    <div style="display:flex; gap:12px; padding:15px; border-bottom:1px solid #1a1a1a; cursor:pointer" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked">
-                        <input type="checkbox" value="${r}" class="adm-ck" ${serverData.config.admin_roles?.includes(r)?'checked':''}> 
-                        <span>${r}</span>
-                    </div>`).join('');
+            // Rôle Déclencheur
+            document.getElementById('w-trigger').innerHTML = '<option value="">Immédiat (Join)</option>' + 
+                                                              serverData.roles.map(r => `<option value="${r}">${r}</option>`).join('');
+            
+            // ADMIN ROLES (Correction alignement)
+            const adminList = document.getElementById('admin-roles-list');
+            adminList.innerHTML = serverData.roles.map(r => `
+                <div class="role-item" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
+                    <span class="role-name">${r}</span>
+                    <input type="checkbox" value="${r}" class="adm-ck" ${serverData.config.admin_roles?.includes(r)?'checked':''}> 
+                </div>`).join('');
 
-                // Charger Config
-                const w = serverData.config.welcome || {};
-                document.getElementById('w-title').value = w.title || "";
-                document.getElementById('w-desc').value = w.desc || "";
-                document.getElementById('w-footer').value = w.footer || "";
-                document.getElementById('w-chan').value = w.channel || "";
-                document.getElementById('w-trigger').value = w.trigger_role || "";
-                
-                if(w.banner) setImg('banner', w.banner);
-                if(w.thumbnail) setImg('thumb', w.thumbnail);
+            // Config Load
+            const w = serverData.config.welcome || {};
+            document.getElementById('w-title').value = w.title || "";
+            document.getElementById('w-desc').value = w.desc || "";
+            document.getElementById('w-footer').value = w.footer || "";
+            document.getElementById('w-chan').value = w.channel || "";
+            document.getElementById('w-trigger').value = w.trigger_role || "";
+            
+            if(w.banner) setImg('banner', w.banner);
+            if(w.thumbnail) setImg('thumb', w.thumbnail);
 
-                sync();
-                renderGallery();
-            } catch (err) { console.error("Erreur init:", err); }
+            sync();
+            renderGallery();
         }
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-        
         function showSection(id, el) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -224,20 +221,10 @@
 
         function openGallery(t) { activeTarget = t; document.getElementById('gallery-modal').style.display='flex'; }
         function closeGallery() { document.getElementById('gallery-modal').style.display='none'; }
-        
-        function renderGallery() { 
-            document.getElementById('gallery-grid').innerHTML = serverData.images.map(img => 
-                `<img src="${img}" onclick="selectImage('${img}')">`
-            ).join(''); 
-        }
+        function renderGallery() { document.getElementById('gallery-grid').innerHTML = serverData.images.map(img => `<img src="${img}" onclick="selectImage('${img}')">`).join(''); }
 
-        function useExternalLink() {
-            const url = document.getElementById('external-url').value;
-            if(url) { selectImage(url); document.getElementById('external-url').value = ''; }
-        }
-
+        function useExternalLink() { const url = document.getElementById('external-url').value; if(url) { selectImage(url); document.getElementById('external-url').value=''; } }
         function selectImage(url) { setImg(activeTarget, url); closeGallery(); }
-
         function setImg(target, url) {
             const img = document.getElementById('pv-' + target + '-img');
             const hint = document.getElementById(target + '-hint');
@@ -246,9 +233,7 @@
         }
 
         async function handleUpload() {
-            const fileInput = document.getElementById('upload-file');
-            if(!fileInput.files[0]) return;
-            const fd = new FormData(); fd.append('file', fileInput.files[0]);
+            const fd = new FormData(); fd.append('file', document.getElementById('upload-file').files[0]);
             const r = await fetch('/api/upload', {method:'POST', body:fd});
             const d = await r.json();
             serverData.images.push(d.url);
@@ -269,13 +254,13 @@
                 admin_roles: Array.from(document.querySelectorAll('.adm-ck:checked')).map(i => i.value)
             };
             await fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
-            alert("✅ Données sauvegardées !");
+            alert("Sauvegardé !");
         }
 
         async function testWelcome() {
             const res = await fetch('/api/test_welcome', { method: 'POST' });
-            if(res.ok) alert("🚀 Test envoyé avec succès !");
-            else alert("❌ Erreur lors de l'envoi du test.");
+            if(res.ok) alert("Test envoyé !");
+            else alert("Erreur d'envoi. Vérifiez le salon et le fichier main.py");
         }
 
         window.onload = init;
