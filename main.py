@@ -14,16 +14,11 @@ UPLOAD_FOLDER = 'public/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-@app.after_request
-def add_header(r):
-    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    return r
-
 @app.route('/')
 def index():
     return send_from_directory('public', 'index.html')
 
-# --- GESTION IMAGES ---
+# --- API GESTION IMAGES ---
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files: return jsonify({"error": "No file"}), 400
@@ -35,30 +30,35 @@ def upload_file():
 @app.route('/api/images', methods=['GET'])
 def list_images():
     files = os.listdir(UPLOAD_FOLDER)
+    # On retourne le chemin complet pour l'affichage
     return jsonify({"images": [f"/uploads/{f}" for f in files]})
 
 @app.route('/api/images/delete', methods=['POST'])
 def delete_image():
-    filename = request.json.get('url').split('/')[-1]
-    path = os.path.join(UPLOAD_FOLDER, filename)
-    if os.path.exists(path): os.remove(path)
-    return jsonify({"status": "success"})
+    data = request.json
+    filename = data.get('url').split('/')[-1]
+    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if os.path.exists(path):
+        os.remove(path)
+        return jsonify({"status": "success"})
+    return jsonify({"error": "Fichier non trouvé"}), 404
 
-# --- INFOS SERVEUR ---
+# --- API INFOS SERVEUR ---
 @app.route('/api/get_server_info')
 def get_info():
-    guild = bot.get_guild(int(GUILD_ID))
-    if not guild: return jsonify({"error": "Guild non trouvée"}), 404
-    channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
-    return jsonify({"channels": channels, "bot": {"name": bot.user.name, "avatar": str(bot.user.display_avatar.url)}})
+    try:
+        guild = bot.get_guild(int(GUILD_ID))
+        if not guild: return jsonify({"error": "Guild non trouvée"}), 404
+        # On filtre pour n'avoir que les salons textuels
+        channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
+        return jsonify({
+            "channels": channels, 
+            "bot": {"name": bot.user.name, "avatar": str(bot.user.display_avatar.url)}
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/api/save_settings', methods=['POST'])
-def save_settings():
-    with open("config_bot.json", "w") as f:
-        json.dump(request.json, f, indent=4)
-    return jsonify({"status": "success"})
-
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 def run_flask():
