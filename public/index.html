@@ -31,6 +31,7 @@
         .nav-item { 
             padding: 18px 30px; display: flex; align-items: center; gap: 15px; 
             color: var(--text-dim); cursor: pointer; transition: 0.3s; font-weight: bold;
+            text-transform: uppercase; font-size: 13px;
         }
         .nav-item:hover { color: #fff; background: rgba(255,255,255,0.02); }
         .nav-item.active { 
@@ -53,7 +54,7 @@
         .section.active { display: block; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- DISCORD PREVIEW (Aperçu) --- */
+        /* --- DISCORD PREVIEW --- */
         .preview-container { 
             background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; 
             padding: 20px; margin-bottom: 35px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
@@ -81,22 +82,9 @@
             width: 100%; background: #000; border: 1px solid var(--border); color: #fff; 
             padding: 16px; border-radius: 12px; font-size: 14px; transition: 0.3s;
         }
-        input:focus { border-color: var(--accent); outline: none; }
+        select[multiple] { height: 150px; padding: 10px; }
+        input:focus, select:focus { border-color: var(--accent); outline: none; }
 
-        /* SÉLECTEUR DE RÔLES PAR CHECKBOX (Ultra compatible Mobile) */
-        .role-grid { 
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
-            gap: 12px; background: #000; padding: 20px; border-radius: 12px; border: 1px solid var(--border);
-            max-height: 250px; overflow-y: auto;
-        }
-        .role-item { 
-            display: flex; align-items: center; gap: 10px; padding: 10px; 
-            background: #080808; border-radius: 8px; border: 1px solid #111; cursor: pointer;
-        }
-        .role-item input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
-        .role-item span { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* --- BUTTONS --- */
         .btn-elite { 
             padding: 20px; border: none; border-radius: 15px; font-weight: 900; 
             cursor: pointer; transition: 0.3s; display: flex; align-items: center; 
@@ -110,31 +98,31 @@
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
         .gallery-card { 
             background: #0a0a0a; border-radius: 15px; overflow: hidden; border: 1px solid var(--border); 
-            transition: 0.3s; cursor: pointer;
+            transition: 0.3s; position: relative;
         }
-        .gallery-card:hover { border-color: var(--accent); transform: scale(1.02); }
-        .gallery-card img { width: 100%; height: 120px; object-fit: cover; }
+        .gallery-card img { width: 100%; height: 120px; object-fit: cover; cursor: pointer; }
         .gallery-name { padding: 10px; font-size: 11px; text-align: center; color: #444; }
+        .delete-btn {
+            position: absolute; top: 10px; right: 10px; background: rgba(237, 66, 69, 0.9);
+            color: white; border: none; width: 30px; height: 30px; border-radius: 8px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+        }
+        .delete-btn:hover { transform: scale(1.1); background: #ff0000; }
 
-        /* --- RESPONSIVE MOBILE --- */
+        /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
             .mobile-header { display: flex; }
-            #sidebar { 
-                position: fixed; left: -280px; top: 0; bottom: 0; height: 100vh;
-                box-shadow: 20px 0 50px rgba(0,0,0,0.8);
-            }
+            #sidebar { position: fixed; left: -280px; height: 100vh; box-shadow: 20px 0 50px #000; }
             #sidebar.open { left: 0; }
-            main { padding: 100px 20px 40px; } /* Augmenté pour éviter la barre noire */
-            .role-grid { grid-template-columns: 1fr; }
+            main { padding: 100px 20px 40px; }
             .card { padding: 20px; }
         }
 
-        /* --- NOTIFICATIONS --- */
         #toast {
             position: fixed; bottom: 30px; right: 30px; padding: 15px 30px;
             background: #2ecc71; color: white; border-radius: 12px; font-weight: bold;
-            transform: translateY(150px); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 2000;
+            transform: translateY(150px); transition: 0.5s; z-index: 2000;
         }
     </style>
 </head>
@@ -142,7 +130,7 @@
 
     <div class="mobile-header">
         <i class="fas fa-bars burger" onclick="toggleSidebar()"></i>
-        <div style="font-weight: 900; letter-spacing: 2px; color: var(--accent);">BAGBOT</div>
+        <div style="font-weight: 900; color: var(--accent);">BAGBOT</div>
     </div>
 
     <nav id="sidebar">
@@ -152,7 +140,6 @@
             <div class="nav-item" onclick="showTab('gallery', this)"><i class="fas fa-images"></i> GALERIE</div>
             <div class="nav-item" onclick="showTab('admin', this)"><i class="fas fa-user-shield"></i> PERMISSIONS</div>
         </div>
-        <div style="padding: 20px; text-align: center; font-size: 10px; color: #222; font-weight: 800;">ELITE V4.0</div>
     </nav>
 
     <main onclick="closeSidebar()">
@@ -160,57 +147,56 @@
             <div class="preview-container">
                 <div class="pv-header">
                     <div style="flex-grow: 1;">
-                        <div id="pv-title" class="pv-title">Chargement...</div>
-                        <div id="pv-desc" class="pv-desc">Veuillez patienter pendant la synchronisation...</div>
+                        <div id="pv-title" class="pv-title">...</div>
+                        <div id="pv-desc" class="pv-desc">...</div>
                     </div>
                     <div class="pv-thumb" onclick="openPicker('thumbnail')">
                         <img id="img-thumb" style="display:none">
-                        <div id="plus-thumb" style="height:100%; display:flex; align-items:center; justify-content:center; color:#333;"><i class="fas fa-plus"></i></div>
+                        <div id="plus-thumb"><i class="fas fa-plus"></i></div>
                     </div>
                 </div>
                 <div class="pv-banner" onclick="openPicker('banner')">
                     <img id="img-banner" style="display:none">
-                    <div id="plus-banner" style="height:100%; display:flex; align-items:center; justify-content:center; color:#333;"><i class="fas fa-image fa-2x"></i></div>
+                    <div id="plus-banner"><i class="fas fa-image fa-2x"></i></div>
                 </div>
-                <div id="pv-footer" class="pv-footer">Pied de page Discord</div>
+                <div id="pv-footer" class="pv-footer"></div>
             </div>
 
             <div class="card">
                 <h2><i class="fas fa-edit"></i> Configuration du Message</h2>
-                <div style="font-size: 12px; color: #333; margin-bottom: 15px;">Tags: {user} (Mention), {guild} (Serveur), {count} (Membres)</div>
                 
                 <label>Titre de l'Embed</label>
                 <input type="text" id="w-title" oninput="syncPreview()">
                 
                 <label>Description / Message</label>
-                <textarea id="w-desc" rows="6" oninput="syncPreview()"></textarea>
+                <textarea id="w-desc" rows="5" oninput="syncPreview()"></textarea>
                 
-                <label>Pied de page (Footer)</label>
+                <label>Pied de page</label>
                 <input type="text" id="w-footer" oninput="syncPreview()">
 
-                <label>Rôles recevant le message</label>
-                <div id="trigger-roles-list" class="role-grid"></div>
+                <label>Rôles de déclenchement (Menu déroulant multiple)</label>
+                <select id="w-trigger-roles" multiple></select>
+                <small style="color:#333; display:block; margin-top:5px;">Maintenez CTRL (ou glissez sur mobile) pour sélectionner plusieurs rôles.</small>
 
                 <label>Salon d'envoi</label>
                 <select id="w-channel"></select>
 
-                <button class="btn-elite" onclick="saveData()"><i class="fas fa-save"></i> SAUVEGARDER L'ELITE</button>
+                <button class="btn-elite" onclick="saveData()"><i class="fas fa-save"></i> SAUVEGARDER</button>
             </div>
         </div>
 
         <div id="gallery" class="section">
             <div class="card">
-                <h2><i class="fas fa-folder-open"></i> Ma Bibliothèque Média</h2>
+                <h2><i class="fas fa-images"></i> Gestion des Images</h2>
                 <div id="gallery-main" class="gallery-grid"></div>
             </div>
         </div>
 
         <div id="admin" class="section">
             <div class="card">
-                <h2><i class="fas fa-key"></i> Accès au Panel</h2>
-                <p style="color:#444; font-size: 13px;">Sélectionnez les rôles autorisés à modifier cette page.</p>
-                <div id="admin-roles-list" class="role-grid" style="margin-top: 20px;"></div>
-                <button class="btn-elite" onclick="saveData()"><i class="fas fa-check-circle"></i> APPLIQUER LES DROITS</button>
+                <h2><i class="fas fa-lock"></i> Rôles Permissions (Multiple)</h2>
+                <select id="admin-roles" multiple style="height: 300px;"></select>
+                <button class="btn-elite" onclick="saveData()"><i class="fas fa-check-circle"></i> APPLIQUER</button>
             </div>
         </div>
     </main>
@@ -220,96 +206,84 @@
     <div id="picker-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:3000; align-items:center; justify-content:center; padding:20px;">
         <div class="card" style="width:100%; max-width:600px;">
             <h3>Choisir une image</h3>
-            <div id="picker-grid" class="gallery-grid" style="max-height:400px; overflow-y:auto; padding:10px;"></div>
+            <div id="picker-grid" class="gallery-grid" style="max-height:400px; overflow-y:auto;"></div>
             <button class="btn-elite" style="background:#222; margin-top:20px;" onclick="closePicker()">ANNULER</button>
         </div>
     </div>
 
     <script>
-        let fullData = { config: { welcome: {} }, images: [], roles: [], channels: [] };
-        let currentPicker = '';
+        let fullData = {};
+        let activePicker = '';
 
-        async function loadData() {
+        async function init() {
             try {
                 const res = await fetch('/api/get_data');
                 fullData = await res.json();
 
-                // Salons
+                // Salon
                 document.getElementById('w-channel').innerHTML = fullData.channels.map(c => 
                     `<option value="${c.id}"># ${c.name}</option>`
                 ).join('');
 
-                // Rôles (Trigger + Admin)
-                const buildRoles = (containerId, selectedArray) => {
-                    document.getElementById(containerId).innerHTML = fullData.roles.map(r => `
-                        <div class="role-item" onclick="this.querySelector('input').click()">
-                            <input type="checkbox" value="${r}" class="${containerId}-check" 
-                            ${selectedArray && selectedArray.includes(r) ? 'checked' : ''} onclick="event.stopPropagation()">
-                            <span>${r}</span>
-                        </div>
-                    `).join('');
-                };
-                buildRoles('trigger-roles-list', fullData.config.welcome.trigger_roles);
-                buildRoles('admin-roles-list', fullData.config.admin_roles);
+                // Menus déroulants multiples (Rôles)
+                const roleOptions = fullData.roles.map(r => `<option value="${r}">${r}</option>`).join('');
+                document.getElementById('w-trigger-roles').innerHTML = roleOptions;
+                document.getElementById('admin-roles').innerHTML = roleOptions;
 
-                // Valeurs Inputs
-                const w = fullData.config.welcome;
-                document.getElementById('w-title').value = w.title || "";
-                document.getElementById('w-desc').value = w.desc || "";
-                document.getElementById('w-footer').value = w.footer || "";
-                document.getElementById('w-channel').value = w.channel || "";
+                // Pré-sélection
+                setSelected('w-trigger-roles', fullData.config.welcome.trigger_roles);
+                setSelected('admin-roles', fullData.config.admin_roles);
 
-                if(w.banner) updateImg('banner', w.banner);
-                if(w.thumbnail) updateImg('thumbnail', w.thumbnail);
+                // Inputs
+                document.getElementById('w-title').value = fullData.config.welcome.title || "";
+                document.getElementById('w-desc').value = fullData.config.welcome.desc || "";
+                document.getElementById('w-footer').value = fullData.config.welcome.footer || "";
+                document.getElementById('w-channel').value = fullData.config.welcome.channel;
 
-                // Galerie principale
-                document.getElementById('gallery-main').innerHTML = fullData.images.map(img => `
-                    <div class="gallery-card"><img src="${img}"><div class="gallery-name">${img.split('/').pop()}</div></div>
-                `).join('');
+                if(fullData.config.welcome.banner) updatePreviewImg('banner', fullData.config.welcome.banner);
+                if(fullData.config.welcome.thumbnail) updatePreviewImg('thumbnail', fullData.config.welcome.thumbnail);
 
+                renderGallery();
                 syncPreview();
-            } catch (err) {
-                console.error("Erreur de chargement:", err);
+            } catch(e) { console.error(e); }
+        }
+
+        function setSelected(id, values) {
+            const el = document.getElementById(id);
+            Array.from(el.options).forEach(opt => {
+                if(values && values.includes(opt.value)) opt.selected = true;
+            });
+        }
+
+        function renderGallery() {
+            const container = document.getElementById('gallery-main');
+            container.innerHTML = fullData.images.map(img => `
+                <div class="gallery-card">
+                    <button class="delete-btn" onclick="deleteImg('${img}')"><i class="fas fa-trash"></i></button>
+                    <img src="${img}" onclick="window.open('${img}')">
+                    <div class="gallery-name">${img.split('/').pop()}</div>
+                </div>
+            `).join('');
+        }
+
+        async function deleteImg(path) {
+            if(!confirm("Supprimer cette image définitivement ?")) return;
+            const res = await fetch('/api/delete_image', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({path})
+            });
+            if(res.ok) {
+                fullData.images = fullData.images.filter(i => i !== path);
+                renderGallery();
+                showToast("Image supprimée");
             }
         }
 
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-        function closeSidebar() { if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open'); }
-
-        function showTab(id, el) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            el.classList.add('active');
-            closeSidebar();
-        }
-
         function syncPreview() {
-            const t = document.getElementById('w-title').value || "Titre de l'Embed";
-            const d = document.getElementById('w-desc').value || "Description de votre message...";
-            const f = document.getElementById('w-footer').value || "Pied de page";
-            
-            document.getElementById('pv-title').innerText = t.replace(/{user}/g, "@Utilisateur");
-            document.getElementById('pv-desc').innerText = d.replace(/{guild}/g, fullData.guild_name || "Serveur");
-            document.getElementById('pv-footer').innerText = f.replace(/{count}/g, "123");
-        }
-
-        function openPicker(type) {
-            currentPicker = type;
-            document.getElementById('picker-grid').innerHTML = fullData.images.map(img => `
-                <img src="${img}" onclick="selectImage('${img}')" style="width:100%; height:100px; object-fit:cover; border-radius:10px; cursor:pointer; border:2px solid #111;">
-            `).join('');
-            document.getElementById('picker-modal').style.display = 'flex';
-        }
-
-        function selectImage(url) { updateImg(currentPicker, url); closePicker(); }
-        function closePicker() { document.getElementById('picker-modal').style.display = 'none'; }
-
-        function updateImg(type, url) {
-            const img = document.getElementById(`img-${type}`);
-            const plus = document.getElementById(`plus-${type}`);
-            img.src = url; img.style.display = 'block'; img.dataset.url = url;
-            plus.style.display = 'none';
+            document.getElementById('pv-title').innerText = document.getElementById('w-title').value || "Titre";
+            document.getElementById('pv-desc').innerText = document.getElementById('w-desc').value || "Description";
+            document.getElementById('pv-footer').innerText = document.getElementById('w-footer').value || "Footer";
         }
 
         async function saveData() {
@@ -321,24 +295,46 @@
                     channel: document.getElementById('w-channel').value,
                     banner: document.getElementById('img-banner').dataset.url || "",
                     thumbnail: document.getElementById('img-thumb').dataset.url || "",
-                    trigger_roles: Array.from(document.querySelectorAll('.trigger-roles-list-check:checked')).map(c => c.value)
+                    trigger_roles: Array.from(document.getElementById('w-trigger-roles').selectedOptions).map(o => o.value)
                 },
-                admin_roles: Array.from(document.querySelectorAll('.admin-roles-list-check:checked')).map(c => c.value)
+                admin_roles: Array.from(document.getElementById('admin-roles').selectedOptions).map(o => o.value)
             };
 
-            const res = await fetch('/api/save', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
+            await fetch('/api/save', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(config)
             });
-            
-            if(res.ok) {
-                const t = document.getElementById('toast');
-                t.style.transform = "translateY(0)";
-                setTimeout(() => t.style.transform = "translateY(150px)", 3000);
-            }
+            showToast("Sauvegardé !");
         }
 
-        window.onload = loadData;
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
+        function showTab(id, el) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+        }
+        function showToast(m) {
+            const t = document.getElementById('toast'); t.innerText = m;
+            t.style.transform = "translateY(0)";
+            setTimeout(() => t.style.transform = "translateY(150px)", 3000);
+        }
+        function openPicker(t) {
+            activePicker = t;
+            document.getElementById('picker-grid').innerHTML = fullData.images.map(i => `<img src="${i}" onclick="selectImg('${i}')" style="width:100%; height:80px; object-fit:cover; cursor:pointer; border-radius:8px;">`).join('');
+            document.getElementById('picker-modal').style.display = 'flex';
+        }
+        function selectImg(u) { updatePreviewImg(activePicker, u); closePicker(); }
+        function closePicker() { document.getElementById('picker-modal').style.display = 'none'; }
+        function updatePreviewImg(t, u) {
+            const img = document.getElementById(`img-${t}`);
+            const plus = document.getElementById(`plus-${t}`);
+            img.src = u; img.style.display = 'block'; img.dataset.url = u; plus.style.display = 'none';
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
