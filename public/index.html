@@ -3,23 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>BagBot Panel v20</title>
+    <title>BagBot Panel v21</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord-bg: #2b2d31; --discord-text: #dbdee1; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        
         body { background: var(--bg); color: white; display: flex; min-height: 100vh; overflow-x: hidden; }
 
-        /* SIDEBAR & NAV */
+        /* SIDEBAR */
         #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 9999; transition: 0.3s; position: sticky; top: 0; height: 100vh; }
         .sidebar-header { padding: 30px 25px; font-size: 22px; font-weight: 900; color: var(--accent); display: flex; align-items: center; gap: 15px; }
         .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 4px solid var(--accent); }
-        @media (max-width: 900px) { #sidebar { position: fixed; transform: translateX(-100%); left: 0; } #sidebar.open { transform: translateX(0); } }
+        
+        @media (max-width: 900px) { 
+            #sidebar { position: fixed; transform: translateX(-100%); left: 0; } 
+            #sidebar.open { transform: translateX(0); } 
+        }
 
-        /* MAIN CONTENT */
+        /* MAIN */
         main { flex: 1; display: flex; flex-direction: column; position: relative; min-width: 0; }
         header { height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding-left: 80px; font-weight: 900; position: sticky; top: 0; z-index: 100; }
+
         .menu-toggle { position: fixed; left: 15px; top: 15px; font-size: 24px; color: var(--accent); cursor: pointer; z-index: 10001; background: #111; padding: 10px; border-radius: 8px; border: 1px solid var(--border); display: none; }
         @media (max-width: 900px) { .menu-toggle { display: block; } }
 
@@ -30,28 +36,30 @@
         .discord-embed { 
             width: 100%; max-width: 500px; background: var(--discord-bg); border-left: 4px solid var(--accent); 
             padding: 16px; border-radius: 4px; position: relative; margin-bottom: 30px; 
-            display: flex; flex-direction: column;
+            display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
-        .embed-top-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
-        .embed-title { font-weight: 600; font-size: 1rem; color: #fff; margin-bottom: 8px; }
-        .embed-desc { font-size: 0.875rem; color: var(--discord-text); white-space: pre-wrap; line-height: 1.375; }
+        .embed-main { display: flex; justify-content: space-between; gap: 10px; }
+        .embed-text { flex: 1; }
+        #p-title { font-weight: 600; font-size: 1rem; color: #fff; margin-bottom: 8px; }
+        #p-desc { font-size: 0.875rem; color: var(--discord-text); white-space: pre-wrap; line-height: 1.375; }
         
-        /* 1. Thumbnail (Haut Droite) */
-        .p-thumb-preview { width: 80px; height: 80px; border-radius: 4px; object-fit: cover; flex-shrink: 0; display: none; }
+        /* 1. Miniature (Thumbnail) */
+        .embed-thumb { width: 80px; height: 80px; border-radius: 4px; object-fit: cover; display: none; flex-shrink: 0; }
         
-        /* 2. Grande Image (Bas) */
-        .p-image-preview { width: 100%; border-radius: 8px; margin-top: 12px; display: none; object-fit: cover; max-height: 280px; }
+        /* 2. Grande Image (Banner) */
+        .embed-image-box { width: 100%; border-radius: 8px; overflow: hidden; margin-top: 12px; display: none; border: 1px solid rgba(0,0,0,0.1); }
+        .embed-image-box img { width: 100%; height: auto; max-height: 280px; object-fit: cover; display: block; }
 
-        /* 3. Footer Icon & Text */
+        /* 3. Footer Section */
         .embed-footer { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
-        .p-footer-icon-preview { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; display: none; }
-        .p-footer-text-preview { color: #fff; font-size: 0.75rem; font-weight: 500; }
+        .footer-icon { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; display: none; }
+        .footer-text { color: #fff; font-size: 0.75rem; font-weight: 500; }
 
-        /* FORM CARDS */
+        /* FORMULAIRE */
         .card { width: 100%; max-width: 550px; background: var(--panel); border-radius: 12px; padding: 25px; border: 1px solid var(--border); margin-bottom: 30px; }
         h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 16px; border-radius: 10px; margin-bottom: 15px; font-size: 15px; outline: none; }
-        
+
         .btn { border: none; padding: 18px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; text-transform: uppercase; transition: 0.2s; margin-top: 10px; }
         .btn-save { background: var(--accent); }
         .btn-test { background: #5865F2; }
@@ -73,46 +81,49 @@
     </nav>
 
     <main>
-        <header>DASHBOARD BOT</header>
+        <header>PANEL CONFIGURATION</header>
 
         <section id="welcome" class="content-section active">
             <div class="discord-embed">
-                <div class="embed-top-row">
-                    <div style="flex:1">
-                        <div class="embed-title" id="p-title">Titre</div>
-                        <div class="embed-desc" id="p-desc">Description...</div>
+                <div class="embed-main">
+                    <div class="embed-text">
+                        <div id="p-title">Bienvenue !</div>
+                        <div id="p-desc">Configurez votre message...</div>
                     </div>
-                    <img src="" class="p-thumb-preview" id="p-thumb">
+                    <img src="" id="p-thumb" class="embed-thumb">
                 </div>
                 
-                <img src="" class="p-image-preview" id="p-image">
+                <div class="embed-image-box" id="p-image-box">
+                    <img src="" id="p-image">
+                </div>
 
                 <div class="embed-footer">
-                    <img src="" class="p-footer-icon-preview" id="p-footer-icon">
-                    <span class="p-footer-text-preview" id="p-footer-text">BagBot • Aujourd'hui</span>
+                    <img src="" id="p-footer-icon" class="footer-icon">
+                    <span id="p-footer-text" class="footer-text">BagBot Dashboard</span>
                 </div>
             </div>
 
             <div class="card">
-                <h3>Textes & Variables</h3>
-                <input type="text" id="w-title" placeholder="Titre..." oninput="sync()">
-                <textarea id="w-desc" rows="4" placeholder="Message..." oninput="sync()"></textarea>
+                <h3>Textes du message</h3>
+                <input type="text" id="w-title" placeholder="Titre (ex: Bienvenue {user})" oninput="sync()">
+                <textarea id="w-desc" rows="4" placeholder="Description..." oninput="sync()"></textarea>
                 <input type="text" id="w-footer" placeholder="Texte du footer..." oninput="sync()">
                 
-                <h3>Salon & Déclencheur</h3>
+                <h3>Configuration</h3>
                 <select id="w-chan"></select>
+
                 <button class="btn btn-save" onclick="save()">SAUVEGARDER</button>
-                <button class="btn btn-test" onclick="testMessage()">TESTER EN DIRECT</button>
+                <button class="btn btn-test" onclick="testMessage()">TESTER LE MESSAGE</button>
             </div>
         </section>
 
         <section id="images" class="content-section">
             <input type="file" id="file-in" onchange="up()" style="display:none">
             <button class="btn btn-save" onclick="document.getElementById('file-in').click()">UPLOADER IMAGE</button>
-            <div id="gallery" style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:20px; width:100%; max-width:550px;"></div>
+            <div id="gallery" style="display:grid; grid-template-columns:repeat(2,1fr); gap:15px; margin-top:20px; width:100%; max-width:550px;"></div>
         </section>
         
-        <footer>BAGBOT DASHBOARD</footer>
+        <footer>BAGBOT DASHBOARD &copy; 2026</footer>
     </main>
 
     <script>
@@ -127,30 +138,34 @@
         }
 
         function sync() {
-            const t = document.getElementById('w-title').value || "Bienvenue";
-            const d = document.getElementById('w-desc').value || "Message de bienvenue...";
+            const t = document.getElementById('w-title').value || "Bienvenue {user}";
+            const d = document.getElementById('w-desc').value || "Bienvenue sur {server} !";
             const f = document.getElementById('w-footer').value || "BagBot Dashboard";
             
-            document.getElementById('p-title').innerText = t.replace(/{user}/g, "@Utilisateur");
-            document.getElementById('p-desc').innerText = d.replace(/{user}/g, "@Utilisateur");
+            // Simulation des variables pour l'aperçu
+            const r = { "{user}": "Pseudo", "{server}": "Mon Serveur", "{count}": "150" };
+            let ct = t, cd = d;
+            for(let k in r) {
+                ct = ct.split(k).join(r[k]);
+                cd = cd.split(k).join(r[k]);
+            }
+            document.getElementById('p-title').innerText = ct;
+            document.getElementById('p-desc').innerText = cd;
             document.getElementById('p-footer-text').innerText = f;
         }
 
         function setImg(path) {
-            const choice = prompt("Où placer cette image ?\n1: MINIATURE (Haut droite)\n2: GRANDE IMAGE (Bas)\n3: ICÔNE FOOTER (Petit rond)", "1");
-            
-            if(choice === "1") {
+            const mode = prompt("Où placer l'image ?\n1: MINIATURE (Haut droite)\n2: GRANDE IMAGE (Bas)\n3: ICÔNE FOOTER (Petit rond)", "1");
+            if(mode === "1") {
                 const el = document.getElementById('p-thumb');
-                el.src = API + path; el.style.display = 'block';
-                el.dataset.path = path;
-            } else if(choice === "2") {
-                const el = document.getElementById('p-image');
-                el.src = API + path; el.style.display = 'block';
-                el.dataset.path = path;
-            } else if(choice === "3") {
+                el.src = API + path; el.style.display = 'block'; el.dataset.path = path;
+            } else if(mode === "2") {
+                const box = document.getElementById('p-image-box');
+                document.getElementById('p-image').src = API + path;
+                box.style.display = 'block'; box.dataset.path = path;
+            } else if(mode === "3") {
                 const el = document.getElementById('p-footer-icon');
-                el.src = API + path; el.style.display = 'block';
-                el.dataset.path = path;
+                el.src = API + path; el.style.display = 'block'; el.dataset.path = path;
             }
         }
 
@@ -161,19 +176,15 @@
                 footer: document.getElementById('w-footer').value,
                 channel: document.getElementById('w-chan').value,
                 thumb: document.getElementById('p-thumb').dataset.path || "",
-                banner: document.getElementById('p-image').dataset.path || "",
+                banner: document.getElementById('p-image-box').dataset.path || "",
                 footer_icon: document.getElementById('p-footer-icon').dataset.path || ""
             };
             await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
-            alert("Configuration enregistrée !");
+            alert("✅ Configuration sauvegardée !");
         }
 
         async function testMessage() { await save(); alert("🚀 Commande de test envoyée !"); }
-
-        async function up() { 
-            const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]); 
-            await fetch(`${API}/api/upload`, { method: 'POST', body: fd }); loadG(); 
-        }
+        async function up() { const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]); await fetch(`${API}/api/upload`, { method: 'POST', body: fd }); loadG(); }
 
         async function loadG() {
             const res = await fetch(`${API}/api/images`); const d = await res.json();
@@ -194,7 +205,9 @@
                     const e = document.getElementById('p-thumb'); e.src = API+CONFIG.welcome.thumb; e.style.display='block'; e.dataset.path = CONFIG.welcome.thumb;
                 }
                 if(CONFIG.welcome.banner) { 
-                    const e = document.getElementById('p-image'); e.src = API+CONFIG.welcome.banner; e.style.display='block'; e.dataset.path = CONFIG.welcome.banner;
+                    const b = document.getElementById('p-image-box');
+                    document.getElementById('p-image').src = API+CONFIG.welcome.banner;
+                    b.style.display='block'; b.dataset.path = CONFIG.welcome.banner;
                 }
                 if(CONFIG.welcome.footer_icon) { 
                     const e = document.getElementById('p-footer-icon'); e.src = API+CONFIG.welcome.footer_icon; e.style.display='block'; e.dataset.path = CONFIG.welcome.footer_icon;
