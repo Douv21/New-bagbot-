@@ -11,10 +11,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
-CLIENT_ID = os.getenv("DISCORD_CLIENT_ID")
-CLIENT_SECRET = os.getenv("DISCORD_CLIENT_SECRET")
-REDIRECT_URI = "http://192.168.1.133:49501/api/callback"
+CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
+GUILD_ID = os.getenv("GUILD_ID")
 OWNER_ID = os.getenv("OWNER_ID")
+REDIRECT_URI = "http://192.168.1.133:49501/api/callback"
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -38,6 +39,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 # --- SECURITÉ & OAUTH2 ---
 @app.route('/api/login')
 def login():
+    if not CLIENT_ID: return "Erreur: CLIENT_ID manquant dans le .env", 500
     return redirect(f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify")
 
 @app.route('/api/callback')
@@ -55,7 +57,8 @@ def check_access():
     if not uid: return False
     if str(uid) == str(OWNER_ID): return True
     config = load_config()
-    guild = bot.guilds[0]
+    guild = bot.get_guild(int(GUILD_ID))
+    if not guild: return False
     member = guild.get_member(int(uid))
     if member:
         member_roles = [r.name for r in member.roles]
@@ -67,7 +70,9 @@ def check_access():
 def get_server_info():
     if not check_access(): return jsonify({"status": "unauthorized"}), 401
     config = load_config()
-    guild = bot.guilds[0]
+    guild = bot.get_guild(int(GUILD_ID))
+    if not guild: return jsonify({"status": "error", "message": "Serveur introuvable"}), 404
+    
     channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
     roles = [r.name for r in guild.roles if r.name != "@everyone"]
     return jsonify({"status": "success", "channels": channels, "all_roles": roles, "config": config})
