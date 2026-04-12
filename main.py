@@ -13,7 +13,7 @@ GUILD_ID = os.getenv("GUILD_ID")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_v12_pro")
+SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_v13_full")
 
 app = Flask(__name__, static_folder='public', static_url_path='')
 CORS(app)
@@ -52,21 +52,45 @@ async def send_event_embed(member, event_type):
     color = 0xed4245 if event_type == "welcome" else 0x2b2d31
     embed = discord.Embed(title=rep(config.get('title')), description=rep(config.get('desc')), color=color)
     
-    file_to_send = None
+    files = []
+    # Gestion Thumbnail
+    if config.get('thumb'):
+        t_name = config['thumb'].split('/')[-1]
+        t_path = os.path.join(UPLOAD_FOLDER, t_name)
+        if os.path.exists(t_path):
+            files.append(discord.File(t_path, filename=t_name))
+            embed.set_thumbnail(url=f"attachment://{t_name}")
+
+    # Gestion Banner
     if config.get('banner'):
-        fname = config['banner'].split('/')[-1]
-        fpath = os.path.join(UPLOAD_FOLDER, fname)
-        if os.path.exists(fpath):
-            file_to_send = discord.File(fpath, filename=fname)
-            embed.set_image(url=f"attachment://{fname}")
+        b_name = config['banner'].split('/')[-1]
+        b_path = os.path.join(UPLOAD_FOLDER, b_name)
+        if os.path.exists(b_path):
+            files.append(discord.File(b_path, filename=b_name))
+            embed.set_image(url=f"attachment://{b_name}")
 
-    await channel.send(embed=embed, file=file_to_send if file_to_send else None)
-
-@bot.event
-async def on_member_join(member): await send_event_embed(member, "welcome")
+    await channel.send(embed=embed, files=files if files else None)
 
 @bot.event
-async def on_member_remove(member): await send_event_embed(member, "leave")
+async def on_member_update(before, after):
+    # Déclenchement sur ajout de rôle (Bienvenue facultative)
+    config = load_config().get("welcome", {})
+    trigger_roles = config.get("trigger_roles", [])
+    if trigger_roles:
+        for r_name in trigger_roles:
+            role = discord.utils.get(after.roles, name=r_name)
+            if role and not discord.utils.get(before.roles, name=r_name):
+                await send_event_embed(after, "welcome")
+
+@bot.event
+async def on_member_join(member):
+    # Si pas de rôles déclencheurs, on envoie direct
+    if not load_config().get("welcome", {}).get("trigger_roles"):
+        await send_event_embed(member, "welcome")
+
+@bot.event
+async def on_member_remove(member):
+    await send_event_embed(member, "leave")
 
 # --- ROUTES API ---
 @app.route('/')
@@ -88,7 +112,6 @@ def callback():
     res = requests.get(f'https://discord.com/api/users/@me/guilds/{GUILD_ID}/member', headers={'Authorization': f'Bearer {token}'})
     if res.status_code == 200:
         session['admin'] = True
-        session['user_id'] = res.json()['user']['id']
         return redirect('/')
     return "Refusé", 403
 
