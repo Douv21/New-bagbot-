@@ -2,102 +2,131 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>BagBot Ultimate Panel</title>
+    <title>BagBot Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --text: #ffffff; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; }
+        :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord: #2b2d31; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar */
         #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .nav-item { padding: 20px 30px; cursor: pointer; color: #888; font-weight: bold; border-right: 4px solid transparent; }
+        .nav-item { padding: 20px 30px; cursor: pointer; color: #888; font-weight: bold; transition: 0.2s; border-right: 4px solid transparent; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right-color: var(--accent); }
 
         main { flex-grow: 1; padding: 40px; overflow-y: auto; }
-        .section { display: none; max-width: 800px; margin: 0 auto; }
+        .section { display: none; max-width: 900px; margin: 0 auto; }
         .section.active { display: block; }
 
-        /* Cards & Inputs */
         .card { background: var(--panel); padding: 25px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-top: 10px; }
         
-        .role-list { max-height: 200px; overflow-y: auto; background: #000; border-radius: 8px; padding: 10px; margin-top: 10px; }
-        .role-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
-        
-        .btn { width: 100%; padding: 15px; background: var(--accent); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; }
-        .btn-upload { background: #5865F2; } /* Style bouton galerie */
+        /* Aperçu Embed */
+        .preview-card { background: var(--discord); border-left: 4px solid var(--accent); padding: 15px; border-radius: 4px; margin-bottom: 20px; width: 100%; max-width: 500px; cursor: pointer; }
+        .banner-box { width: 100%; height: 150px; border: 2px dashed #333; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .banner-box img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Galerie */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
-        .grid img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); }
+        .role-list { max-height: 200px; overflow-y: auto; background: #000; padding: 10px; border-radius: 8px; margin-top: 10px; }
+        .role-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
+
+        .btn { width: 100%; padding: 15px; background: var(--accent); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        
+        /* Modale Galerie */
+        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: var(--panel); padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; border: 1px solid var(--border); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; max-height: 300px; overflow-y: auto; }
+        .grid img { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
+        .grid img:hover { border-color: var(--accent); }
+
+        #overlay { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
+    <div id="overlay">
+        <h1 style="color:var(--accent)">BAGBOT ACCESS</h1>
+        <button class="btn" style="width:auto; padding: 15px 40px" onclick="location.href='/api/login'">CONNEXION DISCORD</button>
+    </div>
+
     <nav id="sidebar">
         <div style="padding: 30px; font-weight: 900; color: var(--accent); font-size: 24px;">BAGBOT</div>
         <div class="nav-item active" onclick="show('welcome', this)">BIENVENUE</div>
-        <div class="nav-item" onclick="show('galerie', this)">GALERIE</div>
-        <div class="nav-item" onclick="show('admin', this)">ACCÈS PANEL</div>
+        <div class="nav-item" onclick="show('admin', this)">ADMINISTRATION</div>
+        <div class="nav-item" onclick="show('files', this)">FICHIERS</div>
     </nav>
 
     <main>
         <div id="welcome" class="section active">
-            <div class="card">
-                <h3>Configuration Bienvenue</h3>
-                <input type="text" id="w-title" placeholder="Titre (ex: Bienvenue {user})">
-                <textarea id="w-desc" placeholder="Message..." rows="4"></textarea>
-                <select id="w-chan"></select>
-                <h4>Rôles à donner à l'arrivée :</h4>
-                <div id="welcome-roles" class="role-list"></div>
-                <button class="btn" onclick="save()">ENREGISTRER</button>
+            <div class="preview-card" onclick="openGal()">
+                <div id="p-title" style="font-weight:bold;">Titre du message</div>
+                <div id="p-desc" style="color:#ccc; font-size:14px; margin-top:5px;">Description...</div>
+                <div class="banner-box">
+                    <img id="p-img" style="display:none">
+                    <span id="p-txt"><i class="fas fa-image"></i> Ajouter une bannière</span>
+                </div>
             </div>
-        </div>
-
-        <div id="galerie" class="section">
             <div class="card">
-                <h3>Ma Galerie</h3>
-                <input type="file" id="file-up" style="display:none" onchange="doUpload()">
-                <button class="btn btn-upload" onclick="document.getElementById('file-up').click()">TÉLÉVERSER UNE IMAGE</button>
-                <div id="images-grid" class="grid"></div>
+                <h3>Editeur d'Embed</h3>
+                <input type="text" id="w-title" placeholder="Titre" oninput="sync()">
+                <textarea id="w-desc" placeholder="Description" rows="3" oninput="sync()"></textarea>
+                <select id="w-chan"></select>
+                <button class="btn" onclick="save()">SAUVEGARDER CONFIG</button>
+                <button class="btn" style="background:#5865F2" onclick="fetch('/api/test_welcome',{method:'POST'})">TESTER L'ENVOI</button>
             </div>
         </div>
 
         <div id="admin" class="section">
             <div class="card">
-                <h3>Permissions Admin</h3>
-                <p>Rôles autorisés à modifier ce panel :</p>
+                <h3>Accès au Dashboard</h3>
+                <p style="font-size:12px; color:#888;">Coche les rôles autorisés à voir ce panel.</p>
                 <div id="admin-roles" class="role-list"></div>
-                <button class="btn" onclick="save()">METTRE À JOUR</button>
+                <button class="btn" onclick="save()">METTRE À JOUR LES DROITS</button>
+            </div>
+        </div>
+
+        <div id="files" class="section">
+            <div class="card">
+                <h3>Téléverser des images</h3>
+                <input type="file" id="file-up" onchange="upload()">
+                <div id="full-grid" class="grid"></div>
             </div>
         </div>
     </main>
 
+    <div id="modal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>Ma Galerie</h3>
+                <i class="fas fa-times" onclick="closeGal()" style="cursor:pointer"></i>
+            </div>
+            <div id="gal-grid" class="grid"></div>
+        </div>
+    </div>
+
     <script>
-        let fullData = {};
+        let data = {};
 
-        async function load() {
+        async function init() {
             const res = await fetch('/api/get_data');
-            if(!res.ok) return window.location.href='/api/login';
-            fullData = await res.json();
+            if(res.status === 401) { document.getElementById('overlay').style.display='flex'; return; }
+            data = await res.json();
             
-            // Remplir salons
-            document.getElementById('w-chan').innerHTML = fullData.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            
-            // Remplir listes de rôles
-            const renderRoles = (container, configKey) => {
-                document.getElementById(container).innerHTML = fullData.roles.map(r => `
-                    <div class="role-item" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked;">
-                        <input type="checkbox" value="${r}" data-key="${configKey}" ${fullData.config[configKey]?.includes(r)?'checked':''}> ${r}
-                    </div>`).join('');
-            };
-            renderRoles('welcome-roles', 'selected_roles');
-            renderRoles('admin-roles', 'admin_roles');
+            document.getElementById('w-chan').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            document.getElementById('admin-roles').innerHTML = data.roles.map(r => `
+                <div class="role-item" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked;">
+                    <input type="checkbox" value="${r}" class="adm-ck" ${data.config.admin_roles?.includes(r)?'checked':''}> ${r}
+                </div>`).join('');
 
-            // Remplir galerie
-            document.getElementById('images-grid').innerHTML = fullData.images.map(img => `<img src="${img}">`).join('');
-            
-            // Valeurs textes
-            document.getElementById('w-title').value = fullData.config.welcome?.title || "";
-            document.getElementById('w-desc').value = fullData.config.welcome?.desc || "";
+            if(data.config.welcome) {
+                document.getElementById('w-title').value = data.config.welcome.title || "";
+                document.getElementById('w-desc').value = data.config.welcome.desc || "";
+                document.getElementById('w-chan').value = data.config.welcome.channel || "";
+                if(data.config.welcome.banner) setImg(data.config.welcome.banner);
+            }
+            sync();
+            loadGrids();
+        }
+
+        function sync() {
+            document.getElementById('p-title').innerText = document.getElementById('w-title').value || "Titre";
+            document.getElementById('p-desc').innerText = document.getElementById('w-desc').value || "Description...";
         }
 
         function show(id, el) {
@@ -107,23 +136,44 @@
             el.classList.add('active');
         }
 
-        async function save() {
-            const config = {
-                welcome: { title: document.getElementById('w-title').value, desc: document.getElementById('w-desc').value, channel: document.getElementById('w-chan').value },
-                selected_roles: Array.from(document.querySelectorAll('[data-key="selected_roles"]:checked')).map(i => i.value),
-                admin_roles: Array.from(document.querySelectorAll('[data-key="admin_roles"]:checked')).map(i => i.value)
-            };
-            await fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
-            alert("Sauvegardé avec succès !");
+        function loadGrids() {
+            const html = data.images.map(img => `<img src="${img}" onclick="setImg('${img}')">`).join('');
+            document.getElementById('gal-grid').innerHTML = html;
+            document.getElementById('full-grid').innerHTML = html;
         }
 
-        async function doUpload() {
+        function openGal() { document.getElementById('modal').style.display='flex'; }
+        function closeGal() { document.getElementById('modal').style.display='none'; }
+
+        function setImg(path) {
+            const img = document.getElementById('p-img');
+            img.src = path; img.style.display = 'block';
+            img.dataset.path = path;
+            document.getElementById('p-txt').style.display = 'none';
+            closeGal();
+        }
+
+        async function upload() {
             const fd = new FormData(); fd.append('file', document.getElementById('file-up').files[0]);
             await fetch('/api/upload', {method:'POST', body:fd});
-            load();
+            init(); // Recharge tout
         }
 
-        window.onload = load;
+        async function save() {
+            const config = {
+                welcome: {
+                    title: document.getElementById('w-title').value,
+                    desc: document.getElementById('w-desc').value,
+                    channel: document.getElementById('w-chan').value,
+                    banner: document.getElementById('p-img').dataset.path || ""
+                },
+                admin_roles: Array.from(document.querySelectorAll('.adm-ck:checked')).map(i => i.value)
+            };
+            await fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
+            alert("Sauvegardé !");
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
