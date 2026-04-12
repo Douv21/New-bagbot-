@@ -4,9 +4,9 @@ from flask import Flask, request, jsonify, send_from_directory
 import threading
 import json
 import os
-import time
+import asyncio
 
-# --- INITIALISATION ---
+# --- CONFIGURATION ---
 app = Flask(__name__)
 UPLOAD_FOLDER = 'public/uploads'
 CONFIG_FILE = 'config.json'
@@ -24,7 +24,6 @@ def load_config():
     return {"welcome": {}, "admin_roles": []}
 
 # --- BOT DISCORD ---
-# Assure-toi que les 3 Privileged Gateway Intents sont cochés sur le portail Discord !
 intents = discord.Intents.default()
 intents.members = True 
 intents.guilds = True
@@ -33,8 +32,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f"✅ Bot Discord en ligne : {bot.user}")
-    print(f"📊 Connecté à {len(bot.guilds)} serveur(s)")
+    print(f"✅ Bot Discord opérationnel : {bot.user}")
 
 # --- ROUTES API ---
 
@@ -42,27 +40,31 @@ async def on_ready():
 def get_server_info():
     config = load_config()
     
-    # Si le bot n'est pas prêt, on informe le JS pour qu'il réessaye
+    # Vérification critique : Si le bot n'est pas prêt, on renvoie une erreur spécifique
     if not bot.is_ready() or not bot.guilds:
         return jsonify({
-            "status": "waiting",
-            "channels": [], 
-            "all_roles": [], 
+            "status": "error",
+            "message": "Le bot n'est pas encore connecté à Discord",
+            "channels": [],
+            "all_roles": [],
             "config": config
         })
     
-    guild = bot.guilds[0]
-    # On trie les salons par position pour que ce soit propre
-    channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
-    # On récupère tous les noms de rôles
-    roles = [r.name for r in guild.roles if not r.is_default()]
-    
-    return jsonify({
-        "status": "ready",
-        "channels": channels,
-        "all_roles": roles,
-        "config": config
-    })
+    try:
+        guild = bot.guilds[0]
+        # On s'assure de récupérer tous les salons textuels
+        channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
+        # On récupère tous les rôles du serveur
+        roles = [r.name for r in guild.roles if r.name != "@everyone"]
+        
+        return jsonify({
+            "status": "success",
+            "channels": channels,
+            "all_roles": roles,
+            "config": config
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
 
 @app.route('/api/save_config', methods=['POST'])
 def save_config():
@@ -92,9 +94,10 @@ def upload():
 def delete_image():
     try:
         data = request.json
-        img_path = data.get('image')
-        if not img_path: return "Missing path", 400
+        img_path = data.get('image') 
+        if not img_path: return "Path missing", 400
         
+        # Transformation du chemin web en chemin système
         full_path = img_path.lstrip('/')
         if os.path.exists(full_path):
             os.remove(full_path)
@@ -108,33 +111,28 @@ def test_welcome():
     try:
         config = load_config().get('welcome', {})
         chan_id = config.get('channel')
-        if not chan_id: return jsonify({"status": "error", "message": "Pas de salon"}), 400
-
+        if not chan_id: return jsonify({"status": "error", "message": "Aucun salon sélectionné"}), 400
+        
         channel = bot.get_channel(int(chan_id))
-        if not channel: return jsonify({"status": "error", "message": "Salon introuvable"}), 404
+        if not channel: return jsonify({"status": "error", "message": "Salon introuvable sur Discord"}), 404
 
-        embed = discord.Embed(
-            title=config.get('title', 'Bienvenue').replace("{user}", bot.user.name), 
-            description=config.get('desc', '').replace("{user}", bot.user.mention), 
-            color=0xed4245
-        )
+        # Traitement des variables {user}
+        title = config.get('title', 'Bienvenue').replace("{user}", bot.user.name)
+        desc = config.get('desc', '').replace("{user}", bot.user.mention)
+
+        embed = discord.Embed(title=title, description=desc, color=0xed4245)
         
         base_url = f"http://{request.host}" 
         if config.get('thumb'): embed.set_thumbnail(url=f"{base_url}{config['thumb']}")
         if config.get('banner'): embed.set_image(url=f"{base_url}{config['banner']}")
         
-        f_text = config.get('footer', 'BagBot')
-        if config.get('footer_icon'): 
-            embed.set_footer(text=f_text, icon_url=f"{base_url}{config['footer_icon']}")
-        else:
-            embed.set_footer(text=f_text)
+        embed.set_footer(text=config.get('footer', 'BagBot'))
         
         bot.loop.create_task(channel.send(embed=embed))
         return jsonify({"status": "success"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# --- SERVEUR DE FICHIERS ---
 @app.route('/')
 def serve_index(): return send_from_directory('public', 'index.html')
 
@@ -142,10 +140,10 @@ def serve_index(): return send_from_directory('public', 'index.html')
 def serve_static(path): return send_from_directory('public', path)
 
 def run_flask():
-    app.run(host='0.0.0.0', port=49501, debug=False, threaded=True)
+    # Utilisation du port spécifique 49501
+    app.run(host='0.0.0.0', port=49501, threaded=True)
 
 if __name__ == '__main__':
     threading.Thread(target=run_flask).start()
-    # REMPLACE BIEN LE TOKEN ICI
     bot.run("TON_TOKEN_ICI")
-    
+        
