@@ -10,8 +10,8 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: white; display: flex; min-height: 100vh; overflow-x: hidden; }
 
-        /* SIDEBAR */
-        #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 9999; transition: 0.3s; position: sticky; top: 0; height: 100vh; }
+        /* SIDEBAR FIXEE */
+        #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10000; transition: 0.3s; position: fixed; height: 100vh; left: 0; }
         .sidebar-header { padding: 30px 25px; font-size: 22px; font-weight: 900; color: var(--accent); display: flex; align-items: center; gap: 15px; }
         .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; transition: 0.2s; }
         .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
@@ -20,13 +20,14 @@
         #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9998; }
 
         @media (max-width: 900px) { 
-            #sidebar { position: fixed; transform: translateX(-100%); left: 0; } 
-            #sidebar.open { transform: translateX(0); }
+            #sidebar { left: -260px; } 
+            #sidebar.open { left: 0; }
             #overlay.open { display: block; }
+            main { padding-left: 0 !important; }
         }
 
         /* HEADER & MAIN */
-        main { flex: 1; display: flex; flex-direction: column; position: relative; min-width: 0; }
+        main { flex: 1; display: flex; flex-direction: column; position: relative; min-width: 0; padding-left: 260px; transition: 0.3s; }
         header { height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding-left: 80px; font-weight: 900; position: sticky; top: 0; z-index: 100; text-transform: uppercase; letter-spacing: 1px; }
         .menu-toggle { position: fixed; left: 15px; top: 15px; font-size: 20px; color: var(--accent); cursor: pointer; z-index: 10001; background: #111; padding: 10px; border-radius: 8px; border: 1px solid var(--border); display: none; }
         @media (max-width: 900px) { .menu-toggle { display: block; } }
@@ -55,7 +56,7 @@
         .var-table td { padding: 12px 15px; border-bottom: 1px solid #111; }
         .var-name { color: var(--accent); font-weight: 800; }
 
-        /* MULTISELECT / ROLES LARGES */
+        /* MULTISELECT */
         .multiselect { position: relative; margin-bottom: 20px; }
         .select-box { background: #000; border: 1px solid var(--border); padding: 16px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .dropdown-content { display: none; position: absolute; width: 100%; top: 100%; left: 0; background: #0d0d0d; border: 1px solid var(--border); z-index: 2000; max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px; }
@@ -74,7 +75,6 @@
         .gal-img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
         .btn-del-img { position: absolute; top: 8px; right: 8px; background: var(--accent); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
 
-        /* MODAL */
         #modal-gal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10002; padding: 20px; overflow-y: auto; }
         .modal-inner { max-width: 550px; margin: 30px auto; background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid var(--border); }
 
@@ -89,14 +89,11 @@
         <div class="modal-inner">
             <span style="float:right; cursor:pointer; font-size:30px; color:var(--accent)" onclick="closeGal()">&times;</span>
             <h2 style="margin-bottom:20px">MODIFIER L'IMAGE</h2>
-            
             <h3 style="color:#666">URL de l'image</h3>
             <input type="text" id="img-url-input" placeholder="https://...">
             <button class="btn btn-test" onclick="selectImgByUrl()" style="margin-top:0; margin-bottom:20px">Utiliser ce lien</button>
-            
             <h3 style="color:#666">Téléverser fichier</h3>
             <button class="btn btn-save" onclick="document.getElementById('file-in').click()" style="margin-top:0; margin-bottom:20px">Charger depuis l'appareil</button>
-            
             <h3 style="color:#666">Images existantes</h3>
             <div id="gal-container" class="gal-grid"></div>
         </div>
@@ -149,7 +146,7 @@
                 </table>
 
                 <h3>Configuration</h3>
-                <select id="w-chan"></select>
+                <select id="w-chan"><option value="">Chargement des salons...</option></select>
                 <div class="multiselect">
                     <div class="select-box" onclick="toggleDrop('drop-roles')">
                         Rôles de déclenchement <i class="fas fa-chevron-down"></i>
@@ -187,7 +184,6 @@
     <script>
         let CONFIG = {}; let targetSlot = ''; const API = window.location.origin;
 
-        // SIDEBAR & DROPDOWNS
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('overlay').classList.toggle('open');
@@ -204,11 +200,10 @@
             document.getElementById('section-' + name).classList.add('active'); 
             el.classList.add('active');
             document.getElementById('main-title').innerText = name;
-            if(window.innerWidth <= 900) toggleSidebar();
+            if(window.innerWidth <= 900 && document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
             if(name === 'GALERIE') loadAdminG();
         }
 
-        // GALERIE / IMAGES
         async function openGal(slot) {
             targetSlot = slot;
             const res = await fetch(`${API}/api/images`); const d = await res.json();
@@ -236,9 +231,7 @@
         }
 
         async function up() { 
-            const file = document.getElementById('file-in').files[0];
-            if(!file) return;
-            const fd = new FormData(); fd.append('file', file);
+            const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]);
             await fetch(`${API}/api/upload`, { method: 'POST', body: fd });
             if(document.getElementById('modal-gal').style.display === 'block') openGal(targetSlot);
             loadAdminG();
@@ -264,7 +257,6 @@
             `).join('');
         }
 
-        // LOGIQUE SYNC & SAVE
         function sync() {
             document.getElementById('p-title').innerText = document.getElementById('w-title').value || "Titre";
             document.getElementById('p-desc').innerText = document.getElementById('w-desc').value || "Description...";
@@ -283,7 +275,7 @@
                 trigger_roles: Array.from(document.querySelectorAll('#drop-roles input:checked')).map(i => i.value)
             };
             await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
-            alert("✅ Sauvegardé !");
+            alert("✅ Configuration sauvegardée !");
         }
 
         async function saveAdmin() {
@@ -298,45 +290,46 @@
             if(res.ok) alert("🚀 Test envoyé !"); else alert("❌ Erreur serveur.");
         }
 
-        // INITIALISATION AVEC SÉCURITÉ DE CHARGEMENT
         async function init() {
             try {
                 const res = await fetch(`${API}/api/get_server_info`); 
                 const data = await res.json();
 
                 if(data.status === "loading") {
-                    console.log("Données Discord en cours de chargement...");
+                    console.log("Le Bot charge...");
                     setTimeout(init, 2000);
                     return;
                 }
 
                 CONFIG = data.config || {};
                 
-                // Remplissage Salons
-                document.getElementById('w-chan').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                const chanSel = document.getElementById('w-chan');
+                if(data.channels.length > 0) {
+                    chanSel.innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                } else {
+                    chanSel.innerHTML = '<option value="">Aucun salon trouvé</option>';
+                }
                 
-                // Remplissage Rôles
                 const makeRoles = (id, selected) => {
-                    document.getElementById(id).innerHTML = data.all_roles.map(r => `
-                        <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
-                            <span>${r}</span> <input type="checkbox" value="${r}" ${(selected || []).includes(r)?'checked':''}>
-                        </div>
-                    `).join('');
+                    const container = document.getElementById(id);
+                    if(data.all_roles.length > 0) {
+                        container.innerHTML = data.all_roles.map(r => `
+                            <div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();">
+                                <span>${r}</span> <input type="checkbox" value="${r}" ${(selected || []).includes(r)?'checked':''}>
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML = '<div class="option">Aucun rôle trouvé</div>';
+                    }
                 };
 
                 makeRoles('drop-roles', CONFIG.welcome?.trigger_roles);
                 makeRoles('drop-admin', CONFIG.admin_roles);
                 
-                // Remplissage des champs de texte
                 if(CONFIG.welcome) {
                     document.getElementById('w-title').value = CONFIG.welcome.title || "";
                     document.getElementById('w-desc').value = CONFIG.welcome.desc || "";
                     document.getElementById('w-footer').value = CONFIG.welcome.footer || "";
                     document.getElementById('w-chan').value = CONFIG.welcome.channel || "";
                     if(CONFIG.welcome.thumb) { targetSlot='thumb'; selectImg(CONFIG.welcome.thumb); }
-                    if(CONFIG.welcome.banner) { targetSlot='banner'; selectImg(CONFIG.welcome.banner); }
-                    if(CONFIG.welcome.footer_icon) { targetSlot='footer_icon'; selectImg(CONFIG.welcome.footer_icon); }
-                }
-                sync();
-            } catch(e) {
-                conso
+                    if(CONFIG.welcome.banner) { targetSlot='banner'; selectImg(CONFIG.wel
