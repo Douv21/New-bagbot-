@@ -13,7 +13,7 @@ GUILD_ID = os.getenv("GUILD_ID")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_v7_stable")
+SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_v8_final")
 
 app = Flask(__name__, static_folder='public', static_url_path='')
 CORS(app)
