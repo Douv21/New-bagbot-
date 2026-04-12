@@ -2,203 +2,272 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot Dashboard - Red & Black</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BagBot Designer Pro - Rouge & Noir</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --accent: #ed4245; /* Rouge Discord */
             --bg-main: #000000; /* Noir Pur */
-            --bg-card: #111214; /* Gris très sombre */
-            --text: #ffffff;
+            --bg-card: #111214;
+            --bg-sidebar: #0a0a0a;
+            --text-primary: #ffffff;
             --text-muted: #949ba4;
+            --embed-bg: #1e1f22;
             --border: #2b2d31;
         }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+
         body {
             background-color: var(--bg-main);
-            color: var(--text);
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
+            color: var(--text-primary);
             display: flex;
             height: 100vh;
+            overflow: hidden;
         }
 
-        /* SIDEBAR */
+        /* --- SIDEBAR --- */
         #sidebar {
             width: 260px;
-            background: #050505;
+            background-color: var(--bg-sidebar);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             transition: 0.3s;
         }
 
-        #sidebar.collapsed { width: 0; overflow: hidden; }
+        #sidebar.collapsed { width: 0; opacity: 0; pointer-events: none; }
 
         .nav-item {
             padding: 15px 20px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            cursor: pointer;
+            gap: 12px;
             color: var(--text-muted);
+            cursor: pointer;
         }
 
         .nav-item.active {
-            color: var(--accent);
             background: rgba(237, 66, 69, 0.1);
+            color: white;
             border-left: 4px solid var(--accent);
         }
 
-        /* MAIN CONTENT */
-        .main { flex-grow: 1; display: flex; flex-direction: column; }
-        
-        .header {
+        /* --- MAIN VIEW --- */
+        .main-view { flex-grow: 1; display: flex; flex-direction: column; }
+
+        .top-bar {
             height: 60px;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             padding: 0 20px;
-            background: #0a0a0a;
+            gap: 15px;
         }
 
         .workspace {
-            padding: 20px;
+            flex-grow: 1;
             overflow-y: auto;
+            padding: 30px 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* EMBED PREVIEW */
-        .embed {
+        /* --- DESIGN DE L'EMBED (PRESENTATION) --- */
+        .embed-preview {
             width: 100%;
             max-width: 500px;
-            background: var(--bg-card);
+            background: var(--embed-bg);
             border-left: 4px solid var(--accent);
-            padding: 15px;
             border-radius: 4px;
+            padding: 16px;
+            position: relative;
         }
 
-        /* SELECTORS */
-        .controls {
-            width: 100%;
-            max-width: 500px;
-            margin-top: 20px;
+        .thumbnail-zone {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 80px;
+            height: 80px;
+            border: 2px dashed var(--border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
         }
+        .thumbnail-zone img { width: 100%; height: 100%; object-fit: cover; }
 
-        select, input, textarea {
+        .author-box { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .author-img { width: 24px; height: 24px; border-radius: 50%; background: #4e5058; cursor: pointer; overflow: hidden; }
+        .author-img img { width: 100%; height: 100%; object-fit: cover; }
+
+        .transparent-input {
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
             width: 100%;
-            background: #1e1f22;
-            border: 1px solid #000;
+        }
+        .title-input { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .desc-input { font-size: 14px; min-height: 60px; color: var(--text-primary); resize: none; }
+
+        .banner-zone {
+            width: 100%;
+            height: 180px;
+            border: 2px dashed var(--border);
+            border-radius: 4px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .banner-zone img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* --- CONTROLES --- */
+        .controls { width: 100%; max-width: 500px; margin-top: 25px; padding-bottom: 50px; }
+
+        .label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
+
+        .discord-select {
+            width: 100%;
+            background: #111214;
+            border: 1px solid var(--border);
             color: white;
             padding: 12px;
-            margin-top: 10px;
             border-radius: 4px;
+            margin-bottom: 20px;
             outline: none;
-        }
-
-        .btn-add {
-            background: #313338;
-            color: white;
-            border: none;
-            padding: 10px;
-            margin: 10px 0;
-            width: 100%;
-            cursor: pointer;
-        }
-
-        .btn-send {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 15px;
-            font-weight: bold;
-            width: 100%;
-            cursor: pointer;
         }
 
         .reaction-row {
             display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
             align-items: center;
+            gap: 10px;
+            background: #0a0a0a;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
         }
+
+        .emoji-btn {
+            font-size: 20px;
+            width: 44px;
+            height: 44px;
+            background: #1e1f22;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 4px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-add { background: #313338; color: white; }
+        .btn-send { background: var(--accent); color: white; margin-top: 20px; }
+
+        /* --- MODAL EMOJI --- */
+        #emoji-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+        .modal-content { background: #1e1f22; width: 90%; max-width: 400px; border-radius: 8px; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; padding: 15px; max-height: 300px; overflow-y: auto; }
+        .emoji-item { font-size: 24px; cursor: pointer; text-align: center; }
     </style>
 </head>
 <body>
 
     <div id="sidebar">
-        <div style="padding: 20px; font-weight: bold; color: var(--accent);">BAGBOT DASHBOARD</div>
-        <div class="nav-item active"><i class="fas fa-plus"></i> Nouveau Message</div>
+        <div style="padding: 20px; font-weight: 800; color: var(--accent);">BAGBOT PRO</div>
+        <div class="nav-item active"><i class="fas fa-edit"></i> Designer</div>
         <div class="nav-item"><i class="fas fa-cog"></i> Paramètres</div>
     </div>
 
-    <div class="main">
-        <div class="header">
-            <i class="fas fa-bars" onclick="document.getElementById('sidebar').classList.toggle('collapsed')" style="cursor:pointer; margin-right: 15px;"></i>
-            <span>Constructeur d'Embed</span>
+    <div class="main-view">
+        <div class="top-bar">
+            <i class="fas fa-bars" onclick="document.getElementById('sidebar').classList.toggle('collapsed')" style="cursor:pointer; color: var(--accent);"></i>
+            <span style="font-weight: 700; font-size: 13px;">CONSTRUCTEUR D'EMBED</span>
         </div>
 
         <div class="workspace">
-            <div class="embed">
-                <input type="text" placeholder="Titre de l'embed" style="background:transparent; border:none; font-size: 18px; font-weight: bold;">
-                <textarea placeholder="Description..." style="background:transparent; border:none; resize: none;"></textarea>
+            <div class="embed-preview">
+                <div class="thumbnail-zone" onclick="triggerFile('thumb')">
+                    <i class="fas fa-plus" id="icon-thumb"></i>
+                    <img id="img-thumb" style="display:none">
+                </div>
+                <div class="author-box">
+                    <div class="author-img" onclick="triggerFile('author')">
+                        <img id="img-author" style="display:none">
+                    </div>
+                    <input type="text" class="transparent-input" value="Auteur du message" style="font-size:13px; font-weight:600;">
+                </div>
+                <input type="text" class="transparent-input title-input" value="Titre de l'embed">
+                <textarea class="transparent-input desc-input" placeholder="Écrivez votre message ici..."></textarea>
+                <div class="banner-zone" onclick="triggerFile('banner')">
+                    <i class="fas fa-image" id="icon-banner" style="font-size:30px; color: #3f4147;"></i>
+                    <img id="img-banner" style="display:none">
+                </div>
             </div>
 
             <div class="controls">
-                <label style="font-size: 12px; color: var(--text-muted);">SALON DISCORD</label>
-                <select id="channel-select">
+                <label class="label">Salon Discord</label>
+                <select class="discord-select" id="channel-list">
                     <option>Chargement des salons...</option>
                 </select>
 
-                <div id="reactions-container" style="margin-top: 20px;">
-                    <label style="font-size: 12px; color: var(--text-muted);">RÔLES-RÉACTIONS</label>
-                </div>
+                <label class="label">Rôles-Réactions</label>
+                <div id="reactions-container"></div>
 
-                <button class="btn-add" onclick="addReactionRow()">+ Ajouter une réaction</button>
-                <button class="btn-send">DÉPLOYER L'EMBED</button>
+                <button class="btn btn-add" onclick="addRow()"><i class="fas fa-plus"></i> Ajouter une réaction</button>
+                <button class="btn btn-send"><i class="fas fa-paper-plane"></i> ENVOYER LE MESSAGE</button>
             </div>
         </div>
     </div>
 
+    <div id="emoji-modal">
+        <div class="modal-content">
+            <div style="padding:15px; border-bottom:1px solid #2b2d31; display:flex; justify-content:space-between;">
+                <span>Choisir un Emoji</span>
+                <i class="fas fa-times" onclick="closeEmojiModal()" style="cursor:pointer;"></i>
+            </div>
+            <div class="emoji-grid" id="emoji-picker"></div>
+        </div>
+    </div>
+
+    <input type="file" id="file-input" style="display:none" onchange="previewImage(this)">
+
 <script>
     let rolesData = [];
+    let currentEmojiBtn = null;
+    let currentTarget = "";
+    const emojis = ["✅","❌","🔥","⭐","🚀","📢","🛠️","🎁","🎉","🤖","🔞","👋","💡","🛡️","💎","👑","🌈","🎯","🎧","🎮","🍎","🍕","🏀","🚗"];
 
-    async function loadData() {
+    // RÉCUPÉRATION RÉELLE
+    async function init() {
         try {
-            const response = await fetch('/api/get_server_info');
-            const data = await response.json();
+            const res = await fetch('/api/get_server_info');
+            const data = await res.json();
             
-            // Remplissage des salons
-            const select = document.getElementById('channel-select');
-            select.innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            
-            // Stockage des rôles
-            rolesData = data.roles;
-        } catch (e) {
-            console.error("Erreur de chargement", e);
-        }
-    }
-
-    function addReactionRow() {
-        const container = document.getElementById('reactions-container');
-        const row = document.createElement('div');
-        row.className = 'reaction-row';
-        
-        const roleOptions = rolesData.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-        
-        row.innerHTML = `
-            <div style="background:#2b2d31; padding:10px; border-radius:4px; cursor:pointer;">😀</div>
-            <select style="margin-top:0;">${roleOptions}</select>
-            <i class="fas fa-trash" onclick="this.parentElement.remove()" style="color:var(--accent); cursor:pointer;"></i>
-        `;
-        container.appendChild(row);
-    }
-
-    window.onload = loadData;
-</script>
-</body>
-</html>
-
+            const select = document.getElementById('channel-list
+                                                   
