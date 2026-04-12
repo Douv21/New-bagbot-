@@ -13,7 +13,7 @@ GUILD_ID = os.getenv("GUILD_ID")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_full_v4")
+SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_v5_responsive")
 OWNER_ID = "943487722738311219"
 
 app = Flask(__name__, static_folder='public', static_url_path='')
@@ -38,7 +38,6 @@ def save_config(data):
     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
         json.dump(current, f, indent=4, ensure_ascii=False)
 
-# --- BOT LOGIC ---
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -88,7 +87,6 @@ async def on_member_update(before, after):
         new_role = next(role for role in after.roles if role not in before.roles)
         if new_role.name in triggers: await send_welcome_embed(after, config)
 
-# --- ROUTES API ---
 @app.route('/')
 def index():
     if not session.get('admin'): return redirect('/login')
@@ -111,7 +109,6 @@ def callback():
         session['admin'] = True
         session['user_id'] = str(m['user']['id'])
         session['user_name'] = m['user']['username']
-        session['user_roles'] = [r for r in m.get('roles', [])]
         return redirect('/')
     return "Refusé", 403
 
@@ -124,7 +121,6 @@ def get_info():
         "all_roles": sorted([r.name for r in guild.roles if r.name != "@everyone"]),
         "bot": {"name": bot.user.name, "avatar": str(bot.user.display_avatar.url)},
         "config": load_config(),
-        "is_owner": str(session.get('user_id')) == OWNER_ID,
         "user_connected": session.get('user_name', 'User'),
         "server_name": guild.name,
         "member_count": guild.member_count
