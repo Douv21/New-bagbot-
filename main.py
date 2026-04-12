@@ -4,11 +4,6 @@ from flask import Flask, send_from_directory, jsonify, request
 from flask_cors import CORS
 import threading, os, json, asyncio
 from werkzeug.utils import secure_filename
-from dotenv import load_dotenv
-
-load_dotenv()
-TOKEN = os.getenv("TOKEN")
-GUILD_ID = os.getenv("GUILD_ID")
 
 app = Flask(__name__, static_folder='public', static_url_path='')
 CORS(app)
@@ -16,10 +11,8 @@ UPLOAD_FOLDER = 'public/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-def load_config():
-    if os.path.exists('config.json'):
-        with open('config.json', 'r', encoding='utf-8') as f: return json.load(f)
-    return {}
+TOKEN = "TON_TOKEN_ICI"
+GUILD_ID = "TON_ID_SERVEUR"
 
 @app.route('/')
 def index(): return send_from_directory('public', 'index.html')
@@ -29,7 +22,7 @@ def get_info():
     try:
         guild = bot.get_guild(int(GUILD_ID))
         channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
-        return jsonify({"channels": channels, "bot": {"name": bot.user.name, "avatar": str(bot.user.display_avatar.url)}, "config": load_config()})
+        return jsonify({"channels": channels, "bot": {"name": bot.user.name, "avatar": str(bot.user.display_avatar.url)}})
     except: return jsonify({"error": "Erreur"}), 500
 
 @app.route('/api/test_message', methods=['POST'])
@@ -38,25 +31,18 @@ def test_message():
     async def send_task():
         channel = bot.get_channel(int(data.get('channel')))
         if not channel: return
-        def rep(text):
-            return text.replace("{user}", bot.user.mention).replace("{server}", channel.guild.name).replace("{count}", str(channel.guild.member_count))
         
-        embed = discord.Embed(title=rep(data.get('title', '')), description=rep(data.get('desc', '')), color=0xed4245)
+        embed = discord.Embed(title=data.get('title', ''), description=data.get('desc', ''), color=0xed4245)
         files = []
-        # Nettoyage : On attache les fichiers sans les poster en dehors de l'embed
         for key in ['thumb', 'banner']:
             val = data.get(key)
             if val and val.startswith('/uploads/'):
                 fname = val.split('/')[-1]
-                fpath = os.path.join(app.config['UPLOAD_FOLDER'], fname)
-                if os.path.exists(fpath):
-                    files.append(discord.File(fpath, filename=fname))
+                path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
+                if os.path.exists(path):
+                    files.append(discord.File(path, filename=fname))
                     if key == 'thumb': embed.set_thumbnail(url=f"attachment://{fname}")
                     else: embed.set_image(url=f"attachment://{fname}")
-            elif val and val.startswith('http'):
-                if key == 'thumb': embed.set_thumbnail(url=val)
-                else: embed.set_image(url=val)
-        
         await channel.send(embed=embed, files=files)
 
     asyncio.run_coroutine_threadsafe(send_task(), bot.loop)
@@ -68,10 +54,6 @@ def upload_file():
     filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     return jsonify({"url": f"/uploads/{filename}"})
-
-@app.route('/api/images', methods=['GET'])
-def list_images():
-    return jsonify({"images": [f"/uploads/{f}" for f in os.listdir(UPLOAD_FOLDER)]})
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
