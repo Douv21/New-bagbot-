@@ -1,27 +1,25 @@
 import discord
 from discord.ext import commands
-from flask import Flask, send_from_directory, jsonify, request, session, redirect
+from flask import Flask, send_from_directory, jsonify, request, session, redirect, url_for
 from flask_cors import CORS
 from flask_session import Session
 import threading, os, json, asyncio, requests
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
+# --- INITIALISATION ---
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
 GUILD_ID = os.getenv("GUILD_ID")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SECRET_KEY = os.getenv("SECRET_KEY", "bagbot-final-ultra-secret")
-
+SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_ultra_secret_99")
 OWNER_ID = "943487722738311219"
 
 app = Flask(__name__, static_folder='public', static_url_path='')
 CORS(app)
-app.config["SESSION_PERMANENT"] = True
-app.config["SESSION_TYPE"] = "filesystem"
-app.config["SECRET_KEY"] = SECRET_KEY
+app.config.update(SESSION_PERMANENT=True, SESSION_TYPE="filesystem", SECRET_KEY=SECRET_KEY)
 Session(app)
 
 UPLOAD_FOLDER = 'public/uploads'
@@ -41,31 +39,25 @@ def save_config(data):
     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
         json.dump(current, f, indent=4, ensure_ascii=False)
 
-# --- LOGIQUE D'ENVOI DISCORD ---
+# --- BOT DISCORD ---
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix="!", intents=intents)
+
 async def send_welcome_embed(member, config, is_test=False):
     try:
-        chan_id = config.get("target_channel")
-        if not chan_id:
-            print("❌ Erreur : Aucun ID de salon dans la config.")
-            return
-
+        chan_id = config.get("target_channel") or config.get("channel")
+        if not chan_id: return "ERREUR: Aucun salon configuré."
+        
         channel = member.guild.get_channel(int(chan_id))
-        if not channel:
-            print(f"❌ Erreur : Salon {chan_id} introuvable.")
-            return
+        if not channel: return f"ERREUR: Salon {chan_id} introuvable."
 
         def rep(t):
             if not t: return ""
             return t.replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
 
-        embed = discord.Embed(
-            title=rep(config.get('title', 'Bienvenue')), 
-            description=rep(config.get('desc', '')), 
-            color=0xed4245
-        )
+        embed = discord.Embed(title=rep(config.get('title', 'Bienvenue')), description=rep(config.get('desc', '')), color=0xed4245)
         
         file_to_send = None
-        # Priorité aux images locales
         for key in ['thumb', 'banner']:
             val = config.get(key)
             if val:
@@ -80,15 +72,11 @@ async def send_welcome_embed(member, config, is_test=False):
                     if key == 'thumb': embed.set_thumbnail(url=val)
                     else: embed.set_image(url=val)
 
-        content = f"{'🚀 **MODE TEST**' if is_test else ''}\n{member.mention}"
+        content = f"{'🚀 **TEST DASHBOARD**' if is_test else ''}\n{member.mention}"
         await channel.send(content=content, embed=embed, file=file_to_send if file_to_send else None)
-        print(f"✅ Message envoyé avec succès dans #{channel.name}")
+        return "SUCCÈS"
     except Exception as e:
-        print(f"❌ Erreur envoi embed : {e}")
-
-# --- BOT EVENTS ---
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix="!", intents=intents)
+        return f"ERREUR: {str(e)}"
 
 @bot.event
 async def on_member_join(member):
@@ -105,7 +93,17 @@ async def on_member_update(before, after):
         if new_role.name in triggers:
             await send_welcome_embed(after, config)
 
-# --- API FLASK ---
+# --- API ---
+@app.route('/')
+def index():
+    if not session.get('admin'): return redirect('/login')
+    return send_from_directory('public', 'index.html')
+
+@app.route('/login')
+def login():
+    url = f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify+guilds.members.read"
+    return redirect(url)
+
 @app.route('/login/callback')
 def callback():
     code = request.args.get('code')
@@ -119,7 +117,7 @@ def callback():
         session['user_id'] = str(m['user']['id'])
         session['user_name'] = m['user']['username']
         return redirect('/')
-    return "Refusé", 403
+    return "Accès refusé", 403
 
 @app.route('/api/get_server_info')
 def get_info():
@@ -140,16 +138,16 @@ def get_info():
 def test_msg():
     if not session.get('admin'): return jsonify({"error": "Unauth"}), 401
     data = request.json
-    async def run_test():
-        guild = bot.get_guild(int(GUILD_ID))
-        member = guild.get_member(int(session.get('user_id'))) or bot.user
-        await send_welcome_embed(member, data, is_test=True)
-    asyncio.run_coroutine_threadsafe(run_test(), bot.loop)
-    return jsonify({"status": "success"})
+    
+    fut = asyncio.run_coroutine_threadsafe(
+        send_welcome_embed(bot.get_guild(int(GUILD_ID)).get_member(int(session['user_id'])), data, True),
+        bot.loop
+    )
+    result = fut.result() # On attend le retour du bot
+    return jsonify({"status": result})
 
 @app.route('/api/save_config', methods=['POST'])
 def save_cfg():
-    if not session.get('admin'): return jsonify({"error": "Unauth"}), 401
     save_config(request.json)
     return jsonify({"status": "success"})
 
@@ -161,18 +159,8 @@ def upload():
     return jsonify({"url": f"/uploads/{filename}"})
 
 @app.route('/api/images')
-def list_images():
+def list_img():
     return jsonify({"images": [f"/uploads/{f}" for f in os.listdir(UPLOAD_FOLDER)]})
-
-@app.route('/')
-def index():
-    if not session.get('admin'): return redirect('/login')
-    return send_from_directory('public', 'index.html')
-
-@app.route('/login')
-def login():
-    url = f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify+guilds.members.read"
-    return redirect(url)
 
 def run_flask(): app.run(host='0.0.0.0', port=49501)
 if __name__ == "__main__":
