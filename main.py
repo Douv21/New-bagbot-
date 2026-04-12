@@ -13,7 +13,7 @@ GUILD_ID = os.getenv("GUILD_ID")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SECRET_KEY = os.getenv("SECRET_KEY", "bagbot-secret-key")
+SECRET_KEY = os.getenv("SECRET_KEY", "bagbot-final-ultra-secret")
 
 OWNER_ID = "943487722738311219"
 
@@ -41,44 +41,59 @@ def save_config(data):
     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
         json.dump(current, f, indent=4, ensure_ascii=False)
 
-# --- BOT LOGIC ---
+# --- LOGIQUE D'ENVOI DISCORD ---
+async def send_welcome_embed(member, config, is_test=False):
+    try:
+        chan_id = config.get("target_channel")
+        if not chan_id:
+            print("❌ Erreur : Aucun ID de salon dans la config.")
+            return
+
+        channel = member.guild.get_channel(int(chan_id))
+        if not channel:
+            print(f"❌ Erreur : Salon {chan_id} introuvable.")
+            return
+
+        def rep(t):
+            if not t: return ""
+            return t.replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
+
+        embed = discord.Embed(
+            title=rep(config.get('title', 'Bienvenue')), 
+            description=rep(config.get('desc', '')), 
+            color=0xed4245
+        )
+        
+        file_to_send = None
+        # Priorité aux images locales
+        for key in ['thumb', 'banner']:
+            val = config.get(key)
+            if val:
+                if val.startswith('/uploads/'):
+                    fname = val.split('/')[-1]
+                    fpath = os.path.join(UPLOAD_FOLDER, fname)
+                    if os.path.exists(fpath):
+                        file_to_send = discord.File(fpath, filename=fname)
+                        if key == 'thumb': embed.set_thumbnail(url=f"attachment://{fname}")
+                        else: embed.set_image(url=f"attachment://{fname}")
+                else:
+                    if key == 'thumb': embed.set_thumbnail(url=val)
+                    else: embed.set_image(url=val)
+
+        content = f"{'🚀 **MODE TEST**' if is_test else ''}\n{member.mention}"
+        await channel.send(content=content, embed=embed, file=file_to_send if file_to_send else None)
+        print(f"✅ Message envoyé avec succès dans #{channel.name}")
+    except Exception as e:
+        print(f"❌ Erreur envoi embed : {e}")
+
+# --- BOT EVENTS ---
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
-
-async def send_welcome_embed(member, config, is_test=False):
-    chan_id = config.get("target_channel")
-    if not chan_id: return
-    channel = member.guild.get_channel(int(chan_id))
-    if not channel: return
-
-    def rep(t):
-        if not t: return ""
-        return t.replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
-
-    embed = discord.Embed(title=rep(config.get('title', '')), description=rep(config.get('desc', '')), color=0xed4245)
-    
-    file_to_send = None
-    for key in ['thumb', 'banner']:
-        val = config.get(key)
-        if val:
-            if val.startswith('/uploads/'):
-                fname = val.split('/')[-1]
-                fpath = os.path.join(UPLOAD_FOLDER, fname)
-                if os.path.exists(fpath):
-                    file_to_send = discord.File(fpath, filename=fname)
-                    if key == 'thumb': embed.set_thumbnail(url=f"attachment://{fname}")
-                    else: embed.set_image(url=f"attachment://{fname}")
-            else:
-                if key == 'thumb': embed.set_thumbnail(url=val)
-                else: embed.set_image(url=val)
-
-    content = f"{'🚀 **TEST**' if is_test else ''}\n{member.mention}"
-    await channel.send(content=content, embed=embed, file=file_to_send if file_to_send else None)
 
 @bot.event
 async def on_member_join(member):
     config = load_config()
-    if not config.get("trigger_roles"): # Si vide = immédiat
+    if not config.get("trigger_roles"):
         await send_welcome_embed(member, config)
 
 @bot.event
@@ -90,12 +105,7 @@ async def on_member_update(before, after):
         if new_role.name in triggers:
             await send_welcome_embed(after, config)
 
-# --- API ROUTES ---
-@app.route('/login')
-def login():
-    url = f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify+guilds.members.read"
-    return redirect(url)
-
+# --- API FLASK ---
 @app.route('/login/callback')
 def callback():
     code = request.args.get('code')
@@ -109,7 +119,7 @@ def callback():
         session['user_id'] = str(m['user']['id'])
         session['user_name'] = m['user']['username']
         return redirect('/')
-    return "Accès refusé", 403
+    return "Refusé", 403
 
 @app.route('/api/get_server_info')
 def get_info():
@@ -128,6 +138,7 @@ def get_info():
 
 @app.route('/api/test_message', methods=['POST'])
 def test_msg():
+    if not session.get('admin'): return jsonify({"error": "Unauth"}), 401
     data = request.json
     async def run_test():
         guild = bot.get_guild(int(GUILD_ID))
@@ -138,6 +149,7 @@ def test_msg():
 
 @app.route('/api/save_config', methods=['POST'])
 def save_cfg():
+    if not session.get('admin'): return jsonify({"error": "Unauth"}), 401
     save_config(request.json)
     return jsonify({"status": "success"})
 
@@ -145,18 +157,22 @@ def save_cfg():
 def upload():
     file = request.files['file']
     filename = secure_filename(file.filename)
-    path = os.path.join(UPLOAD_FOLDER, filename)
-    file.save(path)
+    file.save(os.path.join(UPLOAD_FOLDER, filename))
     return jsonify({"url": f"/uploads/{filename}"})
 
 @app.route('/api/images')
-def images():
+def list_images():
     return jsonify({"images": [f"/uploads/{f}" for f in os.listdir(UPLOAD_FOLDER)]})
 
 @app.route('/')
 def index():
     if not session.get('admin'): return redirect('/login')
     return send_from_directory('public', 'index.html')
+
+@app.route('/login')
+def login():
+    url = f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify+guilds.members.read"
+    return redirect(url)
 
 def run_flask(): app.run(host='0.0.0.0', port=49501)
 if __name__ == "__main__":
