@@ -4,9 +4,10 @@ from flask import Flask, request, jsonify, send_from_directory, session, redirec
 import requests, threading, json, os
 from dotenv import load_dotenv
 
+# 1. Charger le .env AVANT toute chose
 load_dotenv()
 
-# Récupération propre des variables
+# 2. Récupérer les variables (avec une sécurité si vide)
 TOKEN = os.getenv("DISCORD_TOKEN")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
@@ -16,7 +17,7 @@ REDIRECT_URI = os.getenv("REDIRECT_URI")
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-UPLOAD_FOLDER = 'public/uploads'
+UPLOAD_FOLDER = os.path.join('public', 'uploads')
 CONFIG_FILE = 'config.json'
 
 if not os.path.exists(UPLOAD_FOLDER): os.makedirs(UPLOAD_FOLDER)
@@ -33,9 +34,10 @@ intents.members = True
 intents.guilds = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# --- AUTHENTIFICATION ---
+# --- ROUTES D'AUTH (Celles qui manquaient peut-être) ---
 @app.route('/api/login')
 def login():
+    if not CLIENT_ID: return "Erreur: CLIENT_ID non trouvé dans le .env", 500
     url = (f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}"
            f"&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify")
     return redirect(url)
@@ -45,8 +47,10 @@ def callback():
     code = request.args.get('code')
     data = {'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET, 'grant_type': 'authorization_code', 'code': code, 'redirect_uri': REDIRECT_URI}
     r = requests.post('https://discord.com/api/oauth2/token', data=data)
-    token = r.json().get('access_token')
-    user_data = requests.get('https://discord.com/api/users/@me', headers={'Authorization': f'Bearer {token}'}).json()
+    token_resp = r.json()
+    if 'access_token' not in token_resp: return f"Erreur OAuth: {token_resp}", 400
+    
+    user_data = requests.get('https://discord.com/api/users/@me', headers={'Authorization': f'Bearer {token_resp["access_token"]}'}).json()
     session['user_id'] = user_data.get('id')
     return redirect('/')
 
@@ -57,13 +61,16 @@ def check_access():
     config = load_config()
     guild = bot.get_guild(int(GUILD_ID))
     member = guild.get_member(int(uid)) if guild else None
-    return any(role in [r.name for r in member.roles] for role in config.get('admin_roles', [])) if member else False
+    if member:
+        return any(role in [r.name for r in member.roles] for role in config.get('admin_roles', []))
+    return False
 
-# --- API ---
+# --- ROUTES API ---
 @app.route('/api/get_server_info')
 def get_server_info():
     if not check_access(): return jsonify({"status": "unauthorized"}), 401
     guild = bot.get_guild(int(GUILD_ID))
+    if not guild: return jsonify({"status": "error", "message": "Guild introuvable"}), 404
     return jsonify({
         "status": "success", 
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
@@ -78,24 +85,16 @@ def save_config():
         json.dump(request.json, f, indent=4, ensure_ascii=False)
     return jsonify({"status": "success"})
 
-@app.route('/api/images')
-def list_images():
-    return jsonify({"images": [f"/public/uploads/{f}" for f in os.listdir(UPLOAD_FOLDER) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]})
-
-@app.route('/api/upload', methods=['POST'])
-def upload():
-    file = request.files['file']
-    path = os.path.join(UPLOAD_FOLDER, file.filename.replace(" ", "_"))
-    file.save(path)
-    return jsonify({"status": "success", "path": f"/public/uploads/{file.filename}"})
-
+# --- SERVIR LES FICHIERS ---
 @app.route('/')
-def index(): return send_from_directory('public', 'index.html')
+def index():
+    return send_from_directory('public', 'index.html')
 
 @app.route('/public/<path:path>')
-def serve_public(path): return send_from_directory('public', path)
+def serve_public(path):
+    return send_from_directory('public', path)
 
 if __name__ == '__main__':
-    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=49501), daemon=True).start()
+    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=49501, debug=False), daemon=True).start()
     bot.run(TOKEN)
     
