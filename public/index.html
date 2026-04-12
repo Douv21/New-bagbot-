@@ -2,13 +2,14 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BAGBOT | Elite Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { 
             --bg: #050505; --side: #000; --card: #0f0f0f; --accent: #ed4245; 
             --border: #1a1a1a; --d-bg: #2b2d31; --text: #ffffff; --text-dim: #666;
+            --success: #2ecc71;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -17,150 +18,162 @@
             margin: 0; display: flex; height: 100vh; overflow: hidden; 
         }
 
-        /* --- SIDEBAR & NAV --- */
+        /* --- SIDEBAR --- */
         #sidebar { 
             width: 280px; background: var(--side); border-right: 1px solid var(--border); 
-            display: flex; flex-direction: column; flex-shrink: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 100;
+            display: flex; flex-direction: column; flex-shrink: 0; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
         }
 
         .brand { 
-            padding: 30px; font-size: 26px; font-weight: 900; color: var(--accent); 
-            text-align: center; border-bottom: 1px solid var(--border); letter-spacing: 3px;
+            padding: 35px 20px; font-size: 28px; font-weight: 900; color: var(--accent); 
+            text-align: center; border-bottom: 1px solid var(--border); letter-spacing: 4px;
         }
 
-        .nav-items { flex-grow: 1; padding: 20px 0; }
+        .nav-items { flex-grow: 1; padding: 25px 0; }
         .nav-item { 
             padding: 18px 30px; display: flex; align-items: center; gap: 15px; 
-            color: var(--text-dim); cursor: pointer; transition: 0.3s; font-weight: bold;
+            color: var(--text-dim); cursor: pointer; transition: 0.3s; font-weight: 700;
+            text-transform: uppercase; font-size: 13px; letter-spacing: 1px;
         }
-        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.02); }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.03); }
         .nav-item.active { 
-            color: var(--accent); background: rgba(237, 66, 69, 0.05); 
+            color: var(--accent); background: rgba(237, 66, 69, 0.08); 
             border-right: 4px solid var(--accent); 
         }
 
         /* --- MOBILE HEADER & BURGER --- */
         .mobile-header { 
-            display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px;
+            display: none; position: fixed; top: 0; left: 0; right: 0; height: 65px;
             background: var(--side); border-bottom: 1px solid var(--border); 
-            z-index: 101; align-items: center; padding: 0 20px;
+            z-index: 1001; align-items: center; padding: 0 20px; justify-content: space-between;
         }
-        .burger { font-size: 24px; color: var(--accent); cursor: pointer; }
+        .burger { font-size: 26px; color: var(--accent); cursor: pointer; }
 
         /* --- MAIN CONTENT --- */
         main { flex-grow: 1; padding: 40px; overflow-y: auto; scroll-behavior: smooth; position: relative; }
 
-        .section { display: none; max-width: 900px; margin: 0 auto; animation: slideIn 0.4s ease-out; }
+        .section { display: none; max-width: 900px; margin: 0 auto; animation: fadeInUp 0.5s ease; }
         .section.active { display: block; }
 
-        @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* --- DISCORD PREVIEW --- */
         .discord-card { 
             background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; 
-            padding: 16px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            padding: 20px; margin-bottom: 35px; box-shadow: 0 15px 50px rgba(0,0,0,0.5);
         }
         .embed-header { display: flex; justify-content: space-between; gap: 15px; }
-        .embed-title { color: #00a8fc; font-weight: 700; font-size: 16px; margin-bottom: 8px; }
-        .embed-desc { color: #dbdee1; font-size: 14px; line-height: 1.4; white-space: pre-wrap; }
+        .embed-title { color: #00a8fc; font-weight: 700; font-size: 17px; margin-bottom: 10px; }
+        .embed-desc { color: #dbdee1; font-size: 14.5px; line-height: 1.5; white-space: pre-wrap; }
         .embed-thumb { 
-            width: 80px; height: 80px; border-radius: 8px; background: #1e1f22; 
-            border: 1px dashed #444; flex-shrink: 0; cursor: pointer; overflow: hidden;
+            width: 85px; height: 85px; border-radius: 10px; background: #1e1f22; 
+            border: 2px dashed #333; flex-shrink: 0; cursor: pointer; overflow: hidden;
         }
         .embed-banner { 
-            width: 100%; height: 200px; border-radius: 8px; background: #1e1f22; 
-            margin-top: 15px; border: 1px dashed #444; cursor: pointer; overflow: hidden;
+            width: 100%; height: 210px; border-radius: 10px; background: #1e1f22; 
+            margin-top: 18px; border: 2px dashed #333; cursor: pointer; overflow: hidden;
         }
         .embed-thumb img, .embed-banner img { width: 100%; height: 100%; object-fit: cover; }
-        .embed-footer { margin-top: 12px; color: #949ba4; font-size: 12px; font-weight: 500; }
+        .embed-footer { margin-top: 15px; color: #949ba4; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
 
-        /* --- CARDS & INPUTS --- */
-        .card { background: var(--card); border: 1px solid var(--border); padding: 30px; border-radius: 24px; margin-bottom: 25px; }
-        .card h2 { margin: 0 0 20px; font-size: 20px; display: flex; align-items: center; gap: 12px; }
+        /* --- CARDS & FORMS --- */
+        .card { background: var(--card); border: 1px solid var(--border); padding: 35px; border-radius: 25px; margin-bottom: 30px; }
+        .card h2 { margin: 0 0 25px; font-size: 22px; display: flex; align-items: center; gap: 12px; color: var(--accent); }
         
-        label { display: block; margin: 20px 0 8px; color: var(--text-dim); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        label { display: block; margin: 25px 0 10px; color: #555; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; }
         input, textarea, select { 
             width: 100%; background: #000; border: 1px solid var(--border); color: #fff; 
-            padding: 15px; border-radius: 12px; font-size: 14px; transition: 0.3s;
+            padding: 16px; border-radius: 14px; font-size: 15px; transition: 0.3s;
         }
-        input:focus { border-color: var(--accent); outline: none; background: #050505; }
+        input:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(237, 66, 69, 0.1); }
 
-        /* SÉLECTEUR DE RÔLES */
+        /* SÉLECTEUR DE RÔLES ÉVOLUÉ */
         .role-selector { 
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
-            gap: 10px; background: #000; padding: 15px; border-radius: 12px; border: 1px solid var(--border);
-            max-height: 200px; overflow-y: auto;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+            gap: 12px; background: #000; padding: 20px; border-radius: 14px; border: 1px solid var(--border);
+            max-height: 250px; overflow-y: auto;
         }
         .role-pill { 
-            display: flex; align-items: center; gap: 8px; padding: 8px; 
-            background: #111; border-radius: 8px; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; gap: 10px; padding: 10px; 
+            background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 10px; font-size: 13px; cursor: pointer; transition: 0.2s;
         }
-        .role-pill input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); }
+        .role-pill:hover { border-color: var(--accent); }
+        .role-pill input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); margin: 0; }
 
         /* --- BUTTONS --- */
         .btn { 
-            padding: 16px; border: none; border-radius: 12px; font-weight: 800; 
-            cursor: pointer; transition: 0.3s; display: flex; align-items: center; 
-            justify-content: center; gap: 10px; width: 100%; font-size: 15px;
+            padding: 18px; border: none; border-radius: 14px; font-weight: 800; 
+            cursor: pointer; transition: 0.4s; display: flex; align-items: center; 
+            justify-content: center; gap: 12px; width: 100%; font-size: 16px; text-transform: uppercase;
         }
-        .btn-accent { background: var(--accent); color: white; margin-top: 20px; }
-        .btn-accent:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(237, 66, 69, 0.3); }
+        .btn-accent { background: var(--accent); color: white; margin-top: 25px; box-shadow: 0 4px 15px rgba(237, 66, 69, 0.2); }
+        .btn-accent:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(237, 66, 69, 0.4); }
+        .btn-accent:active { transform: translateY(0); }
 
         /* --- GALLERY --- */
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 25px; }
         .gallery-item { 
-            background: #111; border-radius: 15px; overflow: hidden; border: 1px solid var(--border); 
-            transition: 0.3s; cursor: pointer;
+            background: #111; border-radius: 20px; overflow: hidden; border: 1px solid var(--border); 
+            transition: 0.3s; cursor: pointer; position: relative;
         }
-        .gallery-item:hover { border-color: var(--accent); transform: scale(1.03); }
-        .gallery-item img { width: 100%; height: 130px; object-fit: cover; }
-        .gallery-item-name { padding: 10px; font-size: 11px; text-align: center; color: var(--text-dim); }
+        .gallery-item:hover { border-color: var(--accent); transform: scale(1.04); z-index: 10; }
+        .gallery-item img { width: 100%; height: 140px; object-fit: cover; }
+        .gallery-item-name { padding: 12px; font-size: 11px; text-align: center; color: var(--text-dim); background: #080808; }
 
-        /* --- RESPONSIVE --- */
+        /* --- RESPONSIVE MOBILE --- */
         @media (max-width: 768px) {
             .mobile-header { display: flex; }
             #sidebar { 
-                position: fixed; left: -280px; top: 0; bottom: 0; height: 100vh;
+                position: fixed; left: -285px; top: 0; bottom: 0; height: 100vh;
+                box-shadow: 20px 0 50px rgba(0,0,0,0.8);
             }
             #sidebar.open { left: 0; }
-            main { padding: 80px 20px 20px; }
-            .brand { padding: 20px; font-size: 20px; }
-            .nav-item { padding: 15px 20px; }
-            .embed-banner { height: 140px; }
-            .card { padding: 20px; }
+            main { padding: 90px 20px 30px; }
+            .brand { padding: 25px; font-size: 22px; }
+            .nav-item { padding: 15px 25px; font-size: 12px; }
+            .discord-card { padding: 15px; }
+            .embed-banner { height: 160px; }
+            .card { padding: 25px 20px; border-radius: 20px; }
+            .role-selector { grid-template-columns: 1fr; }
         }
 
-        /* --- NOTIFICATION --- */
+        /* --- NOTIFICATIONS --- */
         #notif {
-            position: fixed; bottom: 20px; right: 20px; padding: 15px 30px;
-            background: #2ecc71; color: white; border-radius: 10px; font-weight: bold;
-            transform: translateY(100px); transition: 0.5s; z-index: 1000;
+            position: fixed; bottom: 30px; right: 30px; padding: 18px 35px;
+            background: var(--success); color: white; border-radius: 15px; font-weight: 800;
+            transform: translateY(150px); transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            z-index: 2000; box-shadow: 0 10px 30px rgba(46, 204, 113, 0.3);
         }
 
         /* --- MODAL --- */
         #modal { 
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); 
-            z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(8px);
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); 
+            z-index: 3000; align-items: center; justify-content: center; backdrop-filter: blur(10px);
+            padding: 20px;
         }
-        .modal-content { background: var(--card); width: 90%; max-width: 650px; padding: 30px; border-radius: 30px; border: 1px solid var(--border); }
+        .modal-content { 
+            background: var(--card); width: 100%; max-width: 700px; padding: 35px; 
+            border-radius: 35px; border: 1px solid var(--border); animation: zoomIn 0.3s;
+        }
+        @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div class="mobile-header">
         <i class="fas fa-bars burger" onclick="toggleSidebar()"></i>
-        <div style="margin-left: 20px; font-weight: 900; color: var(--accent); letter-spacing: 2px;">BAGBOT</div>
-    </div>
+        <div style="font-weight: 900; color: var(--accent); letter-spacing: 3px; font-size: 20px;">BAGBOT</div>
+        <div style="width: 26px;"></div> </div>
 
     <nav id="sidebar">
         <div class="brand">BAGBOT</div>
         <div class="nav-items">
-            <div class="nav-item active" onclick="showTab('welcome', this)"><i class="fas fa-magic"></i> BIENVENUE</div>
-            <div class="nav-item" onclick="showTab('gallery', this)"><i class="fas fa-images"></i> MA GALERIE</div>
-            <div class="nav-item" onclick="showTab('admin', this)"><i class="fas fa-shield-halved"></i> ACCÈS PANEL</div>
+            <div class="nav-item active" onclick="showTab('welcome', this)"><i class="fas fa-magic"></i> <span>Bienvenue</span></div>
+            <div class="nav-item" onclick="showTab('gallery', this)"><i class="fas fa-images"></i> <span>Galerie</span></div>
+            <div class="nav-item" onclick="showTab('admin', this)"><i class="fas fa-shield-halved"></i> <span>Permissions</span></div>
         </div>
-        <div style="padding: 20px; font-size: 10px; color: #333; text-align: center;">ELITE VERSION 3.0</div>
+        <div style="padding: 25px; font-size: 11px; color: #222; text-align: center; font-weight: 900; letter-spacing: 1px;">VERSION ELITE 4.0</div>
     </nav>
 
     <main onclick="closeSidebarMobile()">
@@ -168,109 +181,137 @@
             <div class="discord-card">
                 <div class="embed-header">
                     <div style="flex-grow: 1;">
-                        <div id="pv-title" class="embed-title">Titre de l'Embed</div>
-                        <div id="pv-desc" class="embed-desc">Bienvenue sur le serveur ! Préparez votre message ici...</div>
+                        <div id="pv-title" class="embed-title">Chargement...</div>
+                        <div id="pv-desc" class="embed-desc">Veuillez patienter pendant la récupération des données...</div>
                     </div>
                     <div class="embed-thumb" onclick="openPicker('thumbnail')">
                         <img id="pv-thumb-img" style="display:none">
-                        <div id="thumb-plus" style="height:100%; display:flex; align-items:center; justify-content:center; color:#444;"><i class="fas fa-plus"></i></div>
+                        <div id="thumb-plus" style="height:100%; display:flex; align-items:center; justify-content:center; color:#333;"><i class="fas fa-plus fa-2x"></i></div>
                     </div>
                 </div>
                 <div class="embed-banner" onclick="openPicker('banner')">
                     <img id="pv-banner-img" style="display:none">
-                    <div id="banner-plus" style="height:100%; display:flex; align-items:center; justify-content:center; color:#444;"><i class="fas fa-image"></i>&nbsp; AJOUTER BANNIÈRE</div>
+                    <div id="banner-plus" style="height:100%; display:flex; align-items:center; justify-content:center; color:#333;"><i class="fas fa-image fa-3x"></i></div>
                 </div>
-                <div id="pv-footer" class="embed-footer">Pied de page de l'embed</div>
+                <div id="pv-footer" class="embed-footer">Pied de page Discord</div>
             </div>
 
             <div class="card">
-                <h2><i class="fas fa-pen-nib" style="color:var(--accent)"></i> Contenu du Message</h2>
-                <div style="font-size: 12px; color: #444; margin-bottom: 10px;">Variables : {user}, {guild}, {count}</div>
+                <h2><i class="fas fa-sliders" style="color:var(--accent)"></i> Configuration</h2>
                 
-                <label>Titre</label>
+                <label>Titre du message</label>
                 <input type="text" id="w-title" oninput="sync()" placeholder="Bienvenue {user} !">
                 
-                <label>Description</label>
-                <textarea id="w-desc" rows="5" oninput="sync()" placeholder="Nous sommes ravis de t'accueillir..."></textarea>
+                <label>Texte de description</label>
+                <textarea id="w-desc" rows="6" oninput="sync()" placeholder="Tape ton texte ici..."></textarea>
                 
-                <label>Pied de page</label>
-                <input type="text" id="w-footer" oninput="sync()" placeholder="Membre n°{count}">
+                <label>Texte du bas (Footer)</label>
+                <input type="text" id="w-footer" oninput="sync()" placeholder="Nous sommes {count} !">
 
-                <label>Rôles de déclenchement</label>
-                <div id="trigger-roles" class="role-selector"></div>
+                <label>Rôles recevant le message</label>
+                <div id="trigger-roles" class="role-selector">
+                    <p style="color:#333; font-size: 12px; padding: 10px;">Chargement des rôles...</p>
+                </div>
 
-                <label>Salon d'envoi</label>
-                <select id="w-channel"></select>
+                <label>Salon Discord cible</label>
+                <select id="w-channel">
+                    <option>Chargement des salons...</option>
+                </select>
 
-                <button class="btn btn-accent" onclick="saveData()"><i class="fas fa-save"></i> SAUVEGARDER LES PARAMÈTRES</button>
+                <button class="btn btn-accent" onclick="saveData()"><i class="fas fa-cloud-arrow-up"></i> ENREGISTRER L'ELITE</button>
             </div>
         </div>
 
         <div id="gallery" class="section">
-            <h2 style="margin-bottom: 30px;"><i class="fas fa-folder-open"></i> Ma Bibliothèque</h2>
-            <div id="gallery-main" class="gallery-grid"></div>
+            <div class="card">
+                <h2><i class="fas fa-images"></i> Bibliothèque Média</h2>
+                <div id="gallery-main" class="gallery-grid"></div>
+            </div>
         </div>
 
         <div id="admin" class="section">
             <div class="card">
-                <h2><i class="fas fa-user-lock"></i> Permissions d'accès</h2>
-                <p style="color: #666; font-size: 13px;">Sélectionnez les rôles autorisés à gérer ce panel.</p>
-                <div id="admin-roles" class="role-selector" style="margin-top: 20px;"></div>
-                <button class="btn btn-accent" onclick="saveData()" style="margin-top: 30px;"><i class="fas fa-check-double"></i> VALIDER LES DROITS</button>
+                <h2><i class="fas fa-lock"></i> Accès au Panel</h2>
+                <div id="admin-roles" class="role-selector"></div>
+                <button class="btn btn-accent" onclick="saveData()" style="margin-top: 35px;"><i class="fas fa-user-check"></i> MISE À JOUR DES DROITS</button>
             </div>
         </div>
     </main>
 
-    <div id="notif">Action réussie !</div>
+    <div id="notif">CONFIGURATION ENREGISTRÉE !</div>
 
     <div id="modal">
         <div class="modal-content">
-            <h3><i class="fas fa-photo-film"></i> Choisir un média</h3>
-            <div id="modal-grid" class="gallery-grid" style="max-height: 400px; overflow-y: auto; padding: 10px;"></div>
-            <button class="btn" style="background:#222; margin-top: 20px;" onclick="closePicker()">FERMER</button>
+            <h3 style="margin-top:0; color:var(--accent); display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-photo-video"></i> CHOISIR UNE IMAGE
+            </h3>
+            <div id="modal-grid" class="gallery-grid" style="max-height: 450px; overflow-y: auto; padding: 10px;"></div>
+            <button class="btn" style="background:#1a1a1a; margin-top: 25px; color:#555" onclick="closePicker()">ANNULER</button>
         </div>
     </div>
 
     <script>
-        let db = { config: {}, images: [], roles: [], channels: [] };
+        let serverData = { config: { welcome: {} }, images: [], roles: [], channels: [] };
         let activeTarget = '';
 
-        async function load() {
-            const res = await fetch('/api/get_data');
-            db = await res.json();
+        async function loadAllData() {
+            try {
+                const res = await fetch('/api/get_data');
+                if(!res.ok) throw new Error("Erreur de connexion");
+                serverData = await res.json();
 
-            // Salons
-            document.getElementById('w-channel').innerHTML = db.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                // 1. Remplissage Salon
+                const chanSelect = document.getElementById('w-channel');
+                if(serverData.channels.length > 0) {
+                    chanSelect.innerHTML = serverData.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                } else {
+                    chanSelect.innerHTML = "<option disabled>Aucun salon trouvé</option>";
+                }
 
-            // Rôles (Trigger + Admin)
-            const buildRoles = (containerId, configKey, subKey) => {
-                document.getElementById(containerId).innerHTML = db.roles.map(r => `
-                    <div class="role-pill">
-                        <input type="checkbox" value="${r}" class="${containerId}-check" 
-                        ${(subKey ? db.config[configKey][subKey] : db.config[configKey])?.includes(r) ? 'checked' : ''}>
-                        <span>${r}</span>
-                    </div>
-                `).join('');
-            };
-            buildRoles('trigger-roles', 'welcome', 'trigger_roles');
-            buildRoles('admin-roles', 'admin_roles');
+                // 2. Remplissage Rôles
+                const buildRoleList = (containerId, selectedArray) => {
+                    const container = document.getElementById(containerId);
+                    if(serverData.roles.length > 0) {
+                        container.innerHTML = serverData.roles.map(r => `
+                            <div class="role-pill">
+                                <input type="checkbox" value="${r}" class="${containerId}-check" 
+                                ${selectedArray && selectedArray.includes(r) ? 'checked' : ''}>
+                                <span>${r}</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML = "<p style='color:#333'>Aucun rôle trouvé</p>";
+                    }
+                };
+                buildRoleList('trigger-roles', serverData.config.welcome.trigger_roles);
+                buildRoleList('admin-roles', serverData.config.admin_roles);
 
-            // Data Welcome
-            const w = db.config.welcome;
-            document.getElementById('w-title').value = w.title || "";
-            document.getElementById('w-desc').value = w.desc || "";
-            document.getElementById('w-footer').value = w.footer || "";
-            document.getElementById('w-channel').value = w.channel || "";
+                // 3. Inputs
+                const w = serverData.config.welcome;
+                document.getElementById('w-title').value = w.title || "";
+                document.getElementById('w-desc').value = w.desc || "";
+                document.getElementById('w-footer').value = w.footer || "";
+                document.getElementById('w-channel').value = w.channel || "";
 
-            if(w.banner) updateImg('banner', w.banner);
-            if(w.thumbnail) updateImg('thumbnail', w.thumbnail);
+                if(w.banner) updateImagePreview('banner', w.banner);
+                if(w.thumbnail) updateImagePreview('thumbnail', w.thumbnail);
 
-            // Galerie principale
-            document.getElementById('gallery-main').innerHTML = db.images.map(img => `
-                <div class="gallery-item"><img src="${img}"><div class="gallery-item-name">${img.split('/').pop()}</div></div>
-            `).join('');
+                // 4. Galerie
+                const gallery = document.getElementById('gallery-main');
+                if(serverData.images.length > 0) {
+                    gallery.innerHTML = serverData.images.map(img => `
+                        <div class="gallery-item"><img src="${img}"><div class="gallery-item-name">${img.split('/').pop()}</div></div>
+                    `).join('');
+                } else {
+                    gallery.innerHTML = "<p style='color:#333'>La galerie est vide (dossier /uploads)</p>";
+                }
 
-            sync();
+                sync();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('pv-title').innerText = "ERREUR DE CONNEXION";
+                document.getElementById('pv-desc').innerText = "Vérifie que ton BOT est bien lancé et que GUILD_ID est correct.";
+            }
         }
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
@@ -286,30 +327,35 @@
 
         function sync() {
             const t = document.getElementById('w-title').value || "Titre de l'Embed";
-            const d = document.getElementById('w-desc').value || "Aperçu de votre message...";
+            const d = document.getElementById('w-desc').value || "Bienvenue sur le serveur !";
             const f = document.getElementById('w-footer').value || "Pied de page";
             
             document.getElementById('pv-title').innerText = t.replace(/{user}/g, "Utilisateur");
-            document.getElementById('pv-desc').innerText = d.replace(/{guild}/g, "Serveur");
+            document.getElementById('pv-desc').innerText = d.replace(/{guild}/g, serverData.guild_name || "Serveur");
             document.getElementById('pv-footer').innerText = f.replace(/{count}/g, "123");
         }
 
         function openPicker(type) {
             activeTarget = type;
-            document.getElementById('modal-grid').innerHTML = db.images.map(img => `
-                <img src="${img}" onclick="selectImg('${img}')" style="width:100%; height:110px; object-fit:cover; border-radius:12px; cursor:pointer;">
-            `).join('');
+            const grid = document.getElementById('modal-grid');
+            if(serverData.images.length > 0) {
+                grid.innerHTML = serverData.images.map(img => `
+                    <img src="${img}" onclick="selectImage('${img}')" style="width:100%; height:120px; object-fit:cover; border-radius:15px; cursor:pointer; border: 2px solid #111;">
+                `).join('');
+            } else {
+                grid.innerHTML = "<p style='color:#555'>Aucune image dans /public/uploads</p>";
+            }
             document.getElementById('modal').style.display = 'flex';
         }
 
-        function selectImg(url) { updateImg(activeTarget, url); closePicker(); }
+        function selectImage(url) { updateImagePreview(activeTarget, url); closePicker(); }
         function closePicker() { document.getElementById('modal').style.display = 'none'; }
 
-        function updateImg(type, url) {
-            const imgEl = document.getElementById(`pv-${type}-img`);
-            const plusEl = document.getElementById(`${type}-plus`);
-            imgEl.src = url; imgEl.style.display = 'block'; imgEl.dataset.url = url;
-            plusEl.style.display = 'none';
+        function updateImagePreview(type, url) {
+            const img = document.getElementById(`pv-${type}-img`);
+            const plus = document.getElementById(`${type}-plus`);
+            img.src = url; img.style.display = 'block'; img.dataset.url = url;
+            plus.style.display = 'none';
         }
 
         async function saveData() {
@@ -320,23 +366,18 @@
                     footer: document.getElementById('w-footer').value,
                     channel: document.getElementById('w-channel').value,
                     banner: document.getElementById('pv-banner-img').dataset.url || "",
-                    thumbnail: document.getElementById('pv-thumbnail-img').dataset.url || "",
+                    thumbnail: document.getElementById('pv-thumb-img').dataset.url || "",
                     trigger_roles: Array.from(document.querySelectorAll('.trigger-roles-check:checked')).map(c => c.value)
                 },
                 admin_roles: Array.from(document.querySelectorAll('.admin-roles-check:checked')).map(c => c.value)
             };
 
-            await fetch('/api/save', {
+            const res = await fetch('/api/save', {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(config)
             });
             
-            const n = document.getElementById('notif');
-            n.style.transform = "translateY(0)";
-            setTimeout(() => n.style.transform = "translateY(100px)", 3000);
-        }
-
-        window.onload = load;
-    </script>
-</body>
-</html>
+            if(res.ok) {
+                const n = document.getElementById('notif');
+                n.style.transform = "translateY(0)";
+                s
