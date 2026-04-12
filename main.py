@@ -14,9 +14,9 @@ GUILD_ID = os.getenv("GUILD_ID")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SECRET_KEY = os.getenv("SECRET_KEY", "bagbot-secure-key")
+SECRET_KEY = os.getenv("SECRET_KEY", "bagbot-ultra-secret-key")
 
-# Ton ID Discord pour l'accès exclusif au menu Admin
+# TON ID DISCORD POUR LE MENU ADMIN
 OWNER_ID = "943487722738311219"
 
 app = Flask(__name__, static_folder='public', static_url_path='')
@@ -35,7 +35,10 @@ CONFIG_FILE = 'config.json'
 def load_config():
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            try:
+                return json.load(f)
+            except:
+                return {"admin_roles": ["Admin", "Fondateur"]}
     return {"admin_roles": ["Admin", "Fondateur"]}
 
 def save_config(data):
@@ -48,6 +51,7 @@ def save_config(data):
 
 @app.route('/login')
 def login():
+    session.clear() # On vide la session pour forcer un rafraîchissement propre
     url = f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=identify+guilds.members.read"
     return redirect(url)
 
@@ -61,14 +65,14 @@ def callback():
     r = requests.post('https://discord.com/api/oauth2/token', data=data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     access_token = r.json().get('access_token')
 
-    if not access_token: return "Erreur Token", 400
+    if not access_token: return "Erreur : Token non reçu de Discord.", 400
 
     headers = {'Authorization': f'Bearer {access_token}'}
     res = requests.get(f'https://discord.com/api/users/@me/guilds/{GUILD_ID}/member', headers=headers)
     
     if res.status_code == 200:
         member_data = res.json()
-        user_id = member_data['user']['id']
+        user_id = str(member_data['user']['id']) # Conversion en string pour sécurité
         
         is_admin = False
         if user_id == OWNER_ID:
@@ -88,7 +92,7 @@ def callback():
             session['user_name'] = member_data['user']['username']
             return redirect('/')
     
-    return "Accès refusé", 403
+    return "Accès refusé : Identité non reconnue ou droits insuffisants.", 403
 
 # --- API ---
 
@@ -101,6 +105,7 @@ def index():
 def get_info():
     if not session.get('admin'): return jsonify({"error": "Unauth"}), 401
     guild = bot.get_guild(int(GUILD_ID))
+    if not guild: return jsonify({"error": "Le bot n'est pas sur le serveur"}), 500
     
     channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
     all_roles = [role.name for role in guild.roles if role.name != "@everyone"]
@@ -110,17 +115,23 @@ def get_info():
         "all_roles": sorted(all_roles),
         "bot": {"name": bot.user.name, "avatar": str(bot.user.display_avatar.url)}, 
         "config": load_config(),
-        "is_owner": session.get('user_id') == OWNER_ID
+        "is_owner": str(session.get('user_id')) == OWNER_ID
     })
 
 @app.route('/api/save_roles', methods=['POST'])
-def save_roles():
-    if session.get('user_id') != OWNER_ID: return jsonify({"error": "Forbidden"}), 403
+def save_roles_route():
+    if str(session.get('user_id')) != OWNER_ID: return jsonify({"error": "Forbidden"}), 403
     roles = request.json.get('roles', [])
     save_config({"admin_roles": roles})
     return jsonify({"status": "success"})
 
-# --- AUTRES ROUTES (IMAGES / MESSAGES) ---
+@app.route('/api/save_config', methods=['POST'])
+def api_save():
+    if not session.get('admin'): return jsonify({"error": "Unauth"}), 401
+    save_config(request.json)
+    return jsonify({"status": "success"})
+
+# --- GESTION DES IMAGES ET MESSAGES ---
 
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
@@ -170,18 +181,14 @@ def test_message():
     asyncio.run_coroutine_threadsafe(send_task(), bot.loop)
     return jsonify({"status": "success"})
 
-@app.route('/api/save_config', methods=['POST'])
-def api_save():
-    if not session.get('admin'): return jsonify({"error": "Unauth"}), 401
-    save_config(request.json)
-    return jsonify({"status": "success"})
-
+# --- LANCEMENT ---
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-def run_flask(): app.run(host='0.0.0.0', port=49501, debug=False)
+def run_flask():
+    app.run(host='0.0.0.0', port=49501, debug=False)
 
 if __name__ == "__main__":
     threading.Thread(target=run_flask).start()
     bot.run(TOKEN)
-                         
+    
