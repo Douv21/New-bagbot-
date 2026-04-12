@@ -13,7 +13,7 @@ GUILD_ID = os.getenv("GUILD_ID")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")
-SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_v8_final")
+SECRET_KEY = os.getenv("SECRET_KEY", "bagbot_v11_fixed")
 
 app = Flask(__name__, static_folder='public', static_url_path='')
 CORS(app)
@@ -46,13 +46,10 @@ async def send_welcome_embed(member, config, is_test=False):
         if not chan_id: return "ERREUR: Salon non configuré."
         channel = member.guild.get_channel(int(chan_id))
         if not channel: return "ERREUR: Salon introuvable."
-        
         def rep(t):
             if not t: return ""
             return t.replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
-        
         embed = discord.Embed(title=rep(config.get('title', 'Bienvenue')), description=rep(config.get('desc', '')), color=0xed4245)
-        
         file_to_send = None
         for key in ['thumb', 'banner']:
             val = config.get(key)
@@ -63,7 +60,6 @@ async def send_welcome_embed(member, config, is_test=False):
                     file_to_send = discord.File(fpath, filename=fname)
                     if key == 'thumb': embed.set_thumbnail(url=f"attachment://{fname}")
                     else: embed.set_image(url=f"attachment://{fname}")
-
         await channel.send(content=f"{member.mention}", embed=embed, file=file_to_send if file_to_send else None)
         return "SUCCÈS"
     except Exception as e: return f"ERREUR: {str(e)}"
