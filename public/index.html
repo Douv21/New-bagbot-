@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>BagBot Panel v19</title>
+    <title>BagBot Panel v20</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #050505; --panel: #0f0f0f; --accent: #ed4245; --border: #1e1e1e; --discord-bg: #2b2d31; --discord-text: #dbdee1; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Whitney', sans-serif; }
-        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: white; display: flex; min-height: 100vh; overflow-x: hidden; }
 
-        /* SIDEBAR */
+        /* SIDEBAR & NAV */
         #sidebar { width: 260px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 9999; transition: 0.3s; position: sticky; top: 0; height: 100vh; }
         .sidebar-header { padding: 30px 25px; font-size: 22px; font-weight: 900; color: var(--accent); display: flex; align-items: center; gap: 15px; }
         .nav-item { padding: 18px 25px; cursor: pointer; color: #888; display: flex; align-items: center; gap: 12px; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: rgba(237,66,69,0.1); border-right: 4px solid var(--accent); }
         @media (max-width: 900px) { #sidebar { position: fixed; transform: translateX(-100%); left: 0; } #sidebar.open { transform: translateX(0); } }
 
-        /* MAIN */
+        /* MAIN CONTENT */
         main { flex: 1; display: flex; flex-direction: column; position: relative; min-width: 0; }
         header { height: 70px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding-left: 80px; font-weight: 900; position: sticky; top: 0; z-index: 100; }
         .menu-toggle { position: fixed; left: 15px; top: 15px; font-size: 24px; color: var(--accent); cursor: pointer; z-index: 10001; background: #111; padding: 10px; border-radius: 8px; border: 1px solid var(--border); display: none; }
@@ -27,48 +26,38 @@
         .content-section { display: none; flex-direction: column; align-items: center; padding: 20px 15px; width: 100%; }
         .content-section.active { display: flex; }
 
-        /* --- DISCORD EMBED V3 (FULL) --- */
+        /* --- DISCORD EMBED PERFECT REPLICA --- */
         .discord-embed { 
-            width: 100%; max-width: 520px; background: var(--discord-bg); border-left: 4px solid var(--accent); 
+            width: 100%; max-width: 500px; background: var(--discord-bg); border-left: 4px solid var(--accent); 
             padding: 16px; border-radius: 4px; position: relative; margin-bottom: 30px; 
-            display: flex; flex-direction: column; gap: 8px;
+            display: flex; flex-direction: column;
         }
-        .embed-top { display: flex; justify-content: space-between; gap: 16px; }
-        .embed-text { flex: 1; min-width: 0; }
-        #p-title { font-weight: 600; font-size: 1rem; color: #fff; margin-bottom: 8px; }
-        #p-desc { font-size: 0.875rem; color: var(--discord-text); white-space: pre-wrap; line-height: 1.375rem; }
+        .embed-top-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+        .embed-title { font-weight: 600; font-size: 1rem; color: #fff; margin-bottom: 8px; }
+        .embed-desc { font-size: 0.875rem; color: var(--discord-text); white-space: pre-wrap; line-height: 1.375; }
         
-        /* Thumbnail (Miniature en haut à droite) */
-        .embed-thumb-container { width: 80px; height: 80px; flex-shrink: 0; display: none; }
-        .embed-thumb-img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+        /* 1. Thumbnail (Haut Droite) */
+        .p-thumb-preview { width: 80px; height: 80px; border-radius: 4px; object-fit: cover; flex-shrink: 0; display: none; }
+        
+        /* 2. Grande Image (Bas) */
+        .p-image-preview { width: 100%; border-radius: 8px; margin-top: 12px; display: none; object-fit: cover; max-height: 280px; }
 
-        /* Image (Grande image en bas) */
-        .embed-image-container { width: 100%; border-radius: 8px; overflow: hidden; margin-top: 8px; display: none; border: 1px solid rgba(0,0,0,0.1); }
-        .embed-image-img { width: 100%; height: auto; max-height: 300px; object-fit: cover; display: block; }
+        /* 3. Footer Icon & Text */
+        .embed-footer { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+        .p-footer-icon-preview { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; display: none; }
+        .p-footer-text-preview { color: #fff; font-size: 0.75rem; font-weight: 500; }
 
-        /* Footer (Tout en bas) */
-        .embed-footer { display: flex; align-items: center; gap: 8px; margin-top: 8px; color: #fff; font-size: 0.75rem; font-weight: 500; }
-        .footer-icon { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
-
-        /* CARDS */
+        /* FORM CARDS */
         .card { width: 100%; max-width: 550px; background: var(--panel); border-radius: 12px; padding: 25px; border: 1px solid var(--border); margin-bottom: 30px; }
         h3 { font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 16px; border-radius: 10px; margin-bottom: 15px; font-size: 15px; outline: none; }
-
-        .var-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #000; border-radius: 10px; overflow: hidden; font-size: 13px; border: 1px solid var(--border); }
-        .var-table td { padding: 10px; border-bottom: 1px solid #111; }
-        .var-name { color: var(--accent); font-family: monospace; font-weight: bold; }
-
+        
         .btn { border: none; padding: 18px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; color: white; text-transform: uppercase; transition: 0.2s; margin-top: 10px; }
         .btn-save { background: var(--accent); }
         .btn-test { background: #5865F2; }
 
-        .multiselect { position: relative; margin-bottom: 15px; }
-        .select-box { background: #000; border: 1px solid var(--border); padding: 16px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; }
-        .dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #0d0d0d; border: 1px solid var(--border); z-index: 8000; max-height: 200px; overflow-y: auto; border-radius: 0 0 10px 10px; }
-        .dropdown-content.show { display: block; }
-        .option { padding: 14px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
-
+        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9000; }
+        #overlay.show { display: block; }
         footer { width: 100%; padding: 30px; text-align: center; color: #444; font-size: 11px; border-top: 1px solid var(--border); background: #000; margin-top: auto; }
     </style>
 </head>
@@ -84,64 +73,36 @@
     </nav>
 
     <main>
-        <header>PANEL DE CONFIGURATION</header>
+        <header>DASHBOARD BOT</header>
 
         <section id="welcome" class="content-section active">
-            <div class="discord-embed" id="embed-final">
-                <div class="embed-top">
-                    <div class="embed-text">
-                        <div id="p-title">Bienvenue !</div>
-                        <div id="p-desc">Configurez votre message ci-dessous...</div>
+            <div class="discord-embed">
+                <div class="embed-top-row">
+                    <div style="flex:1">
+                        <div class="embed-title" id="p-title">Titre</div>
+                        <div class="embed-desc" id="p-desc">Description...</div>
                     </div>
-                    <div class="embed-thumb-container" id="thumb-wrap">
-                        <img src="" class="embed-thumb-img" id="p-thumb">
-                    </div>
+                    <img src="" class="p-thumb-preview" id="p-thumb">
                 </div>
                 
-                <div class="embed-image-container" id="image-wrap">
-                    <img src="" class="embed-image-img" id="p-image">
-                </div>
+                <img src="" class="p-image-preview" id="p-image">
 
                 <div class="embed-footer">
-                    <img src="https://cdn.discordapp.com/embed/avatars/0.png" id="p-footer-icon" class="footer-icon">
-                    <span id="p-footer-text">BagBot • Aujourd'hui</span>
+                    <img src="" class="p-footer-icon-preview" id="p-footer-icon">
+                    <span class="p-footer-text-preview" id="p-footer-text">BagBot • Aujourd'hui</span>
                 </div>
             </div>
 
             <div class="card">
-                <h3>Message & Footer</h3>
+                <h3>Textes & Variables</h3>
                 <input type="text" id="w-title" placeholder="Titre..." oninput="sync()">
-                <textarea id="w-desc" rows="4" placeholder="Description..." oninput="sync()"></textarea>
-                <input type="text" id="w-footer" placeholder="Texte du footer (ex: Bienvenue sur le serveur !)" oninput="sync()">
+                <textarea id="w-desc" rows="4" placeholder="Message..." oninput="sync()"></textarea>
+                <input type="text" id="w-footer" placeholder="Texte du footer..." oninput="sync()">
                 
-                <h3>Variables</h3>
-                <table class="var-table">
-                    <tr><td class="var-name">{user}</td><td>Mention @Pseudo</td></tr>
-                    <tr><td class="var-name">{server}</td><td>Nom du serveur</td></tr>
-                    <tr><td class="var-name">{count}</td><td>Nb membres</td></tr>
-                </table>
-
-                <h3>Destination</h3>
+                <h3>Salon & Déclencheur</h3>
                 <select id="w-chan"></select>
-
-                <div class="multiselect">
-                    <div class="select-box" onclick="toggleDrop('drop-trigger')">Rôles déclencheurs <i class="fas fa-chevron-down"></i></div>
-                    <div id="drop-trigger" class="dropdown-content"></div>
-                </div>
-
                 <button class="btn btn-save" onclick="save()">SAUVEGARDER</button>
-                <button class="btn btn-test" onclick="testMessage()">TESTER LE MESSAGE</button>
-            </div>
-        </section>
-
-        <section id="admin" class="content-section">
-            <div class="card">
-                <h3>Sécurité Panel</h3>
-                <div id="drop-admin-box" class="multiselect">
-                    <div class="select-box" onclick="toggleDrop('drop-admin')">Rôles autorisés <i class="fas fa-chevron-down"></i></div>
-                    <div id="drop-admin" class="dropdown-content"></div>
-                </div>
-                <button class="btn btn-save" onclick="save()">METTRE À JOUR</button>
+                <button class="btn btn-test" onclick="testMessage()">TESTER EN DIRECT</button>
             </div>
         </section>
 
@@ -151,15 +112,13 @@
             <div id="gallery" style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:20px; width:100%; max-width:550px;"></div>
         </section>
         
-        <footer>BAGBOT &copy; 2026</footer>
+        <footer>BAGBOT DASHBOARD</footer>
     </main>
 
     <script>
         let CONFIG = {}; const API = window.location.origin;
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
-        function toggleDrop(id) { document.getElementById(id).classList.toggle('show'); }
-        
         function show(id, el) { 
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active')); 
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
@@ -168,33 +127,30 @@
         }
 
         function sync() {
-            const t = document.getElementById('w-title').value || "Bienvenue {user}";
-            const d = document.getElementById('w-desc').value || "Bienvenue sur {server} !";
-            const f = document.getElementById('w-footer').value || "BagBot • Aujourd'hui";
+            const t = document.getElementById('w-title').value || "Bienvenue";
+            const d = document.getElementById('w-desc').value || "Message de bienvenue...";
+            const f = document.getElementById('w-footer').value || "BagBot Dashboard";
             
-            const reps = { "{user}": "<span style='color:#5865F2'>@Pseudo</span>", "{server}": "Mon Serveur", "{count}": "150" };
-            let ct = t, cd = d;
-            for(let k in reps) {
-                ct = ct.split(k).join(reps[k].replace(/<[^>]*>?/gm, ''));
-                cd = cd.split(k).join(reps[k]);
-            }
-            document.getElementById('p-title').innerText = ct;
-            document.getElementById('p-desc').innerHTML = cd;
+            document.getElementById('p-title').innerText = t.replace(/{user}/g, "@Utilisateur");
+            document.getElementById('p-desc').innerText = d.replace(/{user}/g, "@Utilisateur");
             document.getElementById('p-footer-text').innerText = f;
         }
 
         function setImg(path) {
-            const mode = confirm("IMAGE (OK) ou MINIATURE (Annuler) ?");
-            if(mode) {
-                const img = document.getElementById('p-image');
-                img.src = API + path;
-                document.getElementById('image-wrap').style.display = 'block';
-                document.getElementById('image-wrap').dataset.path = path;
-            } else {
-                const thumb = document.getElementById('p-thumb');
-                thumb.src = API + path;
-                document.getElementById('thumb-wrap').style.display = 'block';
-                document.getElementById('thumb-wrap').dataset.path = path;
+            const choice = prompt("Où placer cette image ?\n1: MINIATURE (Haut droite)\n2: GRANDE IMAGE (Bas)\n3: ICÔNE FOOTER (Petit rond)", "1");
+            
+            if(choice === "1") {
+                const el = document.getElementById('p-thumb');
+                el.src = API + path; el.style.display = 'block';
+                el.dataset.path = path;
+            } else if(choice === "2") {
+                const el = document.getElementById('p-image');
+                el.src = API + path; el.style.display = 'block';
+                el.dataset.path = path;
+            } else if(choice === "3") {
+                const el = document.getElementById('p-footer-icon');
+                el.src = API + path; el.style.display = 'block';
+                el.dataset.path = path;
             }
         }
 
@@ -204,17 +160,20 @@
                 desc: document.getElementById('w-desc').value,
                 footer: document.getElementById('w-footer').value,
                 channel: document.getElementById('w-chan').value,
-                banner: document.getElementById('image-wrap').dataset.path || "",
-                thumb: document.getElementById('thumb-wrap').dataset.path || "",
-                trigger_roles: Array.from(document.querySelectorAll('#drop-trigger input:checked')).map(i => i.value)
+                thumb: document.getElementById('p-thumb').dataset.path || "",
+                banner: document.getElementById('p-image').dataset.path || "",
+                footer_icon: document.getElementById('p-footer-icon').dataset.path || ""
             };
-            CONFIG.admin_roles = Array.from(document.querySelectorAll('#drop-admin input:checked')).map(i => i.value);
             await fetch(`${API}/api/save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(CONFIG) });
-            alert("✅ Enregistré !");
+            alert("Configuration enregistrée !");
         }
 
-        async function testMessage() { await save(); alert("🚀 Message de test envoyé !"); }
-        async function up() { const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]); await fetch(`${API}/api/upload`, { method: 'POST', body: fd }); loadG(); }
+        async function testMessage() { await save(); alert("🚀 Commande de test envoyée !"); }
+
+        async function up() { 
+            const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]); 
+            await fetch(`${API}/api/upload`, { method: 'POST', body: fd }); loadG(); 
+        }
 
         async function loadG() {
             const res = await fetch(`${API}/api/images`); const d = await res.json();
@@ -225,26 +184,20 @@
             const res = await fetch(`${API}/api/get_server_info`); const data = await res.json();
             CONFIG = data.config;
             document.getElementById('w-chan').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            const makeRoles = (id, saved) => {
-                document.getElementById(id).innerHTML = data.all_roles.map(r => `<div class="option" onclick="const ck=this.querySelector('input'); ck.checked=!ck.checked; event.stopPropagation();"><input type="checkbox" value="${r}" ${saved.includes(r)?'checked':''}> <span>${r}</span></div>`).join('');
-            };
-            makeRoles('drop-admin', CONFIG.admin_roles || []);
-            makeRoles('drop-trigger', (CONFIG.welcome && CONFIG.welcome.trigger_roles) ? CONFIG.welcome.trigger_roles : []);
             
             if(CONFIG.welcome) {
                 document.getElementById('w-title').value = CONFIG.welcome.title || "";
                 document.getElementById('w-desc').value = CONFIG.welcome.desc || "";
                 document.getElementById('w-footer').value = CONFIG.welcome.footer || "";
-                document.getElementById('w-chan').value = CONFIG.welcome.channel || "";
-                if(CONFIG.welcome.banner) { 
-                    document.getElementById('p-image').src = API+CONFIG.welcome.banner;
-                    document.getElementById('image-wrap').style.display = 'block';
-                    document.getElementById('image-wrap').dataset.path = CONFIG.welcome.banner;
-                }
+                
                 if(CONFIG.welcome.thumb) { 
-                    document.getElementById('p-thumb').src = API+CONFIG.welcome.thumb;
-                    document.getElementById('thumb-wrap').style.display = 'block';
-                    document.getElementById('thumb-wrap').dataset.path = CONFIG.welcome.thumb;
+                    const e = document.getElementById('p-thumb'); e.src = API+CONFIG.welcome.thumb; e.style.display='block'; e.dataset.path = CONFIG.welcome.thumb;
+                }
+                if(CONFIG.welcome.banner) { 
+                    const e = document.getElementById('p-image'); e.src = API+CONFIG.welcome.banner; e.style.display='block'; e.dataset.path = CONFIG.welcome.banner;
+                }
+                if(CONFIG.welcome.footer_icon) { 
+                    const e = document.getElementById('p-footer-icon'); e.src = API+CONFIG.welcome.footer_icon; e.style.display='block'; e.dataset.path = CONFIG.welcome.footer_icon;
                 }
             }
             sync();
