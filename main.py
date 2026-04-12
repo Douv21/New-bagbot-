@@ -1,62 +1,73 @@
 import discord
 from discord.ext import commands
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 import threading
+import json
 import os
-from dotenv import load_dotenv
 
-# 1. Chargement des variables (Token et Guild ID) depuis ton .env local
-load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
-GUILD_ID = int(os.getenv("GUILD_ID"))
-PORT = 49501 
+# --- CONFIGURATION ---
+TOKEN = "TON_TOKEN_ICI"
+app = Flask(__name__)
+CONFIG_FILE = "config_bot.json"
 
-# 2. Configuration du Bot Discord
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix="/", intents=intents)
+# Fonction pour charger/sauvegarder les données sans crash
+def load_config():
+    if not os.path.exists(CONFIG_FILE):
+        return {}
+    with open(CONFIG_FILE, "r") as f:
+        return json.load(f)
 
-# 3. Configuration de Flask pour pointer vers ton dossier GitHub "public"
-app = Flask(__name__, 
-            template_folder='public',      # Dossier où se trouve ton index.html
-            static_folder='public',        # Dossier pour tes images/CSS
-            static_url_path='')
+def save_config(data):
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(data, f, indent=4)
 
-@app.route('/')
-def index():
-    """Affiche ton index.html depuis le dossier public/"""
-    try:
-        return render_template('index.html')
-    except Exception as e:
-        return f"Fichier index.html introuvable dans le dossier 'public/'. Erreur : {e}", 404
-
-@app.route('/api/get_server_info')
-def get_server_info():
-    """Récupère les infos du serveur pour le dashboard"""
-    guild = bot.get_guild(GUILD_ID)
-    if not guild:
-        return jsonify({"error": "Serveur non trouvé"}), 404
-    
-    channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
-    roles = [{"id": str(r.id), "name": r.name} for r in guild.roles if r.name != "@everyone"]
-    return jsonify({"channels": channels, "roles": roles})
+# --- BOT DISCORD ---
+intents = discord.Intents.default()
+intents.members = True
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    print("========================================")
-    print(f"✅ BagBot Pro Connecté !")
-    print(f"Dashboard : http://192.168.1.133:{PORT}")
-    print("========================================")
+    print(f"✅ BagBot Pro Connecté : {bot.user}")
 
-# 4. Lancement des services
+# --- ROUTES API (Dashboard) ---
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# RÉCUPÉRER LES SALONS (Pour les menus déroulants)
+@app.route('/api/get_server_info')
+def get_info():
+    guild = bot.guilds[0] if bot.guilds else None
+    if not guild: return jsonify({"error": "No guild found"})
+    
+    channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
+    return jsonify({"channels": channels})
+
+# LA ROUTE MAÎTRE : Enregistre n'importe quelle catégorie !
+@app.route('/api/save_settings', methods=['POST'])
+def save_settings():
+    try:
+        new_data = request.json
+        category = new_data.get("category") # ex: "accueil", "automod"
+        settings = new_data.get("settings") # les champs de l'embed
+        
+        current_config = load_config()
+        current_config[category] = settings # On ajoute ou modifie la catégorie dynamiquement
+        
+        save_config(current_config)
+        print(f"💾 Mise à jour reçue pour : {category}")
+        return jsonify({"status": "success", "message": f"Configuration {category} enregistrée"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+# --- LANCEMENT ---
 def run_flask():
-    app.run(host='0.0.0.0', port=PORT, debug=False, use_reloader=False)
+    app.run(host='0.0.0.0', port=49501)
 
 if __name__ == "__main__":
-    # Flask tourne en arrière-plan
-    threading.Thread(target=run_flask, daemon=True).start()
-    # Le bot occupe le processus principal
-    try:
-        bot.run(TOKEN)
-    except Exception as e:
-        print(f"❌ Erreur de jeton ou de connexion : {e}")
-                
+    t = threading.Thread(target=run_flask)
+    t.start()
+    bot.run(TOKEN)
+            
