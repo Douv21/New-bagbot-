@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BagBot | Dashboard</title>
+    <title>BagBot | Accueil</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --bg-dark: #050505;
             --bg-panel: #0f0f0f;
             --sidebar-bg: #000000;
-            --accent: #ed4245; /* Rouge Discord */
+            --accent: #ed4245;
+            --embed-bg: #2b2d31;
             --text-main: #ffffff;
             --text-muted: #949ba4;
             --border: #1e1e1e;
@@ -19,62 +20,52 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg-dark); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        /* --- SIDEBAR STYLE DRAFTBOT --- */
+        /* --- SIDEBAR --- */
         #sidebar {
             width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border);
             display: flex; flex-direction: column; transition: transform 0.3s ease;
             position: fixed; height: 100%; z-index: 1000;
         }
         .sidebar-header { padding: 30px 20px; font-weight: 900; font-size: 24px; color: var(--accent); letter-spacing: 1px; }
-        .nav-section { padding: 10px 0; }
-        .nav-label { padding: 10px 25px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 800; }
-        .nav-item { padding: 12px 25px; display: flex; align-items: center; gap: 15px; color: var(--text-muted); text-decoration: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .nav-item i { width: 20px; text-align: center; }
-        .nav-item:hover, .nav-item.active { color: var(--text-main); background: rgba(237, 66, 69, 0.05); }
-        .nav-item.active { color: var(--accent); border-right: 3px solid var(--accent); }
+        .nav-item { padding: 15px 25px; display: flex; align-items: center; gap: 15px; color: var(--accent); background: rgba(237, 66, 69, 0.05); font-weight: 700; border-right: 3px solid var(--accent); }
 
-        /* --- MAIN CONTENT --- */
-        main { flex: 1; margin-left: 260px; display: flex; flex-direction: column; transition: margin 0.3s; }
-        header { 
-            height: 70px; background: var(--bg-panel); border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; padding: 0 25px; justify-content: space-between;
-        }
+        /* --- CONTENT --- */
+        main { flex: 1; margin-left: 260px; display: flex; flex-direction: column; transition: 0.3s; }
+        header { height: 70px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 25px; justify-content: space-between; }
         .menu-toggle { display: none; font-size: 20px; cursor: pointer; }
+        .content-wrapper { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
 
-        .content-wrapper { flex: 1; overflow-y: auto; padding: 30px; }
-        .page-header { margin-bottom: 30px; }
-        .page-header h1 { font-size: 28px; font-weight: 800; }
-        .page-header p { color: var(--text-muted); margin-top: 5px; }
-
-        /* --- GRID DE CONFIGURATION --- */
-        .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
-        .card { background: var(--bg-panel); border-radius: 12px; border: 1px solid var(--border); padding: 25px; }
-        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .card-title i { color: var(--accent); }
-
-        /* --- ELEMENTS FORMULAIRE --- */
-        .input-group { margin-bottom: 20px; }
-        label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
-        input, textarea, select { 
-            width: 100%; background: #000; border: 1px solid var(--border); color: white; 
-            padding: 14px; border-radius: 8px; font-size: 14px; transition: 0.2s;
+        /* --- DISCORD EMBED COMPLET --- */
+        .discord-embed {
+            width: 100%; max-width: 520px; background: var(--embed-bg); border-left: 4px solid var(--accent);
+            border-radius: 4px; padding: 16px; margin-bottom: 30px; position: relative;
         }
+        .embed-author { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+        .embed-author img { width: 24px; height: 24px; border-radius: 50%; }
+        
+        .embed-main { display: flex; justify-content: space-between; gap: 10px; }
+        .embed-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #fff; }
+        .embed-description { font-size: 14px; color: #dbdee1; line-height: 1.4; white-space: pre-wrap; }
+        .embed-thumbnail { width: 80px; height: 80px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
+
+        .embed-image { width: 100%; border-radius: 4px; margin-top: 16px; object-fit: cover; max-height: 300px; }
+        .embed-footer { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 12px; color: var(--text-muted); }
+        .embed-footer img { width: 20px; height: 20px; border-radius: 50%; }
+
+        /* --- FORMULAIRE --- */
+        .config-card { width: 100%; max-width: 520px; background: var(--bg-panel); border-radius: 12px; border: 1px solid var(--border); padding: 20px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; font-size: 14px; }
         input:focus { border-color: var(--accent); outline: none; }
-        .btn-primary { 
-            background: var(--accent); color: white; border: none; padding: 15px 25px; 
-            border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; transition: 0.3s;
-        }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(237, 66, 69, 0.3); }
+        .btn-save { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 10px; }
 
-        /* --- RESPONSIVE --- */
         @media (max-width: 900px) {
             main { margin-left: 0; }
             #sidebar { transform: translateX(-100%); }
             #sidebar.open { transform: translateX(0); }
             .menu-toggle { display: block; }
-            .config-grid { grid-template-columns: 1fr; }
         }
-
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; z-index: 999; }
         .overlay.active { display: block; }
     </style>
@@ -85,61 +76,66 @@
 
     <nav id="sidebar">
         <div class="sidebar-header">BAGBOT</div>
-        
-        <div class="nav-section">
-            <div class="nav-label">Général</div>
-            <a class="nav-item active"><i class="fas fa-home"></i> Accueil</a>
-            <a class="nav-item"><i class="fas fa-info-circle"></i> Informations</a>
-        </div>
-
-        <div class="nav-section">
-            <div class="nav-label">Configuration</div>
-            <a class="nav-item"><i class="fas fa-shield-alt"></i> Modération</a>
-            <a class="nav-item"><i class="fas fa-envelope"></i> Message de bienvenue</a>
-            <a class="nav-item"><i class="fas fa-cog"></i> Paramètres</a>
-        </div>
+        <div class="nav-item"><i class="fas fa-home"></i> Accueil</div>
     </nav>
 
     <main>
         <header>
             <i class="fas fa-bars menu-toggle" onclick="toggleMenu()"></i>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <span id="bot-name" style="font-weight: 700;">Dashboard</span>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span id="bot-name" style="font-weight: 700; font-size: 14px;">Dashboard</span>
                 <img id="bot-avatar" src="" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--accent);">
             </div>
         </header>
 
         <div class="content-wrapper">
-            <div class="page-header">
-                <h1>Configuration de l'Accueil</h1>
-                <p>Personnalisez le message que le bot enverra sur votre serveur.</p>
+            <div class="discord-embed">
+                <div class="embed-author">
+                    <img id="prev-auth-icon" src="">
+                    <span id="prev-auth-name">BagBot</span>
+                </div>
+                <div class="embed-main">
+                    <div>
+                        <div class="embed-title" id="prev-title">Titre de l'accueil</div>
+                        <div class="embed-description" id="prev-desc">Ceci est l'aperçu de votre message de bienvenue. Modifiez les champs ci-dessous pour voir le résultat !</div>
+                    </div>
+                    <img id="prev-thumb" class="embed-thumbnail" src="" style="display: none;">
+                </div>
+                <img id="prev-img" class="embed-image" src="" style="display: none;">
+                <div class="embed-footer">
+                    <img id="prev-foot-icon" src="">
+                    <span id="prev-foot-text">ID: 0000 • BagBot System</span>
+                </div>
             </div>
 
-            <div class="config-grid">
-                <div class="card">
-                    <div class="card-title"><i class="fas fa-edit"></i> Contenu de l'Embed</div>
+            <div class="config-card">
+                <div class="input-group">
+                    <label>Titre de l'Embed</label>
+                    <input type="text" id="in-title" placeholder="Bienvenue !" oninput="sync()">
+                </div>
+                <div class="input-group">
+                    <label>Description</label>
+                    <textarea id="in-desc" rows="4" placeholder="Votre message..." oninput="sync()"></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div class="input-group">
-                        <label>Titre de l'accueil</label>
-                        <input type="text" id="title-in" placeholder="Ex: Bienvenue parmi nous !">
+                        <label>Miniature (URL)</label>
+                        <input type="text" id="in-thumb" placeholder="https://..." oninput="sync()">
                     </div>
                     <div class="input-group">
-                        <label>Description</label>
-                        <textarea id="desc-in" rows="5" placeholder="Écrivez votre message ici..."></textarea>
+                        <label>Grande Image (URL)</label>
+                        <input type="text" id="in-img" placeholder="https://..." oninput="sync()">
                     </div>
                 </div>
-
-                <div class="card">
-                    <div class="card-title"><i class="fas fa-paper-plane"></i> Envoi</div>
-                    <div class="input-group">
-                        <label>Salon Discord</label>
-                        <select id="chan-list"></select>
-                    </div>
-                    <div class="input-group">
-                        <label>Image de fond (URL)</label>
-                        <input type="text" id="img-in" placeholder="https://image.png">
-                    </div>
-                    <button class="btn-primary" onclick="save()">Mettre à jour le bot</button>
+                <div class="input-group">
+                    <label>Texte du Footer</label>
+                    <input type="text" id="in-foot" placeholder="Bas de l'embed..." oninput="sync()">
                 </div>
+                <div class="input-group">
+                    <label>Salon de destination</label>
+                    <select id="chan-list"></select>
+                </div>
+                <button class="btn-save">DÉPLOYER LE MESSAGE</button>
             </div>
         </div>
     </main>
@@ -150,24 +146,35 @@
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        async function load() {
-            try {
-                const res = await fetch('/api/get_server_info');
-                const data = await res.json();
-                document.getElementById('bot-name').innerText = data.bot.name;
-                document.getElementById('bot-avatar').src = data.bot.avatar;
-                document.getElementById('chan-list').innerHTML = data.channels.map(c => 
-                    `<option value="${c.id}"># ${c.name}</option>`
-                ).join('');
-            } catch (e) { console.log(e); }
+        function sync() {
+            const t = document.getElementById('in-title').value;
+            const d = document.getElementById('in-desc').value;
+            const th = document.getElementById('in-thumb').value;
+            const im = document.getElementById('in-img').value;
+            const f = document.getElementById('in-foot').value;
+
+            document.getElementById('prev-title').innerText = t || "Titre de l'accueil";
+            document.getElementById('prev-desc').innerText = d || "Ceci est l'aperçu...";
+            document.getElementById('prev-foot-text').innerText = f || "ID: 0000 • BagBot System";
+
+            const thumbImg = document.getElementById('prev-thumb');
+            if(th) { thumbImg.src = th; thumbImg.style.display = 'block'; } else { thumbImg.style.display = 'none'; }
+
+            const mainImg = document.getElementById('prev-img');
+            if(im) { mainImg.src = im; mainImg.style.display = 'block'; } else { mainImg.style.display = 'none'; }
         }
 
-        function save() {
-            // Ici tu peux ajouter ton fetch vers /api/save_settings
-            alert("🚀 Configuration envoyée au bot !");
+        async function init() {
+            const res = await fetch('/api/get_server_info');
+            const data = await res.json();
+            document.getElementById('bot-name').innerText = data.bot.name;
+            document.getElementById('bot-avatar').src = data.bot.avatar;
+            document.getElementById('prev-auth-icon').src = data.bot.avatar;
+            document.getElementById('prev-foot-icon').src = data.bot.avatar;
+            document.getElementById('chan-list').innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
         }
 
-        window.onload = load;
+        window.onload = init;
     </script>
 </body>
 </html>
