@@ -23,12 +23,13 @@ def load_config():
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
             try: return json.load(f)
-            except: return {"welcome": {}, "admin_roles": [], "selected_roles": []}
-    return {"welcome": {}, "admin_roles": [], "selected_roles": []}
+            except: return {"welcome": {}, "admin_roles": []}
+    return {"welcome": {}, "admin_roles": []}
 
-bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix="!", intents=intents)
 
-# --- AUTH ---
+# --- AUTHENTIFICATION ---
 @app.route('/api/login')
 def login():
     url = (f"https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}"
@@ -54,11 +55,12 @@ def has_access():
     member = guild.get_member(int(uid)) if guild else None
     return any(r.name in config.get('admin_roles', []) for r in member.roles) if member else False
 
-# --- API ---
+# --- ROUTES API ---
 @app.route('/api/get_data')
 def get_data():
     if not has_access(): return jsonify({"status": "unauthorized"}), 401
     guild = bot.get_guild(int(GUILD_ID))
+    if not guild: return jsonify({"error": "Guild not found"}), 404
     return jsonify({
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
         "roles": [r.name for r in guild.roles if r.name != "@everyone"],
@@ -79,6 +81,19 @@ def upload():
     file = request.files['file']
     file.save(os.path.join(UPLOAD_FOLDER, file.filename))
     return jsonify({"status": "success"})
+
+@app.route('/api/test_welcome', methods=['POST'])
+def test_welcome():
+    if not has_access(): return jsonify({"status": "unauthorized"}), 401
+    config = load_config().get('welcome', {})
+    channel = bot.get_channel(int(config.get('channel')))
+    if channel:
+        embed = discord.Embed(title=config.get('title'), description=config.get('desc'), color=0xed4245)
+        if config.get('banner'):
+            embed.set_image(url=f"http://{request.host}{config['banner']}")
+        bot.loop.create_task(channel.send(embed=embed))
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error"}), 400
 
 @app.route('/')
 def index(): return send_from_directory('public', 'index.html')
