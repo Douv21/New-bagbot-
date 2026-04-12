@@ -13,19 +13,22 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'public/uploads'
 CONFIG_FILE = 'config.json'
 
-if not os.path.exists(UPLOAD_FOLDER): os.makedirs(UPLOAD_FOLDER)
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 def load_config():
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-            try: return json.load(f)
-            except: return {"welcome": {}, "admin_roles": []}
+            try:
+                return json.load(f)
+            except:
+                return {"welcome": {}, "admin_roles": []}
     return {"welcome": {}, "admin_roles": []}
 
 intents = discord.Intents.default()
 intents.members = True 
 intents.guilds = True
-intents.message_content = True # CRITIQUE POUR LE TEST
+intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 @app.route('/api/get_server_info', methods=['GET'])
@@ -33,46 +36,96 @@ def get_server_info():
     config = load_config()
     if not bot.is_ready() or not bot.guilds:
         return jsonify({"status": "loading", "config": config})
-    guild = bot.guilds[0]
-    channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
-    roles = [r.name for r in guild.roles if r.name != "@everyone"]
-    return jsonify({"status": "success", "channels": channels, "all_roles": roles, "config": config})
+    
+    try:
+        guild = bot.guilds[0]
+        channels = [{"id": str(c.id), "name": c.name} for c in guild.text_channels]
+        roles = [r.name for r in guild.roles if r.name != "@everyone"]
+        
+        return jsonify({
+            "status": "success",
+            "channels": channels,
+            "all_roles": roles,
+            "config": config
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
 
 @app.route('/api/save_config', methods=['POST'])
 def save_config():
-    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-        json.dump(request.json, f, indent=4, ensure_ascii=False)
-    return jsonify({"status": "success"})
+    try:
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(request.json, f, indent=4, ensure_ascii=False)
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/test_welcome', methods=['POST'])
 def test_welcome():
-    config = load_config().get('welcome', {})
-    channel_id = config.get('channel')
-    if not channel_id: return jsonify({"status": "error", "message": "Pas de salon"}), 400
-    
-    channel = bot.get_channel(int(channel_id))
-    if channel:
-        embed = discord.Embed(title=config.get('title', 'Test'), description=config.get('desc', 'Test'), color=0xed4245)
+    try:
+        config = load_config().get('welcome', {})
+        chan_id = config.get('channel')
+        if not chan_id: return jsonify({"status": "error", "message": "Salon non configuré"}), 400
+        
+        channel = bot.get_channel(int(chan_id))
+        guild = bot.guilds[0]
+        
+        def replace_vars(text):
+            if not text: return ""
+            return text.replace("{user}", bot.user.name).replace("{server}", guild.name).replace("{count}", str(guild.member_count))
+
+        embed = discord.Embed(
+            title=replace_vars(config.get('title')),
+            description=replace_vars(config.get('desc')),
+            color=0xed4245
+        )
+        
+        base_url = f"http://{request.host}"
+        for key, func in [('thumb', embed.set_thumbnail), ('banner', embed.set_image)]:
+            val = config.get(key)
+            if val:
+                url = val if val.startswith('http') else f"{base_url}{val}"
+                func(url=url)
+        
+        f_text = replace_vars(config.get('footer', 'BagBot'))
+        f_icon = config.get('footer_icon')
+        if f_icon:
+            f_url = f_icon if f_icon.startswith('http') else f"{base_url}{f_icon}"
+            embed.set_footer(text=f_text, icon_url=f_url)
+        else:
+            embed.set_footer(text=f_text)
+
         bot.loop.create_task(channel.send(embed=embed))
         return jsonify({"status": "success"})
-    return jsonify({"status": "error", "message": "Salon introuvable"}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-# --- SERVEUR STATIQUE ---
+@app.route('/api/images')
+def list_images():
+    files = os.listdir(UPLOAD_FOLDER)
+    return jsonify({"images": [f"/public/uploads/{f}" for f in files if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]})
+
+@app.route('/api/upload', methods=['POST'])
+def upload():
+    file = request.files['file']
+    file.save(os.path.join(UPLOAD_FOLDER, file.filename))
+    return jsonify({"status": "success"})
+
+@app.route('/api/delete_image', methods=['POST'])
+def delete_image():
+    path = request.json.get('image', '').lstrip('/')
+    if os.path.exists(path):
+        os.remove(path)
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error"}), 404
+
 @app.route('/')
 def index(): return send_from_directory('public', 'index.html')
 
 @app.route('/public/<path:path>')
 def serve_public(path): return send_from_directory('public', path)
 
-@app.route('/api/images')
-def list_images():
-    files = os.listdir(UPLOAD_FOLDER)
-    return jsonify({"images": [f"/public/uploads/{f}" for f in files]})
-
-def run_flask():
-    app.run(host='0.0.0.0', port=49501, debug=False, use_reloader=False)
-
 if __name__ == '__main__':
-    threading.Thread(target=run_flask, daemon=True).start()
+    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=49501, debug=False, use_reloader=False), daemon=True).start()
     bot.run(TOKEN)
     
