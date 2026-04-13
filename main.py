@@ -62,6 +62,7 @@ async def create_embed_gen(member, conf, mode_type="welcome"):
             elif sub_mode == "thumb": embed.set_thumbnail(url=path)
             elif sub_mode == "footer": embed.set_footer(text=conf.get('footer'), icon_url=path)
 
+    # Optimisation rapidité via asyncio.gather
     await asyncio.gather(
         process_img(conf.get('banner'), "banner"),
         process_img(conf.get('thumbnail'), "thumb"),
@@ -97,7 +98,7 @@ def index(): return app.send_static_file('index.html')
 def get_data():
     guild = bot.get_guild(GUILD_ID)
     if not guild: return jsonify({"error": "Guild non trouvée"}), 404
-    images = [f("/uploads/{f}") for f in os.listdir(UPLOAD_FOLDER) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+    images = [f"/uploads/{f}" for f in os.listdir(UPLOAD_FOLDER) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
     roles = [r.name for r in guild.roles if not r.managed and r.name != "@everyone"]
     return jsonify({
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
@@ -115,20 +116,17 @@ def save():
 def test():
     data = request.json
     conf = data.get('config')
-    mode = data.get('mode') # 'welcome' ou 'leave'
-    
+    mode = data.get('mode')
     async def send_test():
         guild = bot.get_guild(GUILD_ID)
         chan = bot.get_channel(int(conf.get('channel')))
         member = guild.owner or guild.members[0]
         embed, files = await create_embed_gen(member, conf, mode)
-        msg_prefix = "🔔 **[TEST BIENVENUE]**" if mode == "welcome" else "🚪 **[TEST DÉPART]**"
-        await chan.send(content=f"{msg_prefix} pour {member.mention}", embed=embed, files=files)
-
+        prefix = "🔔 **[BIENVENUE]**" if mode == "welcome" else "🚪 **[DÉPART]**"
+        await chan.send(content=f"{prefix} Test pour {member.mention}", embed=embed, files=files)
     bot.loop.create_task(send_test())
     return jsonify({"status": "sent"})
 
-# Fonctions d'upload et delete conservées à l'identique...
 @app.route('/api/upload', methods=['POST'])
 def upload():
     file = request.files.get('file')
