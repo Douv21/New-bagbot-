@@ -39,7 +39,7 @@
         input[type="color"] { height: 45px; padding: 5px; cursor: pointer; }
 
         .drop-btn { background: #000; border: 1px solid var(--border); padding: 14px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .drop-menu { display: none; background: #050505; border: 1px solid var(--border); border-radius: 10px; max-height: 200px; overflow-y: auto; margin-top: 5px; z-index: 100; }
+        .drop-menu { display: none; background: #050505; border: 1px solid var(--border); border-radius: 10px; max-height: 200px; overflow-y: auto; margin-top: 5px; }
         .drop-menu.show { display: block; }
         .role-item { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #111; cursor: pointer; }
         .role-item input { width: 18px; height: 18px; margin-right: 15px; }
@@ -48,10 +48,12 @@
         .btn-save { background: var(--accent); color: #fff; }
         .btn-test { background: #5865f2; color: #fff; }
         .btn-test.success { background: var(--success) !important; }
-        
+
         .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
         .img-card { height: 100px; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; position: relative; background: #000; }
-        .del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; border-radius: 4px; padding: 5px; z-index: 5; }
+        .del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; border-radius: 4px; padding: 5px; z-index: 5; cursor: pointer; }
+
+        .shop-item-card { background: #000; border: 1px solid #222; border-radius: 15px; padding: 15px; margin-bottom: 15px; position: relative; }
     </style>
 </head>
 <body>
@@ -65,6 +67,7 @@
         <div style="padding: 30px; text-align: center; color: var(--accent); font-weight: 900; letter-spacing: 3px;">BAGBOT</div>
         <div class="nav-item active" onclick="showTab('welcome', this)"><i class="fas fa-paper-plane"></i> BIENVENUE</div>
         <div class="nav-item" onclick="showTab('leave', this)"><i class="fas fa-sign-out-alt"></i> DÉPART</div>
+        <div class="nav-item" onclick="showTab('shop', this)"><i class="fas fa-shopping-cart"></i> BOUTIQUE</div>
         <div class="nav-item" onclick="showTab('admin', this)"><i class="fas fa-user-shield"></i> PERMISSIONS</div>
         <div class="nav-item" onclick="showTab('gallery', this)"><i class="fas fa-images"></i> GALERIE</div>
     </div>
@@ -85,28 +88,19 @@
                     <span id="pv-footer-text-welcome">Footer</span>
                 </div>
             </div>
-
             <div class="card">
-                <h2>Configuration Bienvenue</h2>
-                <label>Couleur Embed</label>
-                <input type="color" id="w-color" oninput="sync('welcome')">
-                <label>Titre</label>
-                <input type="text" id="w-title" oninput="sync('welcome')">
-                <label>Message</label>
-                <textarea id="w-desc" rows="5" oninput="sync('welcome')"></textarea>
-                <div class="var-box"><b>{user}</b> : Mention | <b>{server}</b> : Nom | <b>{count}</b> : Membres</div>
-                <label>Texte Footer</label>
-                <input type="text" id="w-footer" oninput="sync('welcome')">
-                
-                <label>Rôles Déclencheurs</label>
+                <h2>Bienvenue</h2>
+                <label>Couleur</label><input type="color" id="w-color" oninput="sync('welcome')">
+                <label>Titre</label><input type="text" id="w-title" oninput="sync('welcome')">
+                <label>Message</label><textarea id="w-desc" rows="5" oninput="sync('welcome')"></textarea>
+                <div class="var-box"><b>{user}</b> | <b>{server}</b> | <b>{count}</b></div>
+                <label>Footer</label><input type="text" id="w-footer" oninput="sync('welcome')">
+                <label>Rôles</label>
                 <div class="drop-btn" onclick="toggleDrop(event, 'w-role-menu')"><span id="w-role-label">0 rôles</span> <i class="fas fa-chevron-down"></i></div>
                 <div id="w-role-menu" class="drop-menu"></div>
-                
-                <label>Salon Cible</label>
-                <select id="w-channel"></select>
-
-                <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
-                <button class="btn btn-test" id="w-btn-test" onclick="test('welcome')"><i class="fab fa-discord"></i> TESTER LE RENDU</button>
+                <label>Salon</label><select id="w-channel"></select>
+                <button class="btn btn-save" onclick="save()">SAUVEGARDER</button>
+                <button class="btn btn-test" id="w-btn-test" onclick="test('welcome')">TESTER</button>
             </div>
         </div>
 
@@ -114,7 +108,7 @@
             <div id="pv-box-leave" class="preview">
                 <div class="pv-top">
                     <div style="flex-grow:1">
-                        <div id="pv-title-leave" style="color:#00a8fc; font-weight:bold;">Au revoir</div>
+                        <div id="pv-title-leave" style="color:#00a8fc; font-weight:bold;">Titre</div>
                         <div id="pv-desc-leave" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Description</div>
                     </div>
                     <div class="pv-thumb" onclick="openPicker('leave', 'thumbnail')"><img id="l-img-thumb"></div>
@@ -125,24 +119,31 @@
                     <span id="pv-footer-text-leave">Footer</span>
                 </div>
             </div>
-
             <div class="card">
-                <h2>Configuration Départ</h2>
-                <label>Couleur Embed</label>
-                <input type="color" id="l-color" oninput="sync('leave')">
-                <label>Titre</label>
-                <input type="text" id="l-title" oninput="sync('leave')">
-                <label>Message</label>
-                <textarea id="l-desc" rows="5" oninput="sync('leave')"></textarea>
-                <div class="var-box"><b>{user}</b> : Nom | <b>{server}</b> : Nom | <b>{count}</b> : Membres</div>
-                <label>Texte Footer</label>
-                <input type="text" id="l-footer" oninput="sync('leave')">
-                
-                <label>Salon Cible</label>
-                <select id="l-channel"></select>
+                <h2>Départ</h2>
+                <label>Couleur</label><input type="color" id="l-color" oninput="sync('leave')">
+                <label>Titre</label><input type="text" id="l-title" oninput="sync('leave')">
+                <label>Message</label><textarea id="l-desc" rows="5" oninput="sync('leave')"></textarea>
+                <label>Footer</label><input type="text" id="l-footer" oninput="sync('leave')">
+                <label>Salon</label><select id="l-channel"></select>
+                <button class="btn btn-save" onclick="save()">SAUVEGARDER</button>
+                <button class="btn btn-test" id="l-btn-test" onclick="test('leave')">TESTER</button>
+            </div>
+        </div>
 
-                <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
-                <button class="btn btn-test" id="l-btn-test" onclick="test('leave')"><i class="fab fa-discord"></i> TESTER LE RENDU</button>
+        <div id="shop" class="section">
+            <div class="card">
+                <h2>Boutique Elite</h2>
+                <label>Titre Boutique</label><input type="text" id="s-title">
+                <label>Description Boutique</label><textarea id="s-desc" rows="3"></textarea>
+                <label>Couleur Thème</label><input type="color" id="s-color">
+                
+                <hr style="border:0; border-top:1px solid #222; margin:20px 0;">
+                <label>Articles en vente</label>
+                <div id="shop-items-container"></div>
+                <button class="btn" style="background:#222;" onclick="addShopItem()"><i class="fas fa-plus"></i> AJOUTER ARTICLE</button>
+                
+                <button class="btn btn-save" onclick="save()">SAUVEGARDER LA BOUTIQUE</button>
             </div>
         </div>
 
@@ -157,7 +158,7 @@
 
         <div id="gallery" class="section">
             <div class="card">
-                <h2>Galerie Médias</h2>
+                <h2>Galerie</h2>
                 <input type="file" id="file-input" onchange="uploadFile()">
                 <div id="gallery-list" class="gallery-grid"></div>
                 <button class="btn btn-save" onclick="showTab(lastTab)">RETOUR</button>
@@ -166,13 +167,13 @@
     </main>
 
     <script>
-        let db = {}; let activeMode = ''; let activeType = ''; let lastTab = 'welcome';
+        let db = {}; let activeMode = ''; let activeType = ''; let lastTab = 'welcome'; let shopItems = [];
 
         async function init() {
             const res = await fetch('/api/get_data');
             db = await res.json();
             
-            // Bienvenue
+            // Welcome
             const w = db.config.welcome;
             document.getElementById('w-title').value = w.title;
             document.getElementById('w-desc').value = w.desc;
@@ -180,26 +181,29 @@
             document.getElementById('w-color').value = w.color;
             document.getElementById('w-channel').innerHTML = db.channels.map(ch => `<option value="${ch.id}"># ${ch.name}</option>`).join('');
             document.getElementById('w-channel').value = w.channel;
-            setImg('welcome', 'thumbnail', w.thumbnail);
-            setImg('welcome', 'banner', w.banner);
-            setImg('welcome', 'footer_icon', w.footer_icon);
+            setImg('welcome', 'thumbnail', w.thumbnail); setImg('welcome', 'banner', w.banner); setImg('welcome', 'footer_icon', w.footer_icon);
             
-            // Départ
-            const l = db.config.leave || { title: "", desc: "", footer: "", color: "#ed4245", channel: "" };
+            // Leave
+            const l = db.config.leave || { title: "", desc: "", footer: "", color: "#ed4245" };
             document.getElementById('l-title').value = l.title;
             document.getElementById('l-desc').value = l.desc;
             document.getElementById('l-footer').value = l.footer;
             document.getElementById('l-color').value = l.color;
             document.getElementById('l-channel').innerHTML = db.channels.map(ch => `<option value="${ch.id}"># ${ch.name}</option>`).join('');
             document.getElementById('l-channel').value = l.channel;
-            setImg('leave', 'thumbnail', l.thumbnail);
-            setImg('leave', 'banner', l.banner);
-            setImg('leave', 'footer_icon', l.footer_icon);
+            setImg('leave', 'thumbnail', l.thumbnail); setImg('leave', 'banner', l.banner); setImg('leave', 'footer_icon', l.footer_icon);
+
+            // Shop
+            const s = db.config.shop || { title: "Boutique", description: "", color: "#ed4245", items: [] };
+            document.getElementById('s-title').value = s.title;
+            document.getElementById('s-desc').value = s.description;
+            document.getElementById('s-color').value = s.color;
+            shopItems = s.items || [];
+            renderShopItems();
 
             renderChecklist('w-role-menu', db.config.welcome.trigger_roles || [], 'w-role-label');
             renderChecklist('admin-menu', db.config.admin_roles || [], 'admin-label');
-            renderGallery();
-            sync('welcome'); sync('leave');
+            renderGallery(); sync('welcome'); sync('leave');
         }
 
         function parseVars(text) {
@@ -209,19 +213,36 @@
 
         function sync(mode) {
             const p = (mode === 'welcome') ? 'w' : 'l';
-            const col = document.getElementById(`${p}-color`).value;
-            document.getElementById(`pv-box-${mode}`).style.borderLeftColor = col;
+            document.getElementById(`pv-box-${mode}`).style.borderLeftColor = document.getElementById(`${p}-color`).value;
             document.getElementById(`pv-title-${mode}`).innerText = parseVars(document.getElementById(`${p}-title`).value);
             document.getElementById(`pv-desc-${mode}`).innerText = parseVars(document.getElementById(`${p}-desc`).value);
             document.getElementById(`pv-footer-text-${mode}`).innerText = document.getElementById(`${p}-footer`).value;
         }
+
+        function renderShopItems() {
+            const container = document.getElementById('shop-items-container');
+            container.innerHTML = shopItems.map((item, i) => `
+                <div class="shop-item-card">
+                    <button class="del-img" onclick="removeShopItem(${i})">✕</button>
+                    <label>Nom Article</label><input type="text" value="${item.name}" onchange="updateShopItem(${i}, 'name', this.value)">
+                    <div style="display:flex; gap:10px;">
+                        <div style="flex:1"><label>Prix</label><input type="number" value="${item.price}" onchange="updateShopItem(${i}, 'price', this.value)"></div>
+                        <div style="flex:2"><label>Rôle (Nom)</label><input type="text" value="${item.role}" onchange="updateShopItem(${i}, 'role', this.value)"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addShopItem() { shopItems.push({name:"Nouvel Article", price:0, role:""}); renderShopItems(); }
+        function removeShopItem(i) { shopItems.splice(i, 1); renderShopItems(); }
+        function updateShopItem(i, k, v) { shopItems[i][k] = v; }
 
         function renderChecklist(menuId, selected, labelId) {
             document.getElementById(menuId).innerHTML = db.roles.map(r => `<div class="role-item" onclick="toggleCheck(this, '${labelId}')"><input type="checkbox" value="${r}" ${selected.includes(r)?'checked':''}><span>${r}</span></div>`).join('');
             updateCount(menuId, labelId);
         }
 
-        function toggleCheck(el, labelId) { const cb = el.querySelector('input'); cb.checked = !cb.checked; updateCount(el.parentElement.id, labelId); }
+        function toggleCheck(el, labelId) { el.querySelector('input').checked = !el.querySelector('input').checked; updateCount(el.parentElement.id, labelId); }
         function updateCount(menuId, labelId) { const n = document.querySelectorAll(`#${menuId} input:checked`).length; document.getElementById(labelId).innerText = n + " rôle(s)"; }
 
         function openPicker(m, t) { activeMode = m; activeType = t; lastTab = m; showTab('gallery'); }
@@ -230,7 +251,7 @@
             const idMap = {'thumbnail':`${p}-img-thumb`,'banner':`${p}-img-banner`,'footer_icon':`${p}-img-footer`};
             const el = document.getElementById(idMap[t]);
             if(u) { el.src = u; el.style.display = 'block'; el.dataset.url = u; }
-            else { el.style.display = 'none'; el.dataset.url = ""; }
+            else if(el) { el.style.display = 'none'; el.dataset.url = ""; }
         }
 
         function selectImage(u) { if(activeMode) { setImg(activeMode, activeType, u); showTab(activeMode); sync(activeMode); } }
@@ -262,44 +283,16 @@
                     banner: document.getElementById('l-img-banner').dataset.url || "",
                     footer_icon: document.getElementById('l-img-footer').dataset.url || ""
                 },
+                shop: {
+                    title: document.getElementById('s-title').value,
+                    description: document.getElementById('s-desc').value,
+                    color: document.getElementById('s-color').value,
+                    items: shopItems
+                },
                 admin_roles: Array.from(document.querySelectorAll('#admin-menu input:checked')).map(i => i.value)
             };
             await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
-            alert("Enregistré !");
+            alert("Sauvegardé !");
         }
 
-        async function test(mode) {
-            const p = (mode === 'welcome') ? 'w' : 'l';
-            const btn = document.getElementById(`${p}-btn-test`);
-            const conf = {
-                channel: document.getElementById(`${p}-channel`).value,
-                title: document.getElementById(`${p}-title`).value,
-                desc: document.getElementById(`${p}-desc`).value,
-                color: document.getElementById(`${p}-color`).value,
-                footer: document.getElementById(`${p}-footer`).value,
-                thumbnail: document.getElementById(`${p}-img-thumb`).dataset.url,
-                banner: document.getElementById(`${p}-img-banner`).dataset.url,
-                footer_icon: document.getElementById(`${p}-img-footer`).dataset.url
-            };
-            const res = await fetch('/api/test_message', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({mode, config:conf}) });
-            if(res.ok) {
-                const old = btn.innerHTML; btn.classList.add('success'); btn.innerHTML = "✔ ENVOYÉ !";
-                setTimeout(() => { btn.classList.remove('success'); btn.innerHTML = old; }, 2000);
-            }
-        }
-
-        function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('open'); }
-        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
-        function toggleDrop(e, id) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
-        function showTab(id, el) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(el) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); }
-            closeSidebar();
-        }
-
-        window.onclick = () => document.querySelectorAll('.drop-menu').forEach(m => m.classList.remove('show'));
-        window.onload = init;
-    </script>
-</body>
-</html>
+        
