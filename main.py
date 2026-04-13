@@ -29,7 +29,9 @@ def load_config():
 async def create_embed_gen(member, conf, mode_name):
     title = str(conf.get('title', ' ')).replace("{user}", member.display_name).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
     desc = str(conf.get('desc', ' ')).replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
-    col = int(str(conf.get('color', '#ed4245')).replace('#', ''), 16)
+    col_hex = str(conf.get('color', '#ed4245')).replace('#', '')
+    col = int(col_hex, 16) if col_hex else 0xed4245
+    
     embed = discord.Embed(title=title, description=desc, color=col)
     files = []
 
@@ -66,7 +68,6 @@ async def on_member_join(member):
     if channel:
         embed, files = await create_embed_gen(member, conf, "welcome")
         await channel.send(content=member.mention, embed=embed, files=files)
-        # Gestion des rôles auto
         roles_to_add = [discord.utils.get(member.guild.roles, name=r) for r in conf.get("trigger_roles", [])]
         await member.add_roles(*[r for r in roles_to_add if r])
 
@@ -100,6 +101,22 @@ def save():
         json.dump(request.json, f, indent=4, ensure_ascii=False)
     return jsonify({"status": "ok"})
 
+@app.route('/api/test_embed', methods=['POST'])
+def test_embed():
+    data = request.json
+    mode = data.get('mode', 'welcome')
+    conf = load_config().get(mode)
+    if not conf or not conf.get("channel"): return jsonify({"error": "Salon non configuré"}), 400
+    channel = bot.get_channel(int(conf.get("channel")))
+    if channel:
+        guild = bot.get_guild(GUILD_ID)
+        member = guild.owner
+        future = asyncio.run_coroutine_threadsafe(create_embed_gen(member, conf, mode), bot.loop)
+        embed, files = future.result()
+        asyncio.run_coroutine_threadsafe(channel.send(content=f"🧪 **TEST {mode.upper()}**", embed=embed, files=files), bot.loop)
+        return jsonify({"status": "sent"})
+    return jsonify({"error": "Salon introuvable"}), 404
+
 @app.route('/api/upload', methods=['POST'])
 def upload():
     file = request.files.get('file')
@@ -120,22 +137,3 @@ def delete_image():
 def run(): app.run(host='0.0.0.0', port=49501)
 threading.Thread(target=run, daemon=True).start()
 bot.run(TOKEN)
-@app.route('/api/test_embed', methods=['POST'])
-async def test_embed():
-    data = request.json
-    mode = data.get('mode', 'welcome')
-    conf = load_config().get(mode)
-    
-    if not conf or not conf.get("channel"):
-        return jsonify({"error": "Salon non configuré"}), 400
-        
-    channel = bot.get_channel(int(conf.get("channel")))
-    if channel:
-        # On simule un membre pour le test
-        guild = bot.get_guild(GUILD_ID)
-        member = guild.owner # On utilise l'owner comme cobaye pour le test
-        embed, files = await create_embed_gen(member, conf, mode)
-        await channel.send(content=f"🧪 **TEST {mode.upper()}**", embed=embed, files=files)
-        return jsonify({"status": "sent"})
-    return jsonify({"error": "Salon introuvable"}), 404
-    
