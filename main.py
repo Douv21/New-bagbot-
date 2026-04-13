@@ -1,14 +1,9 @@
-import os
-import json
-import discord
-import threading
-import asyncio
+import os, json, discord, threading, asyncio
 from discord.ext import commands
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
-# Chargement des variables d'environnement
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = int(os.getenv("GUILD_ID", 0))
@@ -24,18 +19,18 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 def load_config():
     if not os.path.exists('config.json'):
         return {
-            "welcome": {"title": "Bienvenue {user}", "desc": "Bienvenue sur {server}", "footer": "Jormungand21", "footer_icon": "", "color": "#ed4245", "channel": "", "banner": "", "thumbnail": "", "trigger_roles": []},
-            "leave": {"title": "Au revoir {user}", "desc": "{user} nous a quitté.", "footer": "Jormungand21", "footer_icon": "", "color": "#ed4245", "channel": "", "banner": "", "thumbnail": ""},
+            "welcome": {"title": "Bienvenue", "desc": "{user}", "footer": "BagBot", "color": "#ed4245", "channel": "", "banner": "", "thumbnail": "", "footer_icon": "", "trigger_roles": []},
+            "leave": {"title": "Au revoir", "desc": "{user}", "footer": "BagBot", "color": "#ed4245", "channel": "", "banner": "", "thumbnail": "", "footer_icon": ""},
             "admin_roles": []
         }
     with open('config.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
 async def create_embed_gen(member, conf, mode_name):
-    title = str(conf.get('title', '')).replace("{user}", member.display_name).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
-    desc = str(conf.get('desc', '')).replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
-    col_hex = str(conf.get('color', '#ed4245')).replace('#', '')
-    embed = discord.Embed(title=title, description=desc, color=int(col_hex, 16))
+    title = str(conf.get('title', ' ')).replace("{user}", member.display_name).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
+    desc = str(conf.get('desc', ' ')).replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
+    col = int(str(conf.get('color', '#ed4245')).replace('#', ''), 16)
+    embed = discord.Embed(title=title, description=desc, color=col)
     files = []
 
     async def process_img(path, sub_mode):
@@ -52,14 +47,14 @@ async def create_embed_gen(member, conf, mode_name):
         else:
             if sub_mode == "banner": embed.set_image(url=path)
             elif sub_mode == "thumb": embed.set_thumbnail(url=path)
-            elif sub_mode == "footer": embed.set_footer(text=conf.get('footer'), icon_url=path)
+            elif sub_mode == "footer": embed.set_footer(text=conf.get('footer', ' '), icon_url=path)
 
     await asyncio.gather(
         process_img(conf.get('banner'), "banner"),
         process_img(conf.get('thumbnail'), "thumb"),
         process_img(conf.get('footer_icon'), "footer")
     )
-    if not embed.footer.text: embed.set_footer(text=conf.get('footer'))
+    if not embed.footer.text: embed.set_footer(text=conf.get('footer', ' '))
     return embed, files
 
 @bot.event
@@ -115,8 +110,7 @@ def upload():
 @app.route('/api/test_message', methods=['POST'])
 def test_msg():
     data = request.json
-    mode = data.get('mode')
-    conf = data.get('config')
+    mode, conf = data.get('mode'), data.get('config')
     async def run_test():
         guild = bot.get_guild(GUILD_ID)
         chan = bot.get_channel(int(conf.get('channel')))
