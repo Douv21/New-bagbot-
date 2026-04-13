@@ -9,13 +9,12 @@ CONFIG_FILE = 'config.json'
 
 def load_db():
     if not os.path.exists(CONFIG_FILE):
-        # Structure par défaut si le fichier n'existe pas
         default_data = {
             "config": {
                 "welcome": {
                     "title": "Bienvenue !",
                     "desc": "Bienvenue sur le serveur {user}",
-                    "footer": "BagBot Elite",
+                    "footer": "BAGBOT ELITE V9",
                     "color": "#ed4245",
                     "channel": "",
                     "thumbnail": "",
@@ -26,7 +25,7 @@ def load_db():
                 "leave": {
                     "title": "Au revoir",
                     "desc": "{user} nous a quitté.",
-                    "footer": "BagBot Elite",
+                    "footer": "BAGBOT ELITE V9",
                     "color": "#ed4245",
                     "channel": "",
                     "thumbnail": "",
@@ -36,14 +35,14 @@ def load_db():
                 "admin_roles": []
             },
             "channels": [
-                {"id": "123456789", "name": "general"},
-                {"id": "987654321", "name": "bagbot-install"}
+                {"id": "1", "name": "general"},
+                {"id": "2", "name": "annonces"}
             ],
-            "roles": ["Fondateur", "Admin", "Modérateur", "Bot", "Membre"],
+            "roles": ["@everyone", "Admin", "Modérateur", "Membre"],
             "images": [],
             "server_info": {
-                "name": "Mon Super Serveur",
-                "member_count": "150"
+                "name": "BAGBOT SERVER",
+                "member_count": "100"
             }
         }
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
@@ -61,25 +60,39 @@ def index():
 def get_data():
     return jsonify(load_db())
 
-@app.route('/api/save', list_methods=['POST'])
+@app.route('/api/save', methods=['POST'])
 def save_data():
-    new_config = request.json
+    config = request.json
     db = load_db()
-    db['config'] = new_config
+    db['config'] = config
     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
         json.dump(db, f, indent=4)
     return jsonify({"status": "success"})
 
 @app.route('/api/upload', methods=['POST'])
 def upload():
-    # Simulation d'upload pour l'exemple
-    return jsonify({"path": "https://via.placeholder.com/800x400"})
+    if 'file' not in request.files:
+        return jsonify({"error": "No file"}), 400
+    file = request.files['file']
+    # Logique d'enregistrement réelle à adapter selon ton environnement
+    path = f"/static/uploads/{file.filename}"
+    return jsonify({"path": path})
+
+@app.route('/api/delete_image', methods=['POST'])
+def delete_image():
+    path = request.json.get('path')
+    db = load_db()
+    if path in db['images']:
+        db['images'].remove(path)
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(db, f, indent=4)
+    return jsonify({"status": "success"})
 
 @app.route('/api/test_message', methods=['POST'])
 def test_message():
     data = request.json
-    print(f"Test envoyé dans le salon {data['config']['channel']}")
-    return jsonify({"status": "sent"})
+    # Ici ton code bot envoie le message
+    return jsonify({"status": "success"})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=49501, debug=True)
