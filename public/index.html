@@ -23,7 +23,6 @@
         .section { display: none; max-width: 600px; margin: 0 auto; }
         .section.active { display: block; }
 
-        /* PREVIEW */
         .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; }
         .pv-top { display: flex; justify-content: space-between; gap: 10px; }
         .pv-thumb { width: 65px; height: 65px; border-radius: 4px; background: #222; border: 1px dashed #444; overflow: hidden; cursor: pointer; }
@@ -31,7 +30,6 @@
         .pv-f-icon { width: 20px; height: 20px; border-radius: 50%; background: #222; border: 1px dashed #444; overflow: hidden; cursor: pointer; }
         img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* INPUTS */
         .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
         label { display: block; font-size: 11px; font-weight: 800; color: #555; text-transform: uppercase; margin: 15px 0 8px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; font-size: 14px; outline: none; }
@@ -88,16 +86,12 @@
                 <h2>Configuration</h2>
                 <label>Couleur Embed</label>
                 <input type="color" id="w-color" oninput="sync()">
-                
                 <label>Titre</label>
                 <input type="text" id="w-title" oninput="sync()">
-
                 <label>Message</label>
                 <textarea id="w-desc" rows="4" oninput="sync()"></textarea>
-
                 <label>Texte Footer</label>
                 <input type="text" id="w-footer" oninput="sync()">
-
                 <label>Rôles Déclencheurs</label>
                 <div class="drop-container">
                     <div class="drop-btn" onclick="toggleDrop(event, 'role-menu')">
@@ -105,10 +99,8 @@
                     </div>
                     <div id="role-menu" class="drop-menu"></div>
                 </div>
-
                 <label>Salon Cible</label>
                 <select id="w-channel"></select>
-
                 <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
                 <button class="btn btn-test" onclick="test()"><i class="fab fa-discord"></i> TESTER SUR DISCORD</button>
             </div>
@@ -117,7 +109,6 @@
         <div id="admin" class="section">
             <div class="card">
                 <h2>Permissions</h2>
-                <label>Rôles Dashboard</label>
                 <div class="drop-container">
                     <div class="drop-btn" onclick="toggleDrop(event, 'admin-menu')">
                         <span id="admin-label">0 rôles</span> <i class="fas fa-chevron-down"></i>
@@ -163,7 +154,6 @@
             sync();
         }
 
-        // REMPLACEMENT DES VARIABLES DANS L'APERÇU
         function parseVars(text) {
             if(!text) return "";
             return text.replace(/{user}/g, "PrénomUser")
@@ -264,7 +254,7 @@
                 body:JSON.stringify(config) 
             });
             const r = await res.json();
-            if(r.status === 'sent') alert("Embed envoyé sur Discord !");
+            if(r.status === 'sent') alert("Embed envoyé avec images !");
             else alert("Erreur : " + r.error);
         }
 
