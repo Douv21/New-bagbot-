@@ -3,83 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BAGBOT ELITE V7</title>
+    <title>BAGBOT ELITE V8</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #0a0a0a; --card: #141414; --accent: #ed4245; --border: #252525; --d-bg: #2b2d31; }
         body { margin: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
 
-        /* HEADER FIXE */
-        .header { 
-            position: fixed; top: 0; left: 0; right: 0; height: 65px; 
-            background: #000; border-bottom: 1px solid var(--border); 
-            display: flex; align-items: center; padding: 0 20px; z-index: 1000; 
-        }
-        .burger { font-size: 22px; color: var(--accent); cursor: pointer; margin-right: 20px; }
+        .header { position: fixed; top: 0; left: 0; right: 0; height: 65px; background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; z-index: 2500; }
+        .burger { font-size: 22px; color: var(--accent); cursor: pointer; margin-right: 20px; z-index: 3000; }
         .logo { font-weight: 900; letter-spacing: 2px; color: var(--accent); }
 
-        /* SIDEBAR */
-        #sidebar { 
-            position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; 
-            background: #000; z-index: 2000; transition: 0.3s; border-right: 1px solid var(--border);
-        }
+        #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #000; z-index: 2000; transition: 0.3s; border-right: 1px solid var(--border); }
         #sidebar.open { left: 0; }
-        .nav-item { padding: 20px; border-bottom: 1px solid #111; cursor: pointer; display: flex; align-items: center; gap: 15px; color: #888; }
-        .nav-item.active { color: var(--accent); background: #ed424510; }
+        .nav-item { padding: 20px; border-bottom: 1px solid #111; cursor: pointer; display: flex; align-items: center; gap: 15px; color: #888; font-weight: bold; }
+        .nav-item.active { color: var(--accent); background: #ed424510; border-right: 4px solid var(--accent); }
 
-        /* CONTENT */
         main { height: 100vh; overflow-y: auto; padding: 85px 20px 40px; }
-        .section { display: none; max-width: 600px; margin: 0 auto; }
+        .section { display: none; max-width: 600px; margin: 0 auto; animation: fadeIn 0.3s; }
         .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* EMBED DISCORD */
-        .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; position: relative; }
+        /* PREVIEW */
+        .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; }
         .pv-top { display: flex; justify-content: space-between; gap: 10px; }
         .pv-thumb { width: 65px; height: 65px; border-radius: 4px; background: #222; border: 1px dashed #444; overflow: hidden; cursor: pointer; }
         .pv-banner { width: 100%; height: 150px; border-radius: 8px; background: #222; border: 1px dashed #444; margin-top: 10px; overflow: hidden; cursor: pointer; }
-        .pv-footer-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; color: #b5bac1; }
         .pv-f-icon { width: 20px; height: 20px; border-radius: 50%; background: #222; border: 1px dashed #444; overflow: hidden; cursor: pointer; }
         img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* CONFIG CARD */
+        /* CONFIG ELEMENTS */
         .card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
         label { display: block; font-size: 11px; font-weight: 800; color: #555; text-transform: uppercase; margin: 15px 0 8px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; font-size: 14px; }
         
-        /* MULTISELECT ROLES */
-        .drop-container { position: relative; }
+        /* COLOR PICKER FIX */
+        #w-color { height: 50px; cursor: pointer; padding: 5px; }
+
         .drop-btn { background: #000; border: 1px solid var(--border); padding: 14px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; }
-        .drop-menu { 
-            display: none; position: absolute; top: 100%; left: 0; right: 0; 
-            background: #111; border: 1px solid var(--border); border-radius: 10px; 
-            max-height: 200px; overflow-y: auto; z-index: 500; margin-top: 5px;
-        }
+        .drop-menu { display: none; background: #111; border: 1px solid var(--border); border-radius: 10px; max-height: 200px; overflow-y: auto; margin-top: 5px; }
         .drop-menu.show { display: block; }
-        .role-item { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
+        .role-item { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #1a1a1a; cursor: pointer; text-align: left; }
         .role-item input { width: 20px; margin-right: 15px; accent-color: var(--accent); }
 
-        /* BOUTONS */
         .btn { border: none; padding: 16px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-save { background: var(--accent); color: #fff; }
         .btn-test { background: #5865f2; color: #fff; }
-        .btn-close-gallery { background: #333; color: #fff; width: 40px; height: 40px; border-radius: 50%; position: absolute; top: 10px; right: 10px; z-index: 10; padding: 0; }
+        .btn-close { background: #333; color: #fff; width: 40px; height: 40px; border-radius: 50%; float: right; }
 
-        /* GALLERY */
         .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
         .img-card { height: 100px; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; position: relative; }
-        .img-card img { cursor: pointer; }
+        .del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; border-radius: 4px; padding: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <i class="fas fa-bars burger" onclick="toggleSidebar()"></i>
+        <i class="fas fa-bars burger" onclick="toggleSidebar(event)"></i>
         <div class="logo">BAGBOT</div>
     </div>
 
     <div id="sidebar">
-        <div style="padding: 30px; text-align: center; color: var(--accent); font-weight: 900;">MENU ELITE</div>
-        <div class="nav-item active" onclick="showTab('welcome', this)"><i class="fas fa-home"></i> BIENVENUE</div>
+        <div style="padding: 30px; text-align: center; color: var(--accent); font-weight: 900; letter-spacing: 3px;">BAGBOT</div>
+        <div class="nav-item active" onclick="showTab('welcome', this)"><i class="fas fa-paper-plane"></i> BIENVENUE</div>
+        <div class="nav-item" onclick="showTab('admin', this)"><i class="fas fa-user-shield"></i> PERMISSIONS</div>
         <div class="nav-item" onclick="showTab('gallery', this)"><i class="fas fa-images"></i> GALERIE</div>
     </div>
 
@@ -87,7 +73,7 @@
         <div id="welcome" class="section active">
             <div id="pv-box" class="preview">
                 <div class="pv-top">
-                    <div>
+                    <div style="flex-grow:1">
                         <div id="pv-title" style="color:#00a8fc; font-weight:bold;">Titre</div>
                         <div id="pv-desc" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Description</div>
                     </div>
@@ -101,141 +87,150 @@
             </div>
 
             <div class="card">
+                <h2>Configuration</h2>
                 <label>Couleur Embed</label>
                 <input type="color" id="w-color" oninput="sync()">
                 
                 <label>Titre</label>
-                <input type="text" id="w-title" oninput="sync()">
+                <input type="text" id="w-title" placeholder="Bienvenue {user}" oninput="sync()">
 
                 <label>Message</label>
-                <textarea id="w-desc" rows="4" oninput="sync()"></textarea>
+                <textarea id="w-desc" rows="4" placeholder="Ton texte ici..." oninput="sync()"></textarea>
 
                 <label>Texte Footer</label>
                 <input type="text" id="w-footer" oninput="sync()">
 
                 <label>Rôles Déclencheurs</label>
                 <div class="drop-container">
-                    <div class="drop-btn" onclick="toggleDrop(event)">
+                    <div class="drop-btn" onclick="toggleDrop(event, 'role-menu')">
                         <span id="role-label">Chargement...</span> <i class="fas fa-chevron-down"></i>
                     </div>
                     <div id="role-menu" class="drop-menu"></div>
                 </div>
 
-                <label>Salon de réception</label>
+                <label>Salon Cible</label>
                 <select id="w-channel"></select>
 
-                <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> ENREGISTRER L'ELITE</button>
-                <button class="btn btn-test" onclick="test()"><i class="fab fa-discord"></i> TESTER SUR DISCORD</button>
+                <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
+                <button class="btn btn-test" onclick="test()"><i class="fab fa-discord"></i> TESTER LE MESSAGE</button>
             </div>
         </div>
 
-        <div id="gallery" class="section" style="position:relative;">
-            <button class="btn-close-gallery" onclick="showTab('welcome')">✕</button>
+        <div id="admin" class="section">
             <div class="card">
-                <h3>Gestion des Médias</h3>
-                <label>Ajouter par lien (URL)</label>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="url-input" placeholder="Lien image...">
-                    <button class="btn btn-save" style="width:80px; margin:0;" onclick="useUrl()">OK</button>
+                <h2>Permissions Dashboard</h2>
+                <p style="color:#666; font-size:13px;">Sélectionnez les rôles autorisés à accéder à ce dashboard.</p>
+                <label>Rôles Autorisés</label>
+                <div class="drop-container">
+                    <div class="drop-btn" onclick="toggleDrop(event, 'admin-menu')">
+                        <span id="admin-label">0 rôles</span> <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="admin-menu" class="drop-menu"></div>
                 </div>
-                
-                <label>Téléverser un fichier</label>
-                <input type="file" id="file-input" onchange="uploadFile()">
+                <button class="btn btn-save" onclick="save()">APPLIQUER LES DROITS</button>
+            </div>
+        </div>
 
+        <div id="gallery" class="section">
+            <button class="btn-close" onclick="showTab('welcome')">✕</button>
+            <div class="card" style="clear:both; margin-top:10px;">
+                <h2>Galerie Médias</h2>
+                <label>Ajouter par URL</label>
+                <div style="display:flex; gap:10px;"><input type="text" id="url-input"><button class="btn btn-save" style="width:80px; margin:0;" onclick="useUrl()">OK</button></div>
+                <label>Ou Téléverser</label>
+                <input type="file" id="file-input" onchange="uploadFile()">
                 <div id="gallery-list" class="gallery-grid"></div>
             </div>
         </div>
     </main>
 
     <script>
-        let data = {}; let activePicker = '';
+        let db = {}; let activePicker = '';
 
-        async function load() {
+        async function init() {
             const res = await fetch('/api/get_data');
-            data = await res.json();
+            db = await res.json();
             
-            const c = data.config.welcome;
+            const c = db.config.welcome;
             document.getElementById('w-title').value = c.title;
             document.getElementById('w-desc').value = c.desc;
             document.getElementById('w-footer').value = c.footer;
             document.getElementById('w-color').value = c.color;
             
-            document.getElementById('w-channel').innerHTML = data.channels.map(ch => `<option value="${ch.id}"># ${ch.name}</option>`).join('');
+            document.getElementById('w-channel').innerHTML = db.channels.map(ch => `<option value="${ch.id}"># ${ch.name}</option>`).join('');
             document.getElementById('w-channel').value = c.channel;
 
-            renderRoles();
+            renderChecklist('role-menu', db.config.welcome.trigger_roles, 'role-label');
+            renderChecklist('admin-menu', db.config.admin_roles || [], 'admin-label');
             renderGallery();
+            
             setImg('thumbnail', c.thumbnail);
             setImg('banner', c.banner);
             setImg('footer_icon', c.footer_icon);
             sync();
         }
 
-        function renderRoles() {
-            const sel = data.config.welcome.trigger_roles;
-            document.getElementById('role-menu').innerHTML = data.roles.map(r => `
-                <div class="role-item" onclick="toggleCheck(this)">
-                    <input type="checkbox" value="${r}" ${sel.includes(r)?'checked':''}>
+        function renderChecklist(menuId, selected, labelId) {
+            document.getElementById(menuId).innerHTML = db.roles.map(r => `
+                <div class="role-item" onclick="toggleCheck(this, '${labelId}')">
+                    <input type="checkbox" value="${r}" ${selected.includes(r)?'checked':''}>
                     <span>${r}</span>
                 </div>
             `).join('');
-            updateRoleLabel();
+            updateCount(menuId, labelId);
         }
 
-        function toggleCheck(el) {
+        function toggleCheck(el, labelId) {
             const cb = el.querySelector('input');
             cb.checked = !cb.checked;
-            updateRoleLabel();
+            updateCount(el.parentElement.id, labelId);
         }
 
-        function updateRoleLabel() {
-            const count = document.querySelectorAll('#role-menu input:checked').length;
-            document.getElementById('role-label').innerText = count + " rôle(s) sélectionné(s)";
+        function updateCount(menuId, labelId) {
+            const n = document.querySelectorAll(`#${menuId} input:checked`).length;
+            document.getElementById(labelId).innerText = n + " rôle(s) sélectionné(s)";
         }
 
         function sync() {
-            document.getElementById('pv-box').style.borderLeftColor = document.getElementById('w-color').value;
-            document.getElementById('pv-title').innerText = document.getElementById('w-title').value;
-            document.getElementById('pv-desc').innerText = document.getElementById('w-desc').value;
-            document.getElementById('pv-footer-text').innerText = document.getElementById('w-footer').value;
+            const col = document.getElementById('w-color').value;
+            // Mise à jour de l'aperçu Discord
+            document.getElementById('pv-box').style.borderLeftColor = col;
+            // CORRECTIF : Mise à jour visuelle du champ couleur lui-même
+            document.getElementById('w-color').style.background = col;
+            
+            document.getElementById('pv-title').innerText = document.getElementById('w-title').value || "Titre";
+            document.getElementById('pv-desc').innerText = document.getElementById('w-desc').value || "Description";
+            document.getElementById('pv-footer-text').innerText = document.getElementById('w-footer').value || "Footer";
         }
 
-        function openPicker(type) { 
-            activePicker = type; 
-            showTab('gallery'); 
-        }
-
-        function setImg(type, url) {
-            const idMap = { 'thumbnail': 'img-thumb', 'banner': 'img-banner', 'footer_icon': 'img-footer' };
-            const el = document.getElementById(idMap[type]);
-            if(url) { el.src = url; el.style.display = 'block'; el.dataset.url = url; }
+        function openPicker(t) { activePicker = t; showTab('gallery'); }
+        function setImg(t, u) {
+            const el = document.getElementById({'thumbnail':'img-thumb','banner':'img-banner','footer_icon':'img-footer'}[t]);
+            if(u) { el.src = u; el.style.display = 'block'; el.dataset.url = u; }
             else { el.style.display = 'none'; el.dataset.url = ""; }
         }
 
-        function selectImage(url) {
-            if(!activePicker) return;
-            setImg(activePicker, url);
-            showTab('welcome');
-            activePicker = '';
-        }
-
-        function useUrl() {
-            const url = document.getElementById('url-input').value;
-            if(url) selectImage(url);
-        }
-
+        function selectImage(u) { if(activePicker) { setImg(activePicker, u); showTab('welcome'); activePicker = ''; sync(); } }
+        function useUrl() { selectImage(document.getElementById('url-input').value); }
         async function uploadFile() {
-            const file = document.getElementById('file-input').files[0];
-            const fd = new FormData(); fd.append('file', file);
+            const fd = new FormData(); fd.append('file', document.getElementById('file-input').files[0]);
             const res = await fetch('/api/upload', { method: 'POST', body: fd });
-            const r = await res.json();
-            if(r.path) { selectImage(r.path); load(); }
+            const r = await res.json(); if(r.path) { db.images.push(r.path); renderGallery(); selectImage(r.path); }
         }
 
         function renderGallery() {
-            document.getElementById('gallery-list').innerHTML = data.images.map(img => `
-                <div class="img-card"><img src="${img}" onclick="selectImage('${img}')"></div>
+            document.getElementById('gallery-list').innerHTML = db.images.map(img => `
+                <div class="img-card">
+                    <button class="del-img" onclick="deleteImg('${img}', event)">✕</button>
+                    <img src="${img}" onclick="selectImage('${img}')">
+                </div>
             `).join('');
+        }
+
+        async function deleteImg(p, e) {
+            e.stopPropagation();
+            await fetch('/api/delete_image', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path:p}) });
+            db.images = db.images.filter(i => i !== p); renderGallery();
         }
 
         async function save() {
@@ -246,47 +241,35 @@
                     footer: document.getElementById('w-footer').value,
                     color: document.getElementById('w-color').value,
                     channel: document.getElementById('w-channel').value,
-                    thumbnail: document.getElementById('img-thumb').dataset.url,
-                    banner: document.getElementById('img-banner').dataset.url,
-                    footer_icon: document.getElementById('img-footer').dataset.url,
+                    thumbnail: document.getElementById('img-thumb').dataset.url || "",
+                    banner: document.getElementById('img-banner').dataset.url || "",
+                    footer_icon: document.getElementById('img-footer').dataset.url || "",
                     trigger_roles: Array.from(document.querySelectorAll('#role-menu input:checked')).map(i => i.value)
-                }
+                },
+                admin_roles: Array.from(document.querySelectorAll('#admin-menu input:checked')).map(i => i.value)
             };
-            await fetch('/api/save', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(config) });
-            alert("Configuration Elite Sauvegardée !");
+            await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
+            alert("Sauvegardé avec succès !");
         }
 
         async function test() {
-            const config = {
-                welcome: {
-                    title: document.getElementById('w-title').value,
-                    desc: document.getElementById('w-desc').value,
-                    footer: document.getElementById('w-footer').value,
-                    color: document.getElementById('w-color').value,
-                    channel: document.getElementById('w-channel').value,
-                    thumbnail: document.getElementById('img-thumb').dataset.url,
-                    banner: document.getElementById('img-banner').dataset.url,
-                    footer_icon: document.getElementById('img-footer').dataset.url
-                }
-            };
-            await fetch('/api/test_message', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(config) });
-            alert("Message envoyé !");
+            const config = { welcome: { title: document.getElementById('w-title').value, desc: document.getElementById('w-desc').value, footer: document.getElementById('w-footer').value, color: document.getElementById('w-color').value, channel: document.getElementById('w-channel').value, thumbnail: document.getElementById('img-thumb').dataset.url, banner: document.getElementById('img-banner').dataset.url, footer_icon: document.getElementById('img-footer').dataset.url } };
+            await fetch('/api/test_message', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
+            alert("Message de test envoyé !");
         }
 
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+        function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('open'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
-        function toggleDrop(e) { e.stopPropagation(); document.getElementById('role-menu').classList.toggle('show'); }
+        function toggleDrop(e, id) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
         function showTab(id, el) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            if(el) {
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                el.classList.add('active');
-            }
+            if(el) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); }
+            closeSidebar();
         }
 
-        window.onclick = () => document.getElementById('role-menu').classList.remove('show');
-        window.onload = load;
+        window.onclick = () => document.querySelectorAll('.drop-menu').forEach(m => m.classList.remove('show'));
+        window.onload = init;
     </script>
 </body>
 </html>
