@@ -120,3 +120,22 @@ def delete_image():
 def run(): app.run(host='0.0.0.0', port=49501)
 threading.Thread(target=run, daemon=True).start()
 bot.run(TOKEN)
+@app.route('/api/test_embed', methods=['POST'])
+async def test_embed():
+    data = request.json
+    mode = data.get('mode', 'welcome')
+    conf = load_config().get(mode)
+    
+    if not conf or not conf.get("channel"):
+        return jsonify({"error": "Salon non configuré"}), 400
+        
+    channel = bot.get_channel(int(conf.get("channel")))
+    if channel:
+        # On simule un membre pour le test
+        guild = bot.get_guild(GUILD_ID)
+        member = guild.owner # On utilise l'owner comme cobaye pour le test
+        embed, files = await create_embed_gen(member, conf, mode)
+        await channel.send(content=f"🧪 **TEST {mode.upper()}**", embed=embed, files=files)
+        return jsonify({"status": "sent"})
+    return jsonify({"error": "Salon introuvable"}), 404
+    
