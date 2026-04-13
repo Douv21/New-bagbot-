@@ -51,7 +51,7 @@
         .drop-menu { display: none; background: #050505; border: 1px solid var(--border); border-radius: 10px; max-height: 200px; overflow-y: auto; margin-top: 5px; z-index: 100; }
         .drop-menu.show { display: block; }
         .role-item { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #111; cursor: pointer; }
-        .role-item input { width: 18px; height: 18px; margin-right: 15px; }
+        .role-item input { width: 18px; height: 18px; margin-right: 15px; pointer-events: none; }
 
         .btn { border: none; padding: 16px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
         .btn-save { background: var(--accent); color: #fff; }
@@ -78,8 +78,8 @@
             <i class="fas fa-chevron-down arrow" style="transform: rotate(180deg);"></i>
         </div>
         <div id="submenu-config" class="submenu show">
-            <div class="sub-item active" onclick="showTab('welcome', this)"><i class="fas fa-paper-plane"></i> Bienvenue</div>
-            <div class="sub-item" onclick="showTab('leave', this)"><i class="fas fa-sign-out-alt"></i> Départ</div>
+            <div id="sub-welcome" class="sub-item active" onclick="showTab('welcome', this)"><i class="fas fa-paper-plane"></i> Bienvenue</div>
+            <div id="sub-leave" class="sub-item" onclick="showTab('leave', this)"><i class="fas fa-sign-out-alt"></i> Départ</div>
         </div>
 
         <div class="nav-item" id="nav-admin" onclick="showTab('admin', this)"><i class="fas fa-user-shield main-icon"></i> PERMISSIONS</div>
@@ -114,14 +114,11 @@
                 <div class="var-box"><b>{user}</b> : Mention | <b>{server}</b> : Nom | <b>{count}</b> : Membres</div>
                 <label>Texte Footer</label>
                 <input type="text" id="w-footer" oninput="sync('welcome')">
-                
                 <label>Rôles Déclencheurs</label>
                 <div class="drop-btn" onclick="toggleDrop(event, 'w-role-menu')"><span id="w-role-label">0 rôles</span> <i class="fas fa-chevron-down"></i></div>
                 <div id="w-role-menu" class="drop-menu"></div>
-                
                 <label>Salon Cible</label>
                 <select id="w-channel"></select>
-
                 <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
                 <button class="btn btn-test" id="w-btn-test" onclick="test('welcome')"><i class="fab fa-discord"></i> TESTER LE RENDU</button>
             </div>
@@ -154,10 +151,8 @@
                 <div class="var-box"><b>{user}</b> : Nom | <b>{server}</b> : Nom | <b>{count}</b> : Membres</div>
                 <label>Texte Footer</label>
                 <input type="text" id="l-footer" oninput="sync('leave')">
-                
                 <label>Salon Cible</label>
                 <select id="l-channel"></select>
-
                 <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
                 <button class="btn btn-test" id="l-btn-test" onclick="test('leave')"><i class="fab fa-discord"></i> TESTER LE RENDU</button>
             </div>
@@ -183,22 +178,24 @@
     </main>
 
     <script>
-        let db = {}; let activeMode = ''; let activeType = ''; let lastTab = 'welcome';
+        let db = { channels: [], roles: [], config: {}, images: [], server_info: { name: "Serveur", member_count: 0 } };
+        let activeMode = ''; let activeType = ''; let lastTab = 'welcome';
 
         async function init() {
             try {
                 const res = await fetch('/api/get_data');
                 db = await res.json();
                 
-                const w = db.config.welcome || {};
-                const l = db.config.leave || {};
+                const conf = db.config || {};
+                const w = conf.welcome || {};
+                const l = conf.leave || {};
 
-                // Injection Salons
+                // Salons
                 const chanHtml = db.channels.map(ch => `<option value="${ch.id}"># ${ch.name}</option>`).join('');
                 document.getElementById('w-channel').innerHTML = chanHtml;
                 document.getElementById('l-channel').innerHTML = chanHtml;
 
-                // Valeurs Bienvenue
+                // Bienvenue
                 document.getElementById('w-title').value = w.title || "";
                 document.getElementById('w-desc').value = w.desc || "";
                 document.getElementById('w-footer').value = w.footer || "";
@@ -208,7 +205,7 @@
                 setImg('welcome', 'banner', w.banner);
                 setImg('welcome', 'footer_icon', w.footer_icon);
                 
-                // Valeurs Départ
+                // Départ
                 document.getElementById('l-title').value = l.title || "";
                 document.getElementById('l-desc').value = l.desc || "";
                 document.getElementById('l-footer').value = l.footer || "";
@@ -218,35 +215,18 @@
                 setImg('leave', 'banner', l.banner);
                 setImg('leave', 'footer_icon', l.footer_icon);
 
-                // Checklists Rôles
+                // Rôles
                 renderChecklist('w-role-menu', w.trigger_roles || [], 'w-role-label');
-                renderChecklist('admin-menu', db.config.admin_roles || [], 'admin-label');
+                renderChecklist('admin-menu', conf.admin_roles || [], 'admin-label');
                 
                 renderGallery();
                 sync('welcome'); sync('leave');
-            } catch(e) { console.error("Erreur init:", e); }
-        }
-
-        function parseVars(text) {
-            if(!text) return "";
-            const sName = (db.server_info && db.server_info.name) ? db.server_info.name : "Serveur";
-            const sCount = (db.server_info && db.server_info.member_count) ? db.server_info.member_count : "0";
-            return text.replace(/{user}/g, "@User").replace(/{server}/g, sName).replace(/{count}/g, sCount);
-        }
-
-        function sync(mode) {
-            const p = (mode === 'welcome') ? 'w' : 'l';
-            const col = document.getElementById(`${p}-color`).value;
-            const box = document.getElementById(`pv-box-${mode}`);
-            if(box) box.style.borderLeftColor = col;
-            document.getElementById(`pv-title-${mode}`).innerText = parseVars(document.getElementById(`${p}-title`).value);
-            document.getElementById(`pv-desc-${mode}`).innerText = parseVars(document.getElementById(`${p}-desc`).value);
-            document.getElementById(`pv-footer-text-${mode}`).innerText = document.getElementById(`${p}-footer`).value;
+            } catch(e) { console.error("Erreur chargement:", e); }
         }
 
         function renderChecklist(menuId, selected, labelId) {
             const menu = document.getElementById(menuId);
-            if(!menu) return;
+            if(!menu || !db.roles) return;
             menu.innerHTML = db.roles.map(r => `
                 <div class="role-item" onclick="toggleCheck(this, '${labelId}')">
                     <input type="checkbox" value="${r}" ${selected.includes(r)?'checked':''}>
@@ -264,6 +244,21 @@
         function updateCount(menuId, labelId) { 
             const n = document.querySelectorAll(`#${menuId} input:checked`).length; 
             document.getElementById(labelId).innerText = n + " rôle(s)"; 
+        }
+
+        function parseVars(text) {
+            if(!text) return "";
+            return text.replace(/{user}/g, "@User").replace(/{server}/g, db.server_info.name).replace(/{count}/g, db.server_info.member_count);
+        }
+
+        function sync(mode) {
+            const p = (mode === 'welcome') ? 'w' : 'l';
+            const col = document.getElementById(`${p}-color`).value;
+            const box = document.getElementById(`pv-box-${mode}`);
+            if(box) box.style.borderLeftColor = col;
+            document.getElementById(`pv-title-${mode}`).innerText = parseVars(document.getElementById(`${p}-title`).value);
+            document.getElementById(`pv-desc-${mode}`).innerText = parseVars(document.getElementById(`${p}-desc`).value);
+            document.getElementById(`pv-footer-text-${mode}`).innerText = document.getElementById(`${p}-footer`).value;
         }
 
         function openPicker(m, t) { activeMode = m; activeType = t; lastTab = m; showTab('gallery'); }
@@ -306,10 +301,8 @@
         async function save() {
             const config = {
                 welcome: {
-                    title: document.getElementById('w-title').value, 
-                    desc: document.getElementById('w-desc').value,
-                    footer: document.getElementById('w-footer').value, 
-                    color: document.getElementById('w-color').value,
+                    title: document.getElementById('w-title').value, desc: document.getElementById('w-desc').value,
+                    footer: document.getElementById('w-footer').value, color: document.getElementById('w-color').value,
                     channel: document.getElementById('w-channel').value,
                     thumbnail: document.getElementById('w-img-thumb').dataset.url || "",
                     banner: document.getElementById('w-img-banner').dataset.url || "",
@@ -317,10 +310,8 @@
                     trigger_roles: Array.from(document.querySelectorAll('#w-role-menu input:checked')).map(i => i.value)
                 },
                 leave: {
-                    title: document.getElementById('l-title').value, 
-                    desc: document.getElementById('l-desc').value,
-                    footer: document.getElementById('l-footer').value, 
-                    color: document.getElementById('l-color').value,
+                    title: document.getElementById('l-title').value, desc: document.getElementById('l-desc').value,
+                    footer: document.getElementById('l-footer').value, color: document.getElementById('l-color').value,
                     channel: document.getElementById('l-channel').value,
                     thumbnail: document.getElementById('l-img-thumb').dataset.url || "",
                     banner: document.getElementById('l-img-banner').dataset.url || "",
@@ -329,9 +320,12 @@
                 admin_roles: Array.from(document.querySelectorAll('#admin-menu input:checked')).map(i => i.value)
             };
             await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
-            alert("Configuration sauvegardée !");
+            alert("Sauvegardé !");
         }
 
         async function test(mode) {
             const p = (mode === 'welcome') ? 'w' : 'l';
-            const btn = document.getElementById(`${p}-btn-
+            const btn = document.getElementById(`${p}-btn-test`);
+            const conf = {
+                channel: document.getElementById(`${p}-channel`).value,
+                title: document.getElementById(`
