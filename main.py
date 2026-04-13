@@ -79,26 +79,27 @@ def test():
             return jsonify({"error": f"Salon {channel_id} introuvable"}), 400
         
         guild = bot.get_guild(GUILD_ID)
-        # Formatage des variables pour le test
         title = conf.get('title').replace("{user}", "TestUser").replace("{server}", guild.name).replace("{count}", str(guild.member_count))
         desc = conf.get('desc').replace("{user}", "TestUser").replace("{server}", guild.name).replace("{count}", str(guild.member_count))
         
         col = int(conf.get('color').replace('#', ''), 16)
         embed = discord.Embed(title=title, description=desc, color=col)
         
-        # Gestion propre des URLs (locales vs distantes)
+        # CORRECTIF CRITIQUE : Conversion des chemins locaux en URLs publiques
         def fix_url(u):
             if not u: return None
-            if u.startswith('/uploads'): return f"http://{request.host}{u}"
+            if u.startswith('/uploads'): 
+                # On utilise l'IP/Host de la requête pour que Discord trouve l'image
+                return f"http://{request.host}{u}"
             return u
 
-        banner = fix_url(conf.get('banner'))
-        thumb = fix_url(conf.get('thumbnail'))
-        f_icon = fix_url(conf.get('footer_icon'))
+        banner_url = fix_url(conf.get('banner'))
+        thumb_url = fix_url(conf.get('thumbnail'))
+        f_icon_url = fix_url(conf.get('footer_icon'))
 
-        if banner: embed.set_image(url=banner)
-        if thumb: embed.set_thumbnail(url=thumb)
-        embed.set_footer(text=conf.get('footer'), icon_url=f_icon)
+        if banner_url: embed.set_image(url=banner_url)
+        if thumb_url: embed.set_thumbnail(url=thumb_url)
+        embed.set_footer(text=conf.get('footer'), icon_url=f_icon_url)
         
         bot.loop.create_task(chan.send(content="**[TEST ELITE V9]**", embed=embed))
         return jsonify({"status": "sent"})
