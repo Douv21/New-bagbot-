@@ -75,8 +75,7 @@ def test():
     try:
         channel_id = int(conf.get('channel'))
         chan = bot.get_channel(channel_id)
-        if not chan: 
-            return jsonify({"error": f"Salon {channel_id} introuvable"}), 400
+        if not chan: return jsonify({"error": "Salon introuvable"}), 400
         
         guild = bot.get_guild(GUILD_ID)
         title = conf.get('title').replace("{user}", "TestUser").replace("{server}", guild.name).replace("{count}", str(guild.member_count))
@@ -85,23 +84,34 @@ def test():
         col = int(conf.get('color').replace('#', ''), 16)
         embed = discord.Embed(title=title, description=desc, color=col)
         
-        # CORRECTIF CRITIQUE : Conversion des chemins locaux en URLs publiques
-        def fix_url(u):
-            if not u: return None
-            if u.startswith('/uploads'): 
-                # On utilise l'IP/Host de la requête pour que Discord trouve l'image
-                return f"http://{request.host}{u}"
-            return u
+        files_to_send = []
 
-        banner_url = fix_url(conf.get('banner'))
-        thumb_url = fix_url(conf.get('thumbnail'))
-        f_icon_url = fix_url(conf.get('footer_icon'))
+        # Fonction pour attacher une image locale si nécessaire
+        def process_image(img_path, embed_type):
+            if not img_path: return
+            if img_path.startswith('/uploads'):
+                filename = img_path.split('/')[-1]
+                full_path = os.path.join('public', img_path.lstrip('/'))
+                if os.path.exists(full_path):
+                    d_file = discord.File(full_path, filename=filename)
+                    files_to_send.append(d_file)
+                    if embed_type == "banner": embed.set_image(url=f"attachment://{filename}")
+                    if embed_type == "thumb": embed.set_thumbnail(url=f"attachment://{filename}")
+                    if embed_type == "footer": embed.set_footer(text=conf.get('footer'), icon_url=f"attachment://{filename}")
+            else:
+                # Si c'est une URL externe (http...)
+                if embed_type == "banner": embed.set_image(url=img_path)
+                if embed_type == "thumb": embed.set_thumbnail(url=img_path)
+                if embed_type == "footer": embed.set_footer(text=conf.get('footer'), icon_url=img_path)
 
-        if banner_url: embed.set_image(url=banner_url)
-        if thumb_url: embed.set_thumbnail(url=thumb_url)
-        embed.set_footer(text=conf.get('footer'), icon_url=f_icon_url)
+        process_image(conf.get('banner'), "banner")
+        process_image(conf.get('thumbnail'), "thumb")
+        process_image(conf.get('footer_icon'), "footer")
         
-        bot.loop.create_task(chan.send(content="**[TEST ELITE V9]**", embed=embed))
+        if not embed.footer.text:
+            embed.set_footer(text=conf.get('footer'))
+
+        bot.loop.create_task(chan.send(content="**[TEST ELITE V9 - FIX IMAGES]**", embed=embed, files=files_to_send))
         return jsonify({"status": "sent"})
     except Exception as e:
         print(f"Erreur Test: {e}")
