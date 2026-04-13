@@ -32,6 +32,9 @@
 
         .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
         label { display: block; font-size: 11px; font-weight: 800; color: #555; text-transform: uppercase; margin: 15px 0 8px; }
+        .vars-help { background: #000; padding: 10px; border-radius: 8px; font-size: 12px; color: #888; margin-top: 10px; border: 1px solid #222; }
+        .vars-help b { color: var(--accent); }
+
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; font-size: 14px; outline: none; }
         input[type="color"] { height: 45px; padding: 5px; cursor: pointer; }
 
@@ -90,9 +93,14 @@
                 <input type="text" id="w-title" oninput="sync()">
                 <label>Message</label>
                 <textarea id="w-desc" rows="4" oninput="sync()"></textarea>
+                
+                <div class="vars-help">
+                    <b>{user}</b> : Mention membre | <b>{server}</b> : Nom Serveur | <b>{count}</b> : Nombre membres
+                </div>
+
                 <label>Texte Footer</label>
                 <input type="text" id="w-footer" oninput="sync()">
-                <label>Rôles Déclencheurs</label>
+                <label>Rôles Dashboard</label>
                 <div class="drop-container">
                     <div class="drop-btn" onclick="toggleDrop(event, 'role-menu')">
                         <span id="role-label">Sélectionner...</span> <i class="fas fa-chevron-down"></i>
@@ -102,20 +110,20 @@
                 <label>Salon Cible</label>
                 <select id="w-channel"></select>
                 <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
-                <button class="btn btn-test" onclick="test()"><i class="fab fa-discord"></i> TESTER MAINTENANT</button>
+                <button class="btn btn-test" onclick="test()"><i class="fab fa-discord"></i> TESTER LE RENDU</button>
             </div>
         </div>
 
         <div id="admin" class="section">
             <div class="card">
-                <h2>Permissions Dashboard</h2>
+                <h2>Accès Admin</h2>
                 <div class="drop-container">
                     <div class="drop-btn" onclick="toggleDrop(event, 'admin-menu')">
                         <span id="admin-label">0 rôles</span> <i class="fas fa-chevron-down"></i>
                     </div>
                     <div id="admin-menu" class="drop-menu"></div>
                 </div>
-                <button class="btn btn-save" onclick="save()">APPLIQUER LES DROITS</button>
+                <button class="btn btn-save" onclick="save()">APPLIQUER</button>
             </div>
         </div>
 
@@ -123,9 +131,9 @@
             <button class="btn-close" onclick="showTab('welcome')">✕</button>
             <div class="card" style="clear:both; margin-top:10px;">
                 <h2>Médias</h2>
-                <label>Lien Direct</label>
-                <div style="display:flex; gap:10px;"><input type="text" id="url-input" placeholder="https://..."><button class="btn btn-save" style="width:80px; margin:0;" onclick="useUrl()">OK</button></div>
-                <label>Uploader un fichier</label>
+                <label>Lien Web</label>
+                <div style="display:flex; gap:10px;"><input type="text" id="url-input"><button class="btn btn-save" style="width:80px; margin:0;" onclick="useUrl()">OK</button></div>
+                <label>Local</label>
                 <input type="file" id="file-input" onchange="uploadFile()">
                 <div id="gallery-list" class="gallery-grid"></div>
             </div>
@@ -156,7 +164,8 @@
 
         function parseVars(text) {
             if(!text) return "";
-            return text.replace(/{user}/g, "PrénomUser")
+            // Simule l'utilisateur connecté sur le dashboard dans l'aperçu
+            return text.replace(/{user}/g, "@Utilisateur")
                        .replace(/{server}/g, db.server_info.name)
                        .replace(/{count}/g, db.server_info.member_count);
         }
@@ -231,8 +240,8 @@
                 },
                 admin_roles: Array.from(document.querySelectorAll('#admin-menu input:checked')).map(i => i.value)
             };
-            const res = await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
-            if(res.ok) alert("Configuration appliquée avec succès !");
+            await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
+            alert("Configuration enregistrée !");
         }
 
         async function test() {
@@ -248,9 +257,7 @@
                     footer_icon: document.getElementById('img-footer').dataset.url 
                 } 
             };
-            const res = await fetch('/api/test_message', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
-            const r = await res.json();
-            if(r.status === 'sent') console.log("Test envoyé");
+            await fetch('/api/test_message', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
         }
 
         function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('open'); }
