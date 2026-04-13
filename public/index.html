@@ -95,37 +95,37 @@
                 <label>Rôles Déclencheurs</label>
                 <div class="drop-container">
                     <div class="drop-btn" onclick="toggleDrop(event, 'role-menu')">
-                        <span id="role-label">Chargement...</span> <i class="fas fa-chevron-down"></i>
+                        <span id="role-label">Sélectionner...</span> <i class="fas fa-chevron-down"></i>
                     </div>
                     <div id="role-menu" class="drop-menu"></div>
                 </div>
                 <label>Salon Cible</label>
                 <select id="w-channel"></select>
                 <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
-                <button class="btn btn-test" onclick="test()"><i class="fab fa-discord"></i> TESTER SUR DISCORD</button>
+                <button class="btn btn-test" onclick="test()"><i class="fab fa-discord"></i> TESTER MAINTENANT</button>
             </div>
         </div>
 
         <div id="admin" class="section">
             <div class="card">
-                <h2>Permissions</h2>
+                <h2>Permissions Dashboard</h2>
                 <div class="drop-container">
                     <div class="drop-btn" onclick="toggleDrop(event, 'admin-menu')">
                         <span id="admin-label">0 rôles</span> <i class="fas fa-chevron-down"></i>
                     </div>
                     <div id="admin-menu" class="drop-menu"></div>
                 </div>
-                <button class="btn btn-save" onclick="save()">APPLIQUER</button>
+                <button class="btn btn-save" onclick="save()">APPLIQUER LES DROITS</button>
             </div>
         </div>
 
         <div id="gallery" class="section">
             <button class="btn-close" onclick="showTab('welcome')">✕</button>
             <div class="card" style="clear:both; margin-top:10px;">
-                <h2>Galerie</h2>
-                <label>URL</label>
-                <div style="display:flex; gap:10px;"><input type="text" id="url-input"><button class="btn btn-save" style="width:80px; margin:0;" onclick="useUrl()">OK</button></div>
-                <label>Fichier</label>
+                <h2>Médias</h2>
+                <label>Lien Direct</label>
+                <div style="display:flex; gap:10px;"><input type="text" id="url-input" placeholder="https://..."><button class="btn btn-save" style="width:80px; margin:0;" onclick="useUrl()">OK</button></div>
+                <label>Uploader un fichier</label>
                 <input type="file" id="file-input" onchange="uploadFile()">
                 <div id="gallery-list" class="gallery-grid"></div>
             </div>
@@ -231,8 +231,8 @@
                 },
                 admin_roles: Array.from(document.querySelectorAll('#admin-menu input:checked')).map(i => i.value)
             };
-            await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
-            alert("Sauvegardé !");
+            const res = await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
+            if(res.ok) alert("Configuration appliquée avec succès !");
         }
 
         async function test() {
@@ -248,14 +248,9 @@
                     footer_icon: document.getElementById('img-footer').dataset.url 
                 } 
             };
-            const res = await fetch('/api/test_message', { 
-                method:'POST', 
-                headers:{'Content-Type':'application/json'}, 
-                body:JSON.stringify(config) 
-            });
+            const res = await fetch('/api/test_message', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
             const r = await res.json();
-            if(r.status === 'sent') alert("Embed envoyé avec images !");
-            else alert("Erreur : " + r.error);
+            if(r.status === 'sent') console.log("Test envoyé");
         }
 
         function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('open'); }
