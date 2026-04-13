@@ -20,10 +20,9 @@
         .nav-item:hover { color: #fff; background: #ffffff05; }
         .nav-item.active { color: var(--accent); background: #ed424510; border-right: 4px solid var(--accent); }
         
-        /* Style des sous-onglets */
         .sub-menu { display: none; background: #050505; }
         .nav-sub-item { padding: 15px 20px 15px 45px; font-size: 13px; border-bottom: 1px solid #0a0a0a; cursor: pointer; display: flex; align-items: center; gap: 12px; color: #666; font-weight: 600; }
-        .nav-sub-item.active { color: var(--accent); background: #ed424505; }
+        .nav-sub-item.active { color: var(--accent); background: #ed424505; border-right: 3px solid var(--accent); }
 
         main { height: 100vh; overflow-y: auto; padding: 85px 15px 180px; -webkit-overflow-scrolling: touch; }
         .section { display: none; max-width: 600px; margin: 0 auto; }
@@ -75,16 +74,16 @@
             <i class="fas fa-chevron-down" id="chevron-msg" style="font-size: 10px; margin-left: auto; transition: 0.3s;"></i>
         </div>
         <div id="sub-messages" class="sub-menu">
-            <div class="nav-sub-item active" id="btn-welcome" onclick="showTab('welcome', this)">
+            <div class="nav-sub-item active" onclick="showTab('welcome', this)">
                 <i class="fas fa-paper-plane"></i> BIENVENUE
             </div>
-            <div class="nav-sub-item" id="btn-leave" onclick="showTab('leave', this)">
+            <div class="nav-sub-item" onclick="showTab('leave', this)">
                 <i class="fas fa-sign-out-alt"></i> DÉPART
             </div>
         </div>
 
-        <div class="nav-item" id="btn-admin" onclick="showTab('admin', this)"><i class="fas fa-user-shield"></i> PERMISSIONS</div>
-        <div class="nav-item" id="btn-gallery" onclick="showTab('gallery', this)"><i class="fas fa-images"></i> GALERIE</div>
+        <div class="nav-item" onclick="showTab('admin', this)"><i class="fas fa-user-shield"></i> PERMISSIONS</div>
+        <div class="nav-item" onclick="showTab('gallery', this)"><i class="fas fa-images"></i> GALERIE</div>
     </div>
 
     <main id="main-scroll" onclick="closeSidebar()">
@@ -106,25 +105,17 @@
 
             <div class="card">
                 <h2>Configuration Bienvenue</h2>
-                <label>Couleur Embed</label>
-                <input type="color" id="w-color" oninput="sync('welcome')">
-                <label>Titre</label>
-                <input type="text" id="w-title" oninput="sync('welcome')">
-                <label>Message</label>
-                <textarea id="w-desc" rows="5" oninput="sync('welcome')"></textarea>
+                <label>Couleur Embed</label><input type="color" id="w-color" oninput="sync('welcome')">
+                <label>Titre</label><input type="text" id="w-title" oninput="sync('welcome')">
+                <label>Message</label><textarea id="w-desc" rows="5" oninput="sync('welcome')"></textarea>
                 <div class="var-box"><b>{user}</b> : Mention | <b>{server}</b> : Nom | <b>{count}</b> : Membres</div>
-                <label>Texte Footer</label>
-                <input type="text" id="w-footer" oninput="sync('welcome')">
-                
+                <label>Texte Footer</label><input type="text" id="w-footer" oninput="sync('welcome')">
                 <label>Rôles Déclencheurs</label>
                 <div class="drop-btn" onclick="toggleDrop(event, 'w-role-menu')"><span id="w-role-label">0 rôles</span> <i class="fas fa-chevron-down"></i></div>
                 <div id="w-role-menu" class="drop-menu"></div>
-                
-                <label>Salon Cible</label>
-                <select id="w-channel"></select>
-
+                <label>Salon Cible</label><select id="w-channel"></select>
                 <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
-                <button class="btn btn-test" id="w-btn-test" onclick="test('welcome')"><i class="fab fa-discord"></i> TESTER LE RENDU</button>
+                <button class="btn btn-test" id="w-btn-test" onclick="test('welcome')"><i class="fab fa-discord"></i> TEST</button>
             </div>
         </div>
 
@@ -132,7 +123,7 @@
             <div id="pv-box-leave" class="preview">
                 <div class="pv-top">
                     <div style="flex-grow:1">
-                        <div id="pv-title-leave" style="color:#00a8fc; font-weight:bold;">Au revoir</div>
+                        <div id="pv-title-leave" style="color:#00a8fc; font-weight:bold;">Titre</div>
                         <div id="pv-desc-leave" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Description</div>
                     </div>
                     <div class="pv-thumb" onclick="openPicker('leave', 'thumbnail')"><img id="l-img-thumb"></div>
@@ -143,24 +134,15 @@
                     <span id="pv-footer-text-leave">Footer</span>
                 </div>
             </div>
-
             <div class="card">
                 <h2>Configuration Départ</h2>
-                <label>Couleur Embed</label>
-                <input type="color" id="l-color" oninput="sync('leave')">
-                <label>Titre</label>
-                <input type="text" id="l-title" oninput="sync('leave')">
-                <label>Message</label>
-                <textarea id="l-desc" rows="5" oninput="sync('leave')"></textarea>
-                <div class="var-box"><b>{user}</b> : Nom | <b>{server}</b> : Nom | <b>{count}</b> : Membres</div>
-                <label>Texte Footer</label>
-                <input type="text" id="l-footer" oninput="sync('leave')">
-                
-                <label>Salon Cible</label>
-                <select id="l-channel"></select>
-
+                <label>Couleur Embed</label><input type="color" id="l-color" oninput="sync('leave')">
+                <label>Titre</label><input type="text" id="l-title" oninput="sync('leave')">
+                <label>Message</label><textarea id="l-desc" rows="5" oninput="sync('leave')"></textarea>
+                <label>Texte Footer</label><input type="text" id="l-footer" oninput="sync('leave')">
+                <label>Salon Cible</label><select id="l-channel"></select>
                 <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
-                <button class="btn btn-test" id="l-btn-test" onclick="test('leave')"><i class="fab fa-discord"></i> TESTER LE RENDU</button>
+                <button class="btn btn-test" id="l-btn-test" onclick="test('leave')"><i class="fab fa-discord"></i> TEST</button>
             </div>
         </div>
 
@@ -175,7 +157,7 @@
 
         <div id="gallery" class="section">
             <div class="card">
-                <h2>Galerie Médias</h2>
+                <h2>Galerie</h2>
                 <input type="file" id="file-input" onchange="uploadFile()">
                 <div id="gallery-list" class="gallery-grid"></div>
                 <button class="btn btn-save" onclick="showTab(lastTab)">RETOUR</button>
@@ -184,19 +166,18 @@
     </main>
 
     <script>
-        let db = {}; let activeMode = ''; let activeType = ''; let lastTab = 'welcome';
+        let db = { channels:[], roles:[], config:{}, images:[], server_info:{} };
+        let activeMode = ''; let activeType = ''; let lastTab = 'welcome';
 
         async function init() {
             try {
                 const res = await fetch('/api/get_data');
                 db = await res.json();
                 
-                // Salons (Option unique pour les deux selects)
                 const chanOpts = db.channels.map(ch => `<option value="${ch.id}"># ${ch.name}</option>`).join('');
                 document.getElementById('w-channel').innerHTML = chanOpts;
                 document.getElementById('l-channel').innerHTML = chanOpts;
 
-                // Bienvenue
                 const w = db.config.welcome || {};
                 document.getElementById('w-title').value = w.title || "";
                 document.getElementById('w-desc').value = w.desc || "";
@@ -207,8 +188,7 @@
                 setImg('welcome', 'banner', w.banner);
                 setImg('welcome', 'footer_icon', w.footer_icon);
                 
-                // Départ
-                const l = db.config.leave || { title: "", desc: "", footer: "", color: "#ed4245", channel: "" };
+                const l = db.config.leave || {};
                 document.getElementById('l-title').value = l.title || "";
                 document.getElementById('l-desc').value = l.desc || "";
                 document.getElementById('l-footer').value = l.footer || "";
@@ -218,67 +198,58 @@
                 setImg('leave', 'banner', l.banner);
                 setImg('leave', 'footer_icon', l.footer_icon);
 
-                renderChecklist('w-role-menu', db.config.welcome.trigger_roles || [], 'w-role-label');
+                renderChecklist('w-role-menu', w.trigger_roles || [], 'w-role-label');
                 renderChecklist('admin-menu', db.config.admin_roles || [], 'admin-label');
-                renderGallery();
-                sync('welcome'); sync('leave');
-            } catch(e) { console.error("Erreur init:", e); }
+                renderGallery(); sync('welcome'); sync('leave');
+            } catch(e) { console.error(e); }
         }
 
-        // --- NAVIGATION FUSIONNÉE ---
         function toggleSubMenu(e, id) {
             e.stopPropagation();
             const sub = document.getElementById(id);
-            const chev = document.getElementById('chevron-msg');
             const isVisible = sub.style.display === 'block';
             sub.style.display = isVisible ? 'none' : 'block';
-            chev.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+            document.getElementById('chevron-msg').style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
         }
 
         function showTab(id, el) {
-            // Cacher toutes les sections
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            
-            // Gérer le style des boutons nav (normaux et sub-items)
             document.querySelectorAll('.nav-item, .nav-sub-item').forEach(n => n.classList.remove('active'));
             if(el) el.classList.add('active');
-            
-            // Fermer sidebar sur mobile uniquement si on n'est pas dans un sous-menu
-            if(!el.classList.contains('nav-sub-item')) closeSidebar();
+            if(id !== 'welcome' && id !== 'leave') closeSidebar();
+            if(id !== 'gallery') lastTab = id;
         }
 
-        // --- LOGIQUE CORE ---
-        function parseVars(text) {
-            if(!text) return "";
-            return text.replace(/{user}/g, "@User").replace(/{server}/g, db.server_info?.name || "Serveur").replace(/{count}/g, db.server_info?.member_count || "0");
+        function parseVars(t) {
+            if(!t) return "";
+            return t.replace(/{user}/g, "@User").replace(/{server}/g, db.server_info?.name || "Serveur").replace(/{count}/g, db.server_info?.member_count || "0");
         }
 
-        function sync(mode) {
-            const p = (mode === 'welcome') ? 'w' : 'l';
+        function sync(m) {
+            const p = (m === 'welcome') ? 'w' : 'l';
             const col = document.getElementById(`${p}-color`).value;
-            const box = document.getElementById(`pv-box-${mode}`);
-            if(box) box.style.borderLeftColor = col;
-            document.getElementById(`pv-title-${mode}`).innerText = parseVars(document.getElementById(`${p}-title`).value);
-            document.getElementById(`pv-desc-${mode}`).innerText = parseVars(document.getElementById(`${p}-desc`).value);
-            document.getElementById(`pv-footer-text-${mode}`).innerText = document.getElementById(`${p}-footer`).value;
+            document.getElementById(`pv-box-${m}`).style.borderLeftColor = col;
+            document.getElementById(`pv-title-${m}`).innerText = parseVars(document.getElementById(`${p}-title`).value);
+            document.getElementById(`pv-desc-${m}`).innerText = parseVars(document.getElementById(`${p}-desc`).value);
+            document.getElementById(`pv-footer-text-${m}`).innerText = document.getElementById(`${p}-footer`).value;
         }
 
-        function renderChecklist(menuId, selected, labelId) {
-            const menu = document.getElementById(menuId);
-            if(!menu) return;
-            menu.innerHTML = db.roles.map(r => `<div class="role-item" onclick="toggleCheck(this, '${labelId}')"><input type="checkbox" value="${r}" ${selected.includes(r)?'checked':''}><span>${r}</span></div>`).join('');
-            updateCount(menuId, labelId);
+        function renderChecklist(id, sel, lbl) {
+            const m = document.getElementById(id);
+            if(!m) return;
+            m.innerHTML = db.roles.map(r => `<div class="role-item" onclick="toggleCheck(this, '${lbl}')"><input type="checkbox" value="${r}" ${sel.includes(r)?'checked':''}><span>${r}</span></div>`).join('');
+            updateCount(id, lbl);
         }
 
-        function toggleCheck(el, labelId) { const cb = el.querySelector('input'); cb.checked = !cb.checked; updateCount(el.parentElement.id, labelId); }
-        function updateCount(menuId, labelId) { const n = document.querySelectorAll(`#${menuId} input:checked`).length; document.getElementById(labelId).innerText = n + " rôle(s)"; }
+        function toggleCheck(el, lbl) { const cb = el.querySelector('input'); cb.checked = !cb.checked; updateCount(el.parentElement.id, lbl); }
+        function updateCount(id, lbl) { const n = document.querySelectorAll(`#${id} input:checked`).length; document.getElementById(lbl).innerText = n + " rôle(s)"; }
 
-        function openPicker(m, t) { activeMode = m; activeType = t; lastTab = m; showTab('gallery'); }
+        function openPicker(m, t) { activeMode = m; activeType = t; showTab('gallery'); }
         function setImg(m, t, u) {
             const p = (m === 'welcome') ? 'w' : 'l';
-            const idMap = {'thumbnail':`${p}-img-thumb`,'banner':`${p}-img-banner`,'footer_icon':`${p}-img-footer`};
-            const el = document.getElementById(idMap[t]);
+            const ids = {'thumbnail':`${p}-img-thumb`,'banner':`${p}-img-banner`,'footer_icon':`${p}-img-footer`};
+            const el = document.getElementById(ids[t]);
             if(!el) return;
             if(u) { el.src = u; el.style.display = 'block'; el.dataset.url = u; }
             else { el.style.display = 'none'; el.dataset.url = ""; }
@@ -313,4 +284,21 @@
                     banner: document.getElementById('l-img-banner').dataset.url || "",
                     footer_icon: document.getElementById('l-img-footer').dataset.url || ""
                 },
-                admin_roles: Array.from(document.querySelectorAll('#
+                admin_roles: Array.from(document.querySelectorAll('#admin-menu input:checked')).map(i => i.value)
+            };
+            await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
+            alert("Sauvegardé !");
+        }
+
+        async function test(mode) {
+            const p = (mode === 'welcome') ? 'w' : 'l';
+            const btn = document.getElementById(`${p}-btn-test`);
+            const conf = {
+                channel: document.getElementById(`${p}-channel`).value,
+                title: document.getElementById(`${p}-title`).value,
+                desc: document.getElementById(`${p}-desc`).value,
+                color: document.getElementById(`${p}-color`).value,
+                footer: document.getElementById(`${p}-footer`).value,
+                thumbnail: document.getElementById(`${p}-img-thumb`).dataset.url || "",
+                banner: document.getElementById(`${p}-img-banner`).dataset.url || "",
+                footer_icon: document.getElementById(`${p}-img-footer`).dataset.url |
