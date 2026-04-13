@@ -10,9 +10,11 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
+        /* Header */
         .header { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; z-index: 2500; }
         .burger { font-size: 22px; color: var(--accent); cursor: pointer; }
         
+        /* Sidebar */
         #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #000; z-index: 3000; transition: 0.3s; border-right: 1px solid var(--border); }
         #sidebar.open { left: 0; }
         .nav-item { padding: 20px; border-bottom: 1px solid #111; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: #888; font-weight: bold; }
@@ -26,12 +28,16 @@
         .section { display: none; max-width: 600px; margin: 0 auto; }
         .section.active { display: block; }
 
-        /* Preview Discord */
-        .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; position: relative; }
+        /* Preview Discord Interactive */
+        .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; }
         .pv-top { display: flex; justify-content: space-between; gap: 10px; }
-        .pv-thumb { width: 65px; height: 65px; background: #222; border-radius: 4px; border: 1px dashed #444; overflow: hidden; cursor: pointer; }
-        .pv-banner { width: 100%; height: 140px; background: #222; border-radius: 8px; margin-top: 10px; border: 1px dashed #444; overflow: hidden; cursor: pointer; }
+        .pv-thumb { width: 65px; height: 65px; background: #222; border-radius: 4px; border: 1px dashed #444; overflow: hidden; cursor: pointer; position: relative; }
+        .pv-banner { width: 100%; height: 140px; background: #222; border-radius: 8px; margin-top: 10px; border: 1px dashed #444; overflow: hidden; cursor: pointer; position: relative; }
         .pv-f-icon { width: 20px; height: 20px; border-radius: 50%; background: #222; overflow: hidden; border: 1px dashed #444; cursor: pointer; }
+        
+        /* Overlay indication au survol */
+        .pv-thumb:hover::after, .pv-banner:hover::after { content: 'Modifier'; position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; }
+
         img { width: 100%; height: 100%; object-fit: cover; display: none; }
 
         /* Formulaire */
@@ -44,7 +50,6 @@
         .dropdown-content { display: none; background: #050505; border: 1px solid var(--border); border-radius: 8px; max-height: 150px; overflow-y: auto; margin-top: 5px; }
         .dropdown-content.show { display: block; }
         .role-opt { padding: 10px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #111; cursor: pointer; }
-        .role-opt input { width: 18px; height: 18px; }
 
         .btn { border: none; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-save { background: var(--accent); color: white; }
@@ -59,11 +64,11 @@
 
     <div class="header">
         <i class="fas fa-bars burger" onclick="toggleSidebar(event)"></i>
-        <div style="margin-left: 20px; font-weight: 900; color: var(--accent); letter-spacing: 1px;">BAGBOT ELITE</div>
+        <div style="margin-left: 20px; font-weight: 900; color: var(--accent);">BAGBOT DASHBOARD</div>
     </div>
 
     <div id="sidebar">
-        <div style="padding: 40px 20px; text-align: center; color: var(--accent); font-weight: 900;">V9 DASHBOARD</div>
+        <div style="padding: 40px 20px; text-align: center; color: var(--accent); font-weight: 900;">V9 ELITE</div>
         <div class="nav-item active" onclick="toggleSubmenu('sub-cd', event)">
             <span>BIENVENUE / DÉPART</span><i class="fas fa-chevron-down"></i>
         </div>
@@ -93,22 +98,17 @@
             </div>
 
             <div class="card">
-                <h2>Bienvenue</h2>
+                <h2>Configuration Bienvenue</h2>
                 <label>Couleur</label><input type="color" id="w-color" oninput="sync('welcome')">
-                <label>Contenu</label>
-                <input type="text" id="w-title" placeholder="Titre" oninput="sync('welcome')">
-                <textarea id="w-desc" rows="3" placeholder="Description (Utilise {user}, {server}, {count})" oninput="sync('welcome')"></textarea>
-                <input type="text" id="w-footer" placeholder="Texte Footer" oninput="sync('welcome')">
-
-                <label>URLs Images (Si pas galerie)</label>
-                <input type="text" id="w-input-banner" placeholder="Lien Bannière" oninput="setImg('welcome', 'banner', this.value)">
-                <input type="text" id="w-input-thumb" placeholder="Lien Miniature" oninput="setImg('welcome', 'thumbnail', this.value)">
+                <label>Titre</label><input type="text" id="w-title" oninput="sync('welcome')">
+                <label>Message</label><textarea id="w-desc" rows="3" oninput="sync('welcome')"></textarea>
+                <label>Texte Footer</label><input type="text" id="w-footer" oninput="sync('welcome')">
 
                 <label>Salon</label><select id="w-channel"></select>
 
                 <label>Rôles Automatiques</label>
                 <div class="dropdown-select" onclick="toggleDropdown('w-roles-drop', event)">
-                    <span id="w-roles-label">0 rôles sélectionnés</span><i class="fas fa-chevron-down"></i>
+                    <span id="w-roles-label">0 rôles</span><i class="fas fa-chevron-down"></i>
                 </div>
                 <div id="w-roles-drop" class="dropdown-content"></div>
 
@@ -120,8 +120,8 @@
             <div class="preview" id="pv-box-leave">
                 <div class="pv-top">
                     <div style="flex-grow:1">
-                        <div id="pv-l-title" style="color:#00a8fc; font-weight:bold;">Départ</div>
-                        <div id="pv-l-desc" style="font-size:14px; margin-top:5px;">Message...</div>
+                        <div id="pv-l-title" style="color:#00a8fc; font-weight:bold;">Au revoir</div>
+                        <div id="pv-l-desc" style="font-size:14px; margin-top:5px;">Description...</div>
                     </div>
                     <div class="pv-thumb" onclick="openPicker('leave', 'thumbnail')"><img id="l-img-thumb"></div>
                 </div>
@@ -132,11 +132,10 @@
                 </div>
             </div>
             <div class="card">
-                <h2>Départ</h2>
+                <h2>Configuration Départ</h2>
                 <label>Couleur</label><input type="color" id="l-color" oninput="sync('leave')">
-                <input type="text" id="l-title" oninput="sync('leave')">
-                <textarea id="l-desc" rows="3" oninput="sync('leave')"></textarea>
-                <label>URL Bannière</label><input type="text" id="l-input-banner" oninput="setImg('leave', 'banner', this.value)">
+                <label>Titre</label><input type="text" id="l-title" oninput="sync('leave')">
+                <label>Message</label><textarea id="l-desc" rows="3" oninput="sync('leave')"></textarea>
                 <label>Salon</label><select id="l-channel"></select>
                 <button class="btn btn-save" onclick="save()">SAUVEGARDER</button>
             </div>
@@ -155,7 +154,7 @@
 
         <div id="gallery" class="section">
             <div class="card">
-                <h2>Galerie</h2>
+                <h2>Galerie Médias</h2>
                 <input type="file" id="f-in" onchange="uploadFile()">
                 <div id="g-list" class="gallery-grid"></div>
                 <button class="btn btn-save" onclick="showTab(lastTab)">RETOUR</button>
@@ -186,14 +185,16 @@
             renderDrop('w-roles-drop', 'w-roles-label', db.config.welcome.trigger_roles || []);
             renderDrop('admin-roles-drop', 'admin-roles-label', db.config.admin_roles || []);
 
-            // Load Values
+            // Charger les valeurs et afficher les images
             ['welcome', 'leave'].forEach(m => {
                 const p = m[0]; const c = db.config[m];
                 document.getElementById(`${p}-title`).value = c.title || "";
                 document.getElementById(`${p}-desc`).value = c.desc || "";
-                document.getElementById(`${p}-footer`).value = c.footer || "";
+                if(document.getElementById(`${p}-footer`)) document.getElementById(`${p}-footer`).value = c.footer || "";
                 document.getElementById(`${p}-color`).value = c.color || "#ed4245";
                 document.getElementById(`${p}-channel`).value = c.channel || "";
+                
+                // Forcer l'affichage si l'URL existe
                 setImg(m, 'thumbnail', c.thumbnail);
                 setImg(m, 'banner', c.banner);
                 setImg(m, 'footer_icon', c.footer_icon);
@@ -202,24 +203,30 @@
             renderGallery(); sync('welcome'); sync('leave');
         }
 
-        function setImg(m, t, u) {
-            const p = m[0];
-            const id = (t === 'footer_icon') ? `${p}-img-footer` : `${p}-img-${t}`;
-            const el = document.getElementById(id);
+        // --- GESTION DES IMAGES ---
+        function setImg(mode, type, url) {
+            const p = mode[0];
+            // Mappe le type vers l'ID de l'image dans le HTML
+            const idMap = { 'thumbnail': `${p}-img-thumb`, 'banner': `${p}-img-banner`, 'footer_icon': `${p}-img-footer` };
+            const el = document.getElementById(idMap[type]);
             if(!el) return;
-            if(u && u.trim() !== "") { 
-                el.src = u; el.style.display = 'block'; el.dataset.url = u; 
-            } else { 
-                el.style.display = 'none'; el.dataset.url = ""; 
+
+            if(url && url.trim() !== "") {
+                el.src = url;
+                el.style.display = 'block';
+                el.dataset.url = url; // On stocke l'url brute ici pour le JSON
+            } else {
+                el.style.display = 'none';
+                el.dataset.url = "";
             }
         }
 
-        function sync(mode) {
-            const p = mode[0];
-            document.getElementById(`pv-box-${mode}`).style.borderLeftColor = document.getElementById(`${p}-color`).value;
-            document.getElementById(`pv-${p}-title`).innerText = document.getElementById(`${p}-title`).value || "Titre";
-            document.getElementById(`pv-${p}-desc`).innerText = document.getElementById(`${p}-desc`).value || "Message...";
-            const f = document.getElementById(`pv-${p}-footer`); if(f) f.innerText = document.getElementById(`${p}-footer`).value || "Footer";
+        function openPicker(m, t) { activeMode = m; activeType = t; lastTab = m; showTab('gallery'); }
+
+        function selectImage(url) {
+            setImg(activeMode, activeType, url);
+            showTab(activeMode);
+            sync(activeMode);
         }
 
         async function uploadFile() {
@@ -230,7 +237,7 @@
 
         async function deleteImg(path, e) {
             e.stopPropagation();
-            if(!confirm("Supprimer définitivement ?")) return;
+            if(!confirm("Supprimer l'image ?")) return;
             await fetch('/api/delete_image', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path})});
             db.images = db.images.filter(i => i !== path); renderGallery();
         }
@@ -243,34 +250,30 @@
                 </div>`).join('');
         }
 
-        function selectImage(u) { 
-            setImg(activeMode, activeType, u); 
-            // Met aussi à jour l'input manuel pour la cohérence
-            const inputId = `${activeMode[0]}-input-${activeType === 'footer_icon' ? 'footer' : activeType === 'thumbnail' ? 'thumb' : 'banner'}`;
-            if(document.getElementById(inputId)) document.getElementById(inputId).value = u;
-            showTab(activeMode); 
+        // --- UI & SYNC ---
+        function sync(mode) {
+            const p = mode[0];
+            document.getElementById(`pv-box-${mode}`).style.borderLeftColor = document.getElementById(`${p}-color`).value;
+            document.getElementById(`pv-${p}-title`).innerText = document.getElementById(`${p}-title`).value || "Titre";
+            document.getElementById(`pv-${p}-desc`).innerText = document.getElementById(`${p}-desc`).value || "Message...";
+            const f = document.getElementById(`pv-${p}-footer`); if(f) f.innerText = document.getElementById(`${p}-footer`).value || "Footer";
         }
 
-        function openPicker(m, t) { activeMode = m; activeType = t; lastTab = m; showTab('gallery'); }
         function toggleDropdown(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
-        
         function toggleRoleCheck(el, labelId) {
             const cb = el.querySelector('input'); cb.checked = !cb.checked;
             updateLabel(el.parentElement.id, labelId);
         }
-
         function updateLabel(listId, labelId) {
             const count = document.querySelectorAll(`#${listId} input:checked`).length;
             document.getElementById(labelId).innerText = `${count} sélectionnés`;
         }
-
         function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('open'); }
         function closeSidebar() { 
             document.getElementById('sidebar').classList.remove('open');
             document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
         }
         function toggleSubmenu(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
-        
         function showTab(id, el) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
@@ -281,6 +284,7 @@
             closeSidebar();
         }
 
+        // --- SAUVEGARDE ---
         async function save() {
             const getConf = (m) => {
                 const p = m[0];
