@@ -66,6 +66,9 @@ async def on_member_join(member):
     if channel:
         embed, files = await create_embed_gen(member, conf, "welcome")
         await channel.send(content=member.mention, embed=embed, files=files)
+        # Gestion des rôles auto
+        roles_to_add = [discord.utils.get(member.guild.roles, name=r) for r in conf.get("trigger_roles", [])]
+        await member.add_roles(*[r for r in roles_to_add if r])
 
 @bot.event
 async def on_member_remove(member):
@@ -88,8 +91,7 @@ def get_data():
     roles = [r.name for r in guild.roles if not r.managed and r.name != "@everyone"]
     return jsonify({
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
-        "roles": roles, "config": load_config(), "images": images,
-        "server_info": {"name": guild.name, "member_count": guild.member_count}
+        "roles": roles, "config": load_config(), "images": images
     })
 
 @app.route('/api/save', methods=['POST'])
@@ -107,18 +109,13 @@ def upload():
         return jsonify({"path": f"/uploads/{fname}"})
     return jsonify({"error": "No file"}), 400
 
-@app.route('/api/test_message', methods=['POST'])
-def test_msg():
-    data = request.json
-    mode, conf = data.get('mode'), data.get('config')
-    async def run_test():
-        guild = bot.get_guild(GUILD_ID)
-        chan = bot.get_channel(int(conf.get('channel')))
-        member = guild.owner or guild.members[0]
-        embed, files = await create_embed_gen(member, conf, mode)
-        await chan.send(content=f"🧪 **TEST {mode.upper()}**", embed=embed, files=files)
-    bot.loop.create_task(run_test())
-    return jsonify({"status": "sent"})
+@app.route('/api/delete_image', methods=['POST'])
+def delete_image():
+    path = request.json.get('path', '').lstrip('/')
+    if os.path.exists(path):
+        os.remove(path)
+        return jsonify({"status": "deleted"})
+    return jsonify({"error": "File not found"}), 404
 
 def run(): app.run(host='0.0.0.0', port=49501)
 threading.Thread(target=run, daemon=True).start()
