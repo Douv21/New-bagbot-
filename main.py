@@ -27,8 +27,10 @@ def load_config():
         return json.load(f)
 
 async def create_embed_gen(member, conf, mode_name):
+    # Remplacement des variables {user} par la mention réelle pour le ping
     title = str(conf.get('title', ' ')).replace("{user}", member.display_name).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
     desc = str(conf.get('desc', ' ')).replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
+    
     col_hex = str(conf.get('color', '#ed4245')).replace('#', '')
     col = int(col_hex, 16) if col_hex else 0xed4245
     
@@ -67,7 +69,8 @@ async def on_member_join(member):
     channel = bot.get_channel(int(conf.get("channel")))
     if channel:
         embed, files = await create_embed_gen(member, conf, "welcome")
-        await channel.send(content=member.mention, embed=embed, files=files)
+        # On envoie le ping {member.mention} dans le contenu du message
+        await channel.send(content=f"👋 {member.mention}", embed=embed, files=files)
         roles_to_add = [discord.utils.get(member.guild.roles, name=r) for r in conf.get("trigger_roles", [])]
         await member.add_roles(*[r for r in roles_to_add if r])
 
@@ -102,7 +105,7 @@ def test_embed():
         member = guild.owner
         future = asyncio.run_coroutine_threadsafe(create_embed_gen(member, conf, mode), bot.loop)
         embed, files = future.result()
-        asyncio.run_coroutine_threadsafe(channel.send(content=f"🧪 **TEST {mode.upper()}**", embed=embed, files=files), bot.loop)
+        asyncio.run_coroutine_threadsafe(channel.send(content=f"🧪 **TEST {mode.upper()}**\n{member.mention}", embed=embed, files=files), bot.loop)
         return jsonify({"status": "sent"})
     return jsonify({"error": "Salon introuvable"}), 404
 
