@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BAGBOT ELITE V9</title>
+    <title>BAGBOT DASHBOARD</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #0a0a0a; --card: #141414; --accent: #ed4245; --border: #252525; --d-bg: #2b2d31; }
@@ -36,18 +36,22 @@
         .card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
         label { display: block; font-size: 11px; color: #555; text-transform: uppercase; margin: 15px 0 5px; font-weight: bold; }
         
-        /* Fix Couleur Input */
-        input[type="color"] { height: 45px; padding: 5px; cursor: pointer; background: #1a1a1a; }
+        /* Input Couleur en forme de LIGNE */
+        input[type="color"] { 
+            -webkit-appearance: none; border: none; width: 100%; height: 8px; 
+            background: #1a1a1a; border-radius: 10px; cursor: pointer; padding: 0; overflow: hidden;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 10px; }
+
         input[type="text"], textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; outline: none; margin-bottom: 5px; }
         
         .dropdown-select { background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .dropdown-content { display: none; background: #050505; border: 1px solid var(--border); border-radius: 8px; max-height: 200px; overflow-y: auto; margin-top: 5px; }
         .dropdown-content.show { display: block; }
 
-        /* Fix Alignement Rôles */
         .role-opt { padding: 12px 15px; display: flex; align-items: center; justify-content: flex-start; gap: 15px; border-bottom: 1px solid #111; cursor: pointer; }
-        .role-opt input { width: 18px; height: 18px; margin: 0; cursor: pointer; flex-shrink: 0; }
-        .role-opt span { color: #ccc; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .role-opt input { width: 18px; height: 18px; margin: 0; cursor: pointer; }
 
         .btn { border: none; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-save { background: var(--accent); color: white; }
@@ -55,7 +59,6 @@
 
         .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
         .img-card { height: 100px; border-radius: 8px; border: 1px solid var(--border); position: relative; overflow: hidden; background: #000; }
-        .del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; border-radius: 3px; cursor: pointer; z-index: 10; padding: 2px 6px; font-size: 10px; }
     </style>
 </head>
 <body>
@@ -71,15 +74,15 @@
             <span>BIENVENUE / DÉPART</span><i class="fas fa-chevron-down"></i>
         </div>
         <div id="sub-cd" class="submenu show">
-            <div id="mi-welcome" class="sub-item active" onclick="showTab('welcome', this)">Bienvenue</div>
+            <div id="mi-welcome" class="sub-item" onclick="showTab('welcome', this)">Bienvenue</div>
             <div id="mi-leave" class="sub-item" onclick="showTab('leave', this)">Départ</div>
         </div>
-        <div class="nav-item" onclick="showTab('admin', this)">PERMISSIONS</div>
-        <div class="nav-item" onclick="showTab('gallery', this)">GALERIE</div>
+        <div id="mi-admin" class="nav-item" onclick="showTab('admin', this)">PERMISSIONS</div>
+        <div id="mi-gallery" class="nav-item" onclick="showTab('gallery', this)">GALERIE</div>
     </div>
 
     <main onclick="closeSidebar()">
-        <div id="welcome" class="section active">
+        <div id="welcome" class="section">
             <div class="preview" id="pv-box-welcome">
                 <div class="pv-top">
                     <div style="flex-grow:1">
@@ -97,7 +100,7 @@
 
             <div class="card">
                 <h2>Bienvenue</h2>
-                <label>Couleur Embed</label><input type="color" id="w-color" oninput="sync('welcome')">
+                <label>Couleur Embed (Ligne)</label><input type="color" id="w-color" oninput="sync('welcome')">
                 <label>Titre</label><input type="text" id="w-title" oninput="sync('welcome')">
                 <label>Message</label><textarea id="w-desc" rows="3" oninput="sync('welcome')"></textarea>
                 <label>Footer</label><input type="text" id="w-footer" oninput="sync('welcome')">
@@ -132,7 +135,7 @@
             </div>
             <div class="card">
                 <h2>Départ</h2>
-                <label>Couleur Embed</label><input type="color" id="l-color" oninput="sync('leave')">
+                <label>Couleur Embed (Ligne)</label><input type="color" id="l-color" oninput="sync('leave')">
                 <label>Titre</label><input type="text" id="l-title" oninput="sync('leave')">
                 <label>Message</label><textarea id="l-desc" rows="3" oninput="sync('leave')"></textarea>
                 <label>Salon</label><select id="l-channel"></select>
@@ -159,14 +162,14 @@
                 <h2>Galerie Médias</h2>
                 <input type="file" id="f-in" onchange="uploadFile()">
                 <div id="g-list" class="gallery-grid"></div>
-                <button class="btn btn-save" onclick="showTab(lastTab)">RETOUR</button>
+                <button class="btn btn-save" onclick="showTab(localStorage.getItem('lastTab') || 'welcome')">RETOUR</button>
             </div>
         </div>
     </main>
 
     <script>
         let db = { channels: [], roles: [], config: {}, images: [] };
-        let activeMode = ''; let activeType = ''; let lastTab = 'welcome';
+        let activeMode = ''; let activeType = '';
 
         async function init() {
             const res = await fetch('/api/get_data');
@@ -192,14 +195,7 @@
                 document.getElementById(`${p}-title`).value = c.title || "";
                 document.getElementById(`${p}-desc`).value = c.desc || "";
                 if(document.getElementById(`${p}-footer`)) document.getElementById(`${p}-footer`).value = c.footer || "";
-                
-                // Correction du chargement de la couleur
-                if (c.color) {
-                    let col = c.color;
-                    if(!col.startsWith('#')) col = '#' + col;
-                    document.getElementById(`${p}-color`).value = col;
-                }
-                
+                if (c.color) document.getElementById(`${p}-color`).value = c.color.startsWith('#') ? c.color : '#' + c.color;
                 document.getElementById(`${p}-channel`).value = c.channel || "";
                 setImg(m, 'thumbnail', c.thumbnail);
                 setImg(m, 'banner', c.banner);
@@ -207,15 +203,27 @@
             });
 
             renderGallery(); sync('welcome'); sync('leave');
+
+            // --- PERSISTANCE DE LA PAGE ---
+            const lastPage = localStorage.getItem('currentPage') || 'welcome';
+            showTab(lastPage, document.getElementById('mi-' + lastPage));
         }
 
-        function setImg(mode, type, url) {
-            const p = mode[0];
-            const idMap = { 'thumbnail': `${p}-img-thumb`, 'banner': `${p}-img-banner`, 'footer_icon': `${p}-img-footer` };
-            const el = document.getElementById(idMap[type]);
-            if(!el) return;
-            if(url && url.trim() !== "") { el.src = url; el.style.display = 'block'; el.dataset.url = url; }
-            else { el.style.display = 'none'; el.dataset.url = ""; }
+        function showTab(id, el) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            // On sauvegarde la page actuelle
+            localStorage.setItem('currentPage', id);
+            if(id !== 'gallery') localStorage.setItem('lastTab', id);
+
+            document.querySelectorAll('.nav-item, .sub-item').forEach(n => n.classList.remove('active'));
+            if(el) el.classList.add('active');
+            else {
+                const target = document.getElementById('mi-' + id);
+                if(target) target.classList.add('active');
+            }
+            closeSidebar();
         }
 
         function sync(mode) {
@@ -243,55 +251,40 @@
                 };
             };
             const config = { welcome: getConf('welcome'), leave: getConf('leave'), admin_roles: Array.from(document.querySelectorAll('#admin-roles-drop input:checked')).map(i => i.value) };
-            
             const res = await fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
-            const r = await res.json();
-            if(r.status === 'ok') alert("✅ Configuration sauvegardée avec succès !");
+            if((await res.json()).status === 'ok') alert("✅ Sauvegardé !");
         }
 
         async function sendTest(mode) {
             await save(); 
-            const res = await fetch('/api/test_embed', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ mode: mode })
-            });
-            const r = await res.json();
-            if(r.status === 'sent') alert("🧪 Test envoyé dans le salon !");
+            const res = await fetch('/api/test_embed', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ mode })});
+            if((await res.json()).status === 'sent') alert("🧪 Test envoyé !");
         }
 
-        function toggleRoleCheck(el, labelId) {
-            const cb = el.querySelector('input'); 
-            cb.checked = !cb.checked;
-            updateLabel(el.parentElement.id, labelId);
+        function setImg(mode, type, url) {
+            const p = mode[0];
+            const idMap = { 'thumbnail': `${p}-img-thumb`, 'banner': `${p}-img-banner`, 'footer_icon': `${p}-img-footer` };
+            const el = document.getElementById(idMap[type]);
+            if(!el) return;
+            if(url && url.trim() !== "") { el.src = url; el.style.display = 'block'; el.dataset.url = url; }
+            else { el.style.display = 'none'; el.dataset.url = ""; }
         }
 
-        function updateLabel(listId, labelId) {
-            const count = document.querySelectorAll(`#${listId} input:checked`).length;
-            document.getElementById(labelId).innerText = `${count} sélectionnés`;
-        }
-
-        // --- Fonctions Galerie & Sidebar (inchangées) ---
+        function openPicker(m, t) { activeMode = m; activeType = t; showTab('gallery'); }
+        function toggleRoleCheck(el, labelId) { el.querySelector('input').checked = !el.querySelector('input').checked; updateLabel(el.parentElement.id, labelId); }
+        function updateLabel(listId, labelId) { document.getElementById(labelId).innerText = `${document.querySelectorAll(`#${listId} input:checked`).length} sélectionnés`; }
+        function toggleDropdown(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
+        function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('open'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show')); }
+        function toggleSubmenu(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
         async function uploadFile() {
             const fd = new FormData(); fd.append('file', document.getElementById('f-in').files[0]);
             const r = await (await fetch('/api/upload', {method:'POST', body:fd})).json();
             db.images.push(r.path); renderGallery(); selectImage(r.path);
         }
-        function renderGallery() {
-            document.getElementById('g-list').innerHTML = db.images.map(i => `<div class="img-card"><button class="del-img" onclick="deleteImg('${i}', event)">✕</button><img src="${i}" style="display:block" onclick="selectImage('${i}')"></div>`).join('');
-        }
-        function selectImage(url) { setImg(activeMode, activeType, url); showTab(activeMode); sync(activeMode); }
-        function openPicker(m, t) { activeMode = m; activeType = t; lastTab = m; showTab('gallery'); }
-        function toggleDropdown(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
-        function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('open'); }
-        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show')); }
-        function toggleSubmenu(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
-        function showTab(id, el) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(el) { document.querySelectorAll('.nav-item, .sub-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); }
-            closeSidebar();
-        }
+        function renderGallery() { document.getElementById('g-list').innerHTML = db.images.map(i => `<div class="img-card"><img src="${i}" style="display:block" onclick="selectImage('${i}')"></div>`).join(''); }
+        function selectImage(url) { setImg(activeMode, activeType, url); showTab(localStorage.getItem('lastTab') || 'welcome'); sync(activeMode); }
+
         window.onload = init;
     </script>
 </body>
