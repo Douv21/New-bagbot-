@@ -10,28 +10,26 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* Header & Navigation */
         .header { position: fixed; top: 0; left: 0; right: 0; height: 65px; background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; z-index: 2500; }
         .burger { font-size: 22px; color: var(--accent); cursor: pointer; margin-right: 20px; }
-        .logo { font-weight: 900; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
+        .logo { font-weight: 900; color: var(--accent); text-transform: uppercase; }
 
         #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #000; z-index: 3000; transition: 0.3s; border-right: 1px solid var(--border); }
         #sidebar.open { left: 0; }
         .nav-item { padding: 20px; border-bottom: 1px solid #111; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: #888; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: #ed424510; }
+        .fa-chevron-down { transition: 0.3s; font-size: 12px; }
+        .nav-item.active .fa-chevron-down { transform: rotate(180deg); }
         
         .submenu { display: none; background: #050505; }
         .submenu.show { display: block; }
-        .sub-item { padding: 15px 15px 15px 55px; cursor: pointer; color: #666; font-size: 14px; border-bottom: 1px solid #0a0a0a; transition: 0.2s; }
-        .sub-item:hover { color: #fff; }
+        .sub-item { padding: 15px 15px 15px 55px; cursor: pointer; color: #666; border-bottom: 1px solid #0a0a0a; }
         .sub-item.active { color: var(--accent); background: #ed424505; font-weight: bold; }
 
-        /* Main Content */
-        main { height: 100vh; overflow-y: auto; padding: 85px 15px 180px; -webkit-overflow-scrolling: touch; }
+        main { height: 100vh; overflow-y: auto; padding: 85px 15px 180px; }
         .section { display: none; max-width: 600px; margin: 0 auto; }
         .section.active { display: block; }
 
-        /* Discord Preview */
         .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; }
         .pv-top { display: flex; justify-content: space-between; gap: 10px; }
         .pv-thumb { width: 65px; height: 65px; border-radius: 4px; background: #222; overflow: hidden; border: 1px dashed #444; cursor: pointer; }
@@ -39,26 +37,23 @@
         .pv-f-icon { width: 20px; height: 20px; border-radius: 50%; background: #222; overflow: hidden; border: 1px dashed #444; cursor: pointer; }
         img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Cards & Forms */
         .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
-        h2 { margin-top: 0; font-size: 18px; color: #fff; }
         label { display: block; font-size: 11px; font-weight: 800; color: #555; text-transform: uppercase; margin: 15px 0 8px; }
-        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; font-size: 14px; outline: none; }
-        input[type="color"] { height: 45px; padding: 5px; cursor: pointer; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 5px; }
         
-        .btn { border: none; padding: 16px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+        /* Dropdown Roles Style */
+        .dropdown-select { background: #000; border: 1px solid var(--border); padding: 14px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .dropdown-content { display: none; background: #050505; border: 1px solid var(--border); border-radius: 10px; max-height: 200px; overflow-y: auto; margin-top: 5px; }
+        .dropdown-content.show { display: block; }
+        .role-option { padding: 12px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #111; }
+        .role-option input { width: 18px; height: 18px; margin: 0; }
+
+        .btn { border: none; padding: 16px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-save { background: var(--accent); color: #fff; }
-        .btn-test { background: #5865f2; color: #fff; }
-
-        /* Checklist Roles */
-        .role-list { background: #000; border: 1px solid var(--border); border-radius: 10px; max-height: 250px; overflow-y: auto; margin-top: 10px; }
-        .role-item { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #111; cursor: pointer; }
-        .role-item input { width: 18px; height: 18px; margin-right: 15px; }
-
-        /* Gallery */
+        
         .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
-        .img-card { height: 100px; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; position: relative; background: #000; }
-        .del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; border-radius: 4px; padding: 5px; z-index: 5; font-size: 10px; }
+        .img-card { height: 100px; border-radius: 10px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+        .del-img { position: absolute; top: 5px; right: 5px; background: rgba(237, 66, 69, 0.9); color: white; border: none; width: 25px; height: 25px; border-radius: 5px; cursor: pointer; z-index: 10; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -69,17 +64,15 @@
     </div>
 
     <div id="sidebar">
-        <div style="padding: 30px; text-align: center; color: var(--accent); font-weight: 900; letter-spacing: 3px;">DASHBOARD</div>
-        
-        <div class="nav-item active" onclick="toggleSubmenu('sub-config', event)">
-            <span>CONFIGURATION</span>
+        <div style="padding: 40px 20px; text-align: center; color: var(--accent); font-weight: 900; letter-spacing: 2px;">V9 ELITE</div>
+        <div class="nav-item active" onclick="toggleSubmenu('sub-cd', event)">
+            <span>BIENVENUE / DÉPART</span>
             <i class="fas fa-chevron-down"></i>
         </div>
-        <div id="sub-config" class="submenu show">
+        <div id="sub-cd" class="submenu show">
             <div id="mi-welcome" class="sub-item active" onclick="showTab('welcome', this)">Bienvenue</div>
             <div id="mi-leave" class="sub-item" onclick="showTab('leave', this)">Départ</div>
         </div>
-
         <div class="nav-item" onclick="showTab('admin', this)">PERMISSIONS</div>
         <div class="nav-item" onclick="showTab('gallery', this)">GALERIE</div>
     </div>
@@ -89,8 +82,8 @@
             <div class="preview" id="pv-box-welcome">
                 <div class="pv-top">
                     <div style="flex-grow:1">
-                        <div id="pv-w-title" style="color:#00a8fc; font-weight:bold;">Bienvenue</div>
-                        <div id="pv-w-desc" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Message...</div>
+                        <div id="pv-w-title" style="color:#00a8fc; font-weight:bold;">Titre</div>
+                        <div id="pv-w-desc" style="font-size:13px; margin-top:5px; white-space:pre-wrap;">Message...</div>
                     </div>
                     <div class="pv-thumb" onclick="openPicker('welcome', 'thumbnail')"><img id="w-img-thumb"></div>
                 </div>
@@ -102,21 +95,31 @@
             </div>
 
             <div class="card">
-                <h2>Configuration Bienvenue</h2>
+                <h2>Bienvenue</h2>
                 <label>Couleur Embed</label>
                 <input type="color" id="w-color" oninput="sync('welcome')">
-                <label>Titre</label>
-                <input type="text" id="w-title" oninput="sync('welcome')">
-                <label>Message</label>
-                <textarea id="w-desc" rows="4" oninput="sync('welcome')"></textarea>
-                <label>Texte Footer</label>
-                <input type="text" id="w-footer" oninput="sync('welcome')">
-                <label>Salon de réception</label>
+                
+                <label>Titre & Message</label>
+                <input type="text" id="w-title" placeholder="Titre" oninput="sync('welcome')">
+                <textarea id="w-desc" rows="3" placeholder="Description" oninput="sync('welcome')"></textarea>
+                
+                <label>Footer</label>
+                <input type="text" id="w-footer" placeholder="Texte footer" oninput="sync('welcome')">
+                
+                <label>Images (URL Manuelle)</label>
+                <input type="text" id="w-url-banner" placeholder="URL Bannière" oninput="manualImg('welcome', 'banner', this.value)">
+                <input type="text" id="w-url-thumb" placeholder="URL Miniature" oninput="manualImg('welcome', 'thumbnail', this.value)">
+
+                <label>Salon</label>
                 <select id="w-channel"></select>
-                <label>Rôles à donner au join</label>
-                <div id="w-roles-list" class="role-list"></div>
+
+                <label>Rôles Automatiques</label>
+                <div class="dropdown-select" onclick="toggleDropdown('w-roles-drop', event)">
+                    <span id="w-roles-label">0 rôles sélectionnés</span><i class="fas fa-chevron-down"></i>
+                </div>
+                <div id="w-roles-drop" class="dropdown-content"></div>
+
                 <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
-                <button class="btn btn-test" onclick="test('welcome')"><i class="fab fa-discord"></i> TESTER LE RENDU</button>
             </div>
         </div>
 
@@ -125,7 +128,7 @@
                 <div class="pv-top">
                     <div style="flex-grow:1">
                         <div id="pv-l-title" style="color:#00a8fc; font-weight:bold;">Au revoir</div>
-                        <div id="pv-l-desc" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Message...</div>
+                        <div id="pv-l-desc" style="font-size:13px; margin-top:5px; white-space:pre-wrap;">Description...</div>
                     </div>
                     <div class="pv-thumb" onclick="openPicker('leave', 'thumbnail')"><img id="l-img-thumb"></div>
                 </div>
@@ -135,39 +138,37 @@
                     <span id="pv-l-footer">Footer</span>
                 </div>
             </div>
-
             <div class="card">
-                <h2>Configuration Départ</h2>
-                <label>Couleur Embed</label>
-                <input type="color" id="l-color" oninput="sync('leave')">
-                <label>Titre</label>
+                <h2>Départ</h2>
+                <label>Couleur</label><input type="color" id="l-color" oninput="sync('leave')">
+                <label>Texte</label>
                 <input type="text" id="l-title" oninput="sync('leave')">
-                <label>Message</label>
-                <textarea id="l-desc" rows="4" oninput="sync('leave')"></textarea>
-                <label>Texte Footer</label>
-                <input type="text" id="l-footer" oninput="sync('leave')">
-                <label>Salon de réception</label>
-                <select id="l-channel"></select>
+                <textarea id="l-desc" rows="3" oninput="sync('leave')"></textarea>
+                <label>URL Bannière</label>
+                <input type="text" id="l-url-banner" oninput="manualImg('leave', 'banner', this.value)">
+                <label>Salon</label><select id="l-channel"></select>
                 <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
-                <button class="btn btn-test" onclick="test('leave')"><i class="fab fa-discord"></i> TESTER LE RENDU</button>
             </div>
         </div>
 
         <div id="admin" class="section">
             <div class="card">
-                <h2>Accès au Dashboard</h2>
-                <p style="font-size:12px; color:#666;">Sélectionnez les rôles autorisés à utiliser ce bot sur Discord.</p>
-                <div id="admin-roles-list" class="role-list"></div>
-                <button class="btn btn-save" onclick="save()"><i class="fas fa-check"></i> APPLIQUER</button>
+                <h2>Accès Admin</h2>
+                <label>Rôles autorisés</label>
+                <div class="dropdown-select" onclick="toggleDropdown('admin-roles-drop', event)">
+                    <span id="admin-roles-label">0 rôles sélectionnés</span><i class="fas fa-chevron-down"></i>
+                </div>
+                <div id="admin-roles-drop" class="dropdown-content"></div>
+                <button class="btn btn-save" onclick="save()">APPLIQUER</button>
             </div>
         </div>
 
         <div id="gallery" class="section">
             <div class="card">
-                <h2>Galerie Médias</h2>
-                <input type="file" id="file-input" onchange="uploadFile()">
+                <h2>Galerie</h2>
+                <input type="file" id="file-in" onchange="uploadFile()">
                 <div id="gallery-list" class="gallery-grid"></div>
-                <button class="btn btn-save" onclick="showTab(lastTab)"><i class="fas fa-arrow-left"></i> RETOUR</button>
+                <button class="btn btn-save" onclick="showTab(lastTab)">RETOUR</button>
             </div>
         </div>
     </main>
@@ -177,133 +178,95 @@
         let activeMode = ''; let activeType = ''; let lastTab = 'welcome';
 
         async function init() {
-            try {
-                const res = await fetch('/api/get_data');
-                db = await res.json();
-                
-                // Salons
-                const chanHtml = db.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-                document.getElementById('w-channel').innerHTML = chanHtml;
-                document.getElementById('l-channel').innerHTML = chanHtml;
+            const res = await fetch('/api/get_data');
+            db = await res.json();
+            
+            document.getElementById('w-channel').innerHTML = db.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+            document.getElementById('l-channel').innerHTML = document.getElementById('w-channel').innerHTML;
 
-                // Rôles
-                const renderRoles = (containerId, selected) => {
-                    document.getElementById(containerId).innerHTML = db.roles.map(r => `
-                        <div class="role-item" onclick="this.querySelector('input').click()">
-                            <input type="checkbox" value="${r}" ${selected.includes(r)?'checked':''} onclick="event.stopPropagation()">
-                            <span>${r}</span>
-                        </div>`).join('');
-                };
-                renderRoles('w-roles-list', db.config.welcome.trigger_roles || []);
-                renderRoles('admin-roles-list', db.config.admin_roles || []);
+            const renderDrop = (id, listId, labelId, selected) => {
+                const container = document.getElementById(listId);
+                container.innerHTML = db.roles.map(r => `
+                    <div class="role-option" onclick="toggleRoleCheck(this, '${labelId}')">
+                        <input type="checkbox" value="${r}" ${selected.includes(r)?'checked':''} onclick="event.stopPropagation()">
+                        <span>${r}</span>
+                    </div>`).join('');
+                updateLabel(listId, labelId);
+            };
 
-                // Données Bienvenue
-                const w = db.config.welcome;
-                document.getElementById('w-title').value = w.title || "";
-                document.getElementById('w-desc').value = w.desc || "";
-                document.getElementById('w-footer').value = w.footer || "";
-                document.getElementById('w-color').value = w.color || "#ed4245";
-                document.getElementById('w-channel').value = w.channel || "";
-                setImg('welcome', 'thumbnail', w.thumbnail);
-                setImg('welcome', 'banner', w.banner);
-                setImg('welcome', 'footer_icon', w.footer_icon);
+            renderDrop('w-roles-drop', 'w-roles-drop', 'w-roles-label', db.config.welcome.trigger_roles || []);
+            renderDrop('admin-roles-drop', 'admin-roles-drop', 'admin-roles-label', db.config.admin_roles || []);
 
-                // Données Départ
-                const l = db.config.leave;
-                document.getElementById('l-title').value = l.title || "";
-                document.getElementById('l-desc').value = l.desc || "";
-                document.getElementById('l-footer').value = l.footer || "";
-                document.getElementById('l-color').value = l.color || "#ed4245";
-                document.getElementById('l-channel').value = l.channel || "";
-                setImg('leave', 'thumbnail', l.thumbnail);
-                setImg('leave', 'banner', l.banner);
-                setImg('leave', 'footer_icon', l.footer_icon);
+            // Load values
+            ['welcome', 'leave'].forEach(m => {
+                const p = m[0]; const c = db.config[m];
+                document.getElementById(`${p}-title`).value = c.title || "";
+                document.getElementById(`${p}-desc`).value = c.desc || "";
+                document.getElementById(`${p}-footer`).value = c.footer || "";
+                document.getElementById(`${p}-color`).value = c.color || "#ed4245";
+                document.getElementById(`${p}-channel`).value = c.channel || "";
+                setImg(m, 'thumbnail', c.thumbnail); setImg(m, 'banner', c.banner); setImg(m, 'footer_icon', c.footer_icon);
+            });
 
-                renderGallery();
-                sync('welcome'); sync('leave');
-            } catch(e) { console.error(e); }
+            renderGallery(); sync('welcome'); sync('leave');
+        }
+
+        function toggleRoleCheck(el, labelId) {
+            const cb = el.querySelector('input'); cb.checked = !cb.checked;
+            updateLabel(el.parentElement.id, labelId);
+        }
+
+        function updateLabel(listId, labelId) {
+            const count = document.querySelectorAll(`#${listId} input:checked`).length;
+            document.getElementById(labelId).innerText = `${count} rôles sélectionnés`;
         }
 
         function sync(mode) {
             const p = mode[0];
-            const col = document.getElementById(`${p}-color`).value;
-            document.getElementById(`pv-box-${mode}`).style.borderLeftColor = col;
-            document.getElementById(`pv-${p}-title`).innerText = document.getElementById(`${p}-title`).value || (mode==='welcome'?'Bienvenue':'Au revoir');
+            document.getElementById(`pv-box-${mode}`).style.borderLeftColor = document.getElementById(`${p}-color`).value;
+            document.getElementById(`pv-${p}-title`).innerText = document.getElementById(`${p}-title`).value || "Titre";
             document.getElementById(`pv-${p}-desc`).innerText = document.getElementById(`${p}-desc`).value || "Message...";
-            document.getElementById(`pv-${p}-footer`).innerText = document.getElementById(`${p}-footer`).value || "Footer Text";
+            const f = document.getElementById(`pv-${p}-footer`); if(f) f.innerText = document.getElementById(`${p}-footer`).value || "Footer";
         }
+
+        function manualImg(m, t, url) { setImg(m, t, url); }
 
         function setImg(m, t, u) {
-            const p = m[0];
-            const id = (t==='footer_icon') ? `${p}-img-footer` : `${p}-img-${t}`;
-            const el = document.getElementById(id);
+            const el = document.getElementById(`${m[0]}-img-${t === 'footer_icon' ? 'footer' : t}`);
             if(!el) return;
-            if(u) { el.src = u; el.style.display='block'; el.dataset.url=u; } 
-            else { el.style.display='none'; el.dataset.url=""; }
+            if(u) { el.src = u; el.style.display='block'; el.dataset.url=u; } else { el.style.display='none'; el.dataset.url=""; }
         }
 
-        function openPicker(m, t) { activeMode = m; activeType = t; lastTab = m; showTab('gallery'); }
-        function selectImage(u) { setImg(activeMode, activeType, u); showTab(activeMode); sync(activeMode); }
-
         async function uploadFile() {
-            const file = document.getElementById('file-input').files[0];
-            if(!file) return;
-            const fd = new FormData(); fd.append('file', file);
-            const res = await fetch('/api/upload', {method:'POST', body:fd});
-            const r = await res.json();
+            const fd = new FormData(); fd.append('file', document.getElementById('file-in').files[0]);
+            const r = await (await fetch('/api/upload', {method:'POST', body:fd})).json();
             db.images.push(r.path); renderGallery(); selectImage(r.path);
+        }
+
+        async function deleteImage(path, e) {
+            e.stopPropagation();
+            if(!confirm("Supprimer cette image ?")) return;
+            await fetch('/api/delete_image', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path})});
+            db.images = db.images.filter(img => img !== path); renderGallery();
         }
 
         function renderGallery() {
             document.getElementById('gallery-list').innerHTML = db.images.map(img => `
-                <div class="img-card"><img src="${img}" onclick="selectImage('${img}')"></div>
-            `).join('');
+                <div class="img-card">
+                    <button class="del-img" onclick="deleteImage('${img}', event)">✕</button>
+                    <img src="${img}" onclick="selectImage('${img}')">
+                </div>`).join('');
         }
 
-        async function save() {
-            const config = {
-                welcome: {
-                    title: document.getElementById('w-title').value, desc: document.getElementById('w-desc').value,
-                    footer: document.getElementById('w-footer').value, color: document.getElementById('w-color').value,
-                    channel: document.getElementById('w-channel').value,
-                    thumbnail: document.getElementById('w-img-thumb').dataset.url || "",
-                    banner: document.getElementById('w-img-banner').dataset.url || "",
-                    footer_icon: document.getElementById('w-img-footer').dataset.url || "",
-                    trigger_roles: Array.from(document.querySelectorAll('#w-roles-list input:checked')).map(i => i.value)
-                },
-                leave: {
-                    title: document.getElementById('l-title').value, desc: document.getElementById('l-desc').value,
-                    footer: document.getElementById('l-footer').value, color: document.getElementById('l-color').value,
-                    channel: document.getElementById('l-channel').value,
-                    thumbnail: document.getElementById('l-img-thumb').dataset.url || "",
-                    banner: document.getElementById('l-img-banner').dataset.url || "",
-                    footer_icon: document.getElementById('l-img-footer').dataset.url || ""
-                },
-                admin_roles: Array.from(document.querySelectorAll('#admin-roles-list input:checked')).map(i => i.value)
-            };
-            await fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
-            alert("Configuration sauvegardée !");
-        }
-
-        async function test(mode) {
-            const p = mode[0];
-            const conf = {
-                channel: document.getElementById(`${p}-channel`).value,
-                title: document.getElementById(`${p}-title`).value,
-                desc: document.getElementById(`${p}-desc`).value,
-                color: document.getElementById(`${p}-color`).value,
-                footer: document.getElementById(`${p}-footer`).value,
-                thumbnail: document.getElementById(`${p}-img-thumb`).dataset.url || "",
-                banner: document.getElementById(`${p}-img-banner`).dataset.url || "",
-                footer_icon: document.getElementById(`${p}-img-footer`).dataset.url || ""
-            };
-            await fetch('/api/test_message', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({mode, config:conf})});
-        }
-
+        function toggleDropdown(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
+        function openPicker(m, t) { activeMode = m; activeType = t; lastTab = m; showTab('gallery'); }
+        function selectImage(u) { setImg(activeMode, activeType, u); showTab(activeMode); sync(activeMode); }
         function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('open'); }
-        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
-        function toggleSubmenu(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
-        
+        function closeSidebar() { 
+            document.getElementById('sidebar').classList.remove('open');
+            document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+        }
+        function toggleSubmenu(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); e.currentTarget.classList.toggle('active'); }
         function showTab(id, el) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
@@ -311,7 +274,28 @@
             if(el) el.classList.add('active');
             closeSidebar();
         }
-
+        async function save() {
+            const getConf = (m) => {
+                const p = m[0];
+                return {
+                    title: document.getElementById(`${p}-title`).value, desc: document.getElementById(`${p}-desc`).value,
+                    footer: document.getElementById(`${p}-footer`) ? document.getElementById(`${p}-footer`).value : "", 
+                    color: document.getElementById(`${p}-color`).value,
+                    channel: document.getElementById(`${p}-channel`).value,
+                    thumbnail: document.getElementById(`${p}-img-thumb`).dataset.url || "",
+                    banner: document.getElementById(`${p}-img-banner`).dataset.url || "",
+                    footer_icon: document.getElementById(`${p}-img-footer`) ? document.getElementById(`${p}-img-footer`).dataset.url : "",
+                    trigger_roles: m === 'welcome' ? Array.from(document.querySelectorAll('#w-roles-drop input:checked')).map(i => i.value) : []
+                };
+            };
+            const config = { 
+                welcome: getConf('welcome'), 
+                leave: getConf('leave'), 
+                admin_roles: Array.from(document.querySelectorAll('#admin-roles-drop input:checked')).map(i => i.value) 
+            };
+            await fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
+            alert("Sauvegardé !");
+        }
         window.onload = init;
     </script>
 </body>
