@@ -28,7 +28,8 @@ def load_config():
                 "title": "Bienvenue {user}", "desc": "Bienvenue sur {server}", 
                 "footer": "Jormungand21", "footer_icon": "", "color": "#ed4245", 
                 "channel": "", "banner": "", "thumbnail": "", "trigger_roles": ["@JOIN"]
-            }
+            },
+            "admin_roles": []
         }
 
 @app.route('/')
@@ -60,6 +61,13 @@ def save():
         json.dump(request.json, f, indent=4, ensure_ascii=False)
     return jsonify({"status": "ok"})
 
+@app.route('/api/delete_image', methods=['POST'])
+def delete_image():
+    path = request.json.get('path')
+    full = os.path.join('public', path.lstrip('/'))
+    if os.path.exists(full): os.remove(full)
+    return jsonify({"status": "deleted"})
+
 @app.route('/api/test_message', methods=['POST'])
 def test():
     conf = request.json.get('welcome')
@@ -74,5 +82,5 @@ def test():
     return jsonify({"status": "sent"})
 
 def run(): app.run(host='0.0.0.0', port=49501)
-threading.Thread(target=run).start()
+threading.Thread(target=run, daemon=True).start()
 bot.run(TOKEN)
