@@ -30,34 +30,38 @@ def load_config():
                 "footer": "Jormungand21", "footer_icon": "", "color": "#ed4245", 
                 "channel": "", "banner": "", "thumbnail": "", "trigger_roles": []
             },
+            "leave": {
+                "title": "Au revoir {user}", "desc": "{user} nous a quitté...", 
+                "footer": "Jormungand21", "footer_icon": "", "color": "#ed4245", 
+                "channel": "", "banner": "", "thumbnail": ""
+            },
             "admin_roles": []
         }
 
-async def create_welcome_embed(member, conf):
+async def create_embed_gen(member, conf, mode_type="welcome"):
     title = conf.get('title').replace("{user}", member.display_name).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
     desc = conf.get('desc').replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
-    col = int(conf.get('color').replace('#', ''), 16)
+    col = int(conf.get('color', '#ed4245').replace('#', ''), 16)
     
     embed = discord.Embed(title=title, description=desc, color=col)
     files = []
 
-    async def process_img(path, mode):
+    async def process_img(path, sub_mode):
         if not path: return
         if path.startswith('/uploads'):
             fname = path.split('/')[-1]
             fpath = os.path.join('public', 'uploads', fname)
             if os.path.exists(fpath):
-                att_name = f"{mode}_{fname}"
+                att_name = f"{mode_type}_{sub_mode}_{fname}"
                 files.append(discord.File(fpath, filename=att_name))
-                if mode == "banner": embed.set_image(url=f"attachment://{att_name}")
-                elif mode == "thumb": embed.set_thumbnail(url=f"attachment://{att_name}")
-                elif mode == "footer": embed.set_footer(text=conf.get('footer'), icon_url=f"attachment://{att_name}")
+                if sub_mode == "banner": embed.set_image(url=f"attachment://{att_name}")
+                elif sub_mode == "thumb": embed.set_thumbnail(url=f"attachment://{att_name}")
+                elif sub_mode == "footer": embed.set_footer(text=conf.get('footer'), icon_url=f"attachment://{att_name}")
         else:
-            if mode == "banner": embed.set_image(url=path)
-            elif mode == "thumb": embed.set_thumbnail(url=path)
-            elif mode == "footer": embed.set_footer(text=conf.get('footer'), icon_url=path)
+            if sub_mode == "banner": embed.set_image(url=path)
+            elif sub_mode == "thumb": embed.set_thumbnail(url=path)
+            elif sub_mode == "footer": embed.set_footer(text=conf.get('footer'), icon_url=path)
 
-    # Exécution parallèle pour plus de rapidité
     await asyncio.gather(
         process_img(conf.get('banner'), "banner"),
         process_img(conf.get('thumbnail'), "thumb"),
@@ -73,8 +77,18 @@ async def on_member_join(member):
     if not conf or not conf.get("channel"): return
     channel = bot.get_channel(int(conf.get("channel")))
     if not channel: return
-    embed, files = await create_welcome_embed(member, conf)
+    embed, files = await create_embed_gen(member, conf, "welcome")
     await channel.send(content=member.mention, embed=embed, files=files)
+
+@bot.event
+async def on_member_remove(member):
+    if member.guild.id != GUILD_ID: return
+    conf = load_config().get("leave")
+    if not conf or not conf.get("channel"): return
+    channel = bot.get_channel(int(conf.get("channel")))
+    if not channel: return
+    embed, files = await create_embed_gen(member, conf, "leave")
+    await channel.send(embed=embed, files=files)
 
 @app.route('/')
 def index(): return app.send_static_file('index.html')
@@ -83,7 +97,7 @@ def index(): return app.send_static_file('index.html')
 def get_data():
     guild = bot.get_guild(GUILD_ID)
     if not guild: return jsonify({"error": "Guild non trouvée"}), 404
-    images = [f"/uploads/{f}" for f in os.listdir(UPLOAD_FOLDER) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+    images = [f("/uploads/{f}") for f in os.listdir(UPLOAD_FOLDER) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
     roles = [r.name for r in guild.roles if not r.managed and r.name != "@everyone"]
     return jsonify({
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
@@ -91,41 +105,43 @@ def get_data():
         "server_info": {"name": guild.name, "member_count": guild.member_count, "bot_name": bot.user.name}
     })
 
-@app.route('/api/upload', methods=['POST'])
-def upload():
-    file = request.files.get('file')
-    if file:
-        fname = secure_filename(file.filename)
-        file.save(os.path.join(UPLOAD_FOLDER, fname))
-        return jsonify({"path": f"/uploads/{fname}"})
-    return jsonify({"error": "No file"}), 400
-
 @app.route('/api/save', methods=['POST'])
 def save():
     with open('config.json', 'w', encoding='utf-8') as f:
         json.dump(request.json, f, indent=4, ensure_ascii=False)
     return jsonify({"status": "ok"})
 
-@app.route('/api/delete_image', methods=['POST'])
-def delete_image():
-    path = request.json.get('path')
-    full = os.path.join('public', path.lstrip('/'))
-    if os.path.exists(full): os.remove(full)
-    return jsonify({"status": "deleted"})
-
 @app.route('/api/test_message', methods=['POST'])
 def test():
-    conf = request.json.get('welcome')
+    data = request.json
+    conf = data.get('config')
+    mode = data.get('mode') # 'welcome' ou 'leave'
+    
     async def send_test():
         guild = bot.get_guild(GUILD_ID)
         chan = bot.get_channel(int(conf.get('channel')))
-        # On utilise le propriétaire du serveur pour le ping réel en test
         member = guild.owner or guild.members[0]
-        embed, files = await create_welcome_embed(member, conf)
-        await chan.send(content=f"🔔 **[TEST RAPIDE]** Notification pour {member.mention}", embed=embed, files=files)
+        embed, files = await create_embed_gen(member, conf, mode)
+        msg_prefix = "🔔 **[TEST BIENVENUE]**" if mode == "welcome" else "🚪 **[TEST DÉPART]**"
+        await chan.send(content=f"{msg_prefix} pour {member.mention}", embed=embed, files=files)
 
     bot.loop.create_task(send_test())
-    return jsonify({"status": "sent", "message": "Message de test envoyé avec succès !"})
+    return jsonify({"status": "sent"})
+
+# Fonctions d'upload et delete conservées à l'identique...
+@app.route('/api/upload', methods=['POST'])
+def upload():
+    file = request.files.get('file')
+    if file:
+        fname = secure_filename(file.filename); file.save(os.path.join(UPLOAD_FOLDER, fname))
+        return jsonify({"path": f"/uploads/{fname}"})
+    return jsonify({"error": "No file"}), 400
+
+@app.route('/api/delete_image', methods=['POST'])
+def delete_image():
+    path = request.json.get('path'); full = os.path.join('public', path.lstrip('/'))
+    if os.path.exists(full): os.remove(full)
+    return jsonify({"status": "deleted"})
 
 def run(): app.run(host='0.0.0.0', port=49501)
 threading.Thread(target=run, daemon=True).start()
