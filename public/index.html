@@ -19,7 +19,6 @@
         .nav-item { padding: 20px; border-bottom: 1px solid #111; cursor: pointer; display: flex; align-items: center; gap: 15px; color: #888; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: #ed424510; border-right: 4px solid var(--accent); }
         
-        /* Styles Sous-menu */
         .sub-menu { display: none; background: #080808; }
         .nav-sub-item { padding: 15px 20px 15px 45px; border-bottom: 1px solid #111; cursor: pointer; display: flex; align-items: center; gap: 15px; color: #666; font-weight: bold; font-size: 13px; }
         .nav-sub-item.active { color: var(--accent); background: #ed424505; border-right: 4px solid var(--accent); }
@@ -162,45 +161,65 @@
     </main>
 
     <script>
-        let db = {}; let activeMode = ''; let activeType = ''; let lastTab = 'welcome';
+        let db = { channels:[], roles:[], config:{welcome:{}, leave:{}, admin_roles:[]}, images:[], server_info:{name:"Serveur", member_count:0} };
+        let activeMode = ''; let activeType = ''; let lastTab = 'welcome';
 
         async function init() {
-            const res = await fetch('/api/get_data');
-            db = await res.json();
-            
-            const chanOpts = db.channels.map(ch => `<option value="${ch.id}"># ${ch.name}</option>`).join('');
-            document.getElementById('w-channel').innerHTML = chanOpts;
-            document.getElementById('l-channel').innerHTML = chanOpts;
+            try {
+                const res = await fetch('/api/get_data');
+                const data = await res.json();
+                if(data) db = data;
 
-            const w = db.config.welcome;
-            document.getElementById('w-title').value = w.title;
-            document.getElementById('w-desc').value = w.desc;
-            document.getElementById('w-footer').value = w.footer;
-            document.getElementById('w-color').value = w.color;
-            document.getElementById('w-channel').value = w.channel;
-            setImg('welcome', 'thumbnail', w.thumbnail);
-            setImg('welcome', 'banner', w.banner);
-            setImg('welcome', 'footer_icon', w.footer_icon);
-            
-            const l = db.config.leave || { title: "", desc: "", footer: "", color: "#ed4245", channel: "" };
-            document.getElementById('l-title').value = l.title;
-            document.getElementById('l-desc').value = l.desc;
-            document.getElementById('l-footer').value = l.footer;
-            document.getElementById('l-color').value = l.color;
-            document.getElementById('l-channel').value = l.channel;
-            setImg('leave', 'thumbnail', l.thumbnail);
-            setImg('leave', 'banner', l.banner);
-            setImg('leave', 'footer_icon', l.footer_icon);
+                // Sécurité données manquantes
+                if(!db.config) db.config = { welcome:{}, leave:{}, admin_roles:[] };
+                if(!db.config.welcome) db.config.welcome = {};
+                if(!db.config.leave) db.config.leave = {};
+                if(!db.channels) db.channels = [];
+                if(!db.roles) db.roles = [];
 
-            renderChecklist('w-role-menu', db.config.welcome.trigger_roles || [], 'w-role-label');
-            renderChecklist('admin-menu', db.config.admin_roles || [], 'admin-label');
-            renderGallery();
-            sync('welcome'); sync('leave');
+                // Salons
+                const chanOpts = db.channels.map(ch => `<option value="${ch.id}"># ${ch.name}</option>`).join('');
+                document.getElementById('w-channel').innerHTML = chanOpts;
+                document.getElementById('l-channel').innerHTML = chanOpts;
+
+                // Bienvenue
+                const w = db.config.welcome;
+                document.getElementById('w-title').value = w.title || "";
+                document.getElementById('w-desc').value = w.desc || "";
+                document.getElementById('w-footer').value = w.footer || "";
+                document.getElementById('w-color').value = w.color || "#ed4245";
+                document.getElementById('w-channel').value = w.channel || "";
+                setImg('welcome', 'thumbnail', w.thumbnail);
+                setImg('welcome', 'banner', w.banner);
+                setImg('welcome', 'footer_icon', w.footer_icon);
+                
+                // Départ
+                const l = db.config.leave;
+                document.getElementById('l-title').value = l.title || "";
+                document.getElementById('l-desc').value = l.desc || "";
+                document.getElementById('l-footer').value = l.footer || "";
+                document.getElementById('l-color').value = l.color || "#ed4245";
+                document.getElementById('l-channel').value = l.channel || "";
+                setImg('leave', 'thumbnail', l.thumbnail);
+                setImg('leave', 'banner', l.banner);
+                setImg('leave', 'footer_icon', l.footer_icon);
+
+                renderChecklist('w-role-menu', db.config.welcome.trigger_roles || [], 'w-role-label');
+                renderChecklist('admin-menu', db.config.admin_roles || [], 'admin-label');
+                renderGallery();
+                sync('welcome'); sync('leave');
+            } catch(e) { 
+                console.error("Erreur critique init:", e);
+                // On force l'affichage même en cas d'erreur API
+                sync('welcome');
+            }
         }
 
         function parseVars(text) {
             if(!text) return "";
-            return text.replace(/{user}/g, "@User").replace(/{server}/g, db.server_info.name).replace(/{count}/g, db.server_info.member_count);
+            const sName = db.server_info?.name || "Serveur";
+            const sCount = db.server_info?.member_count || "0";
+            return text.replace(/{user}/g, "@User").replace(/{server}/g, sName).replace(/{count}/g, sCount);
         }
 
         function sync(mode) {
@@ -213,7 +232,9 @@
         }
 
         function renderChecklist(id, sel, lbl) {
-            document.getElementById(id).innerHTML = db.roles.map(r => `<div class="role-item" onclick="toggleCheck(this, '${lbl}')"><input type="checkbox" value="${r}" ${sel.includes(r)?'checked':''}><span>${r}</span></div>`).join('');
+            const el = document.getElementById(id);
+            if(!el) return;
+            el.innerHTML = db.roles.map(r => `<div class="role-item" onclick="toggleCheck(this, '${lbl}')"><input type="checkbox" value="${r}" ${sel.includes(r)?'checked':''}><span>${r}</span></div>`).join('');
             updateCount(id, lbl);
         }
 
@@ -225,18 +246,21 @@
             const p = (m === 'welcome') ? 'w' : 'l';
             const idMap = {'thumbnail':`${p}-img-thumb`,'banner':`${p}-img-banner`,'footer_icon':`${p}-img-footer`};
             const el = document.getElementById(idMap[t]);
+            if(!el) return;
             if(u) { el.src = u; el.style.display = 'block'; el.dataset.url = u; }
             else { el.style.display = 'none'; el.dataset.url = ""; }
         }
 
         function selectImage(u) { if(activeMode) { setImg(activeMode, activeType, u); showTab(activeMode); sync(activeMode); } }
         async function uploadFile() {
-            const fd = new FormData(); fd.append('file', document.getElementById('file-input').files[0]);
+            const fileEl = document.getElementById('file-input');
+            if(!fileEl.files[0]) return;
+            const fd = new FormData(); fd.append('file', fileEl.files[0]);
             const res = await fetch('/api/upload', { method: 'POST', body: fd });
             const r = await res.json(); if(r.path) { db.images.push(r.path); renderGallery(); selectImage(r.path); }
         }
 
-        function renderGallery() { document.getElementById('gallery-list').innerHTML = db.images.map(img => `<div class="img-card"><button class="del-img" onclick="deleteImg('${img}', event)">✕</button><img src="${img}" onclick="selectImage('${img}')"></div>`).join(''); }
+        function renderGallery() { document.getElementById('gallery-list').innerHTML = (db.images || []).map(img => `<div class="img-card"><button class="del-img" onclick="deleteImg('${img}', event)">✕</button><img src="${img}" onclick="selectImage('${img}')"></div>`).join(''); }
         async function deleteImg(p, e) { e.stopPropagation(); await fetch('/api/delete_image', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path:p}) }); db.images = db.images.filter(i => i !== p); renderGallery(); }
 
         async function save() {
@@ -273,29 +297,8 @@
                 desc: document.getElementById(`${p}-desc`).value,
                 color: document.getElementById(`${p}-color`).value,
                 footer: document.getElementById(`${p}-footer`).value,
-                thumbnail: document.getElementById(`${p}-img-thumb`).dataset.url,
-                banner: document.getElementById(`${p}-img-banner`).dataset.url,
-                footer_icon: document.getElementById(`${p}-img-footer`).dataset.url
+                thumbnail: document.getElementById(`${p}-img-thumb`).dataset.url || "",
+                banner: document.getElementById(`${p}-img-banner`).dataset.url || "",
+                footer_icon: document.getElementById(`${p}-img-footer`).dataset.url || ""
             };
-            const res = await fetch('/api/test_message', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({mode, config:conf}) });
-            if(res.ok) {
-                const old = btn.innerHTML; btn.classList.add('success'); btn.innerHTML = "✔ ENVOYÉ !";
-                setTimeout(() => { btn.classList.remove('success'); btn.innerHTML = old; }, 2000);
-            }
-        }
-
-        function toggleSubMenu(e) {
-            e.stopPropagation();
-            const sub = document.getElementById('sub-messages');
-            const chev = document.getElementById('chev-msg');
-            const isVisible = sub.style.display === 'block';
-            sub.style.display = isVisible ? 'none' : 'block';
-            chev.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
-        }
-
-        function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('open'); }
-        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
-        function toggleDrop(e, id) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
-        
-        function showTab(id, el) {
-            document.querySelectorAll('.s
+            const res = await fetch('/api/test_message', { method:'POS
