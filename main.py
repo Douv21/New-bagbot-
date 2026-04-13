@@ -42,37 +42,37 @@ async def on_member_join(member):
     channel = bot.get_channel(int(conf.get("channel")))
     if not channel: return
 
-    # Préparation du contenu
     title = conf.get('title').replace("{user}", member.display_name).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
     desc = conf.get('desc').replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
     col = int(conf.get('color').replace('#', ''), 16)
     
     embed = discord.Embed(title=title, description=desc, color=col)
-    files = []
+    files_to_send = []
 
-    # Traitement des images
-    def get_img(p, target):
-        if not p: return
-        if p.startswith('/uploads'):
-            fname = p.split('/')[-1]
-            fpath = os.path.join('public', 'uploads', fname)
-            if os.path.exists(fpath):
-                files.append(discord.File(fpath, filename=fname))
-                if target == "banner": embed.set_image(url=f"attachment://{fname}")
-                if target == "thumb": embed.set_thumbnail(url=f"attachment://{fname}")
-                if target == "footer": embed.set_footer(text=conf.get('footer'), icon_url=f"attachment://{fname}")
+    def process_image(img_path, mode):
+        if not img_path: return
+        if img_path.startswith('/uploads'):
+            file_name = img_path.split('/')[-1]
+            full_path = os.path.join('public', 'uploads', file_name)
+            if os.path.exists(full_path):
+                # On utilise un nom unique pour éviter les conflits Discord
+                attachment_name = f"upload_{mode}_{file_name}"
+                files_to_send.append(discord.File(full_path, filename=attachment_name))
+                if mode == "banner": embed.set_image(url=f"attachment://{attachment_name}")
+                elif mode == "thumb": embed.set_thumbnail(url=f"attachment://{attachment_name}")
+                elif mode == "footer": embed.set_footer(text=conf.get('footer'), icon_url=f"attachment://{attachment_name}")
         else:
-            if target == "banner": embed.set_image(url=p)
-            if target == "thumb": embed.set_thumbnail(url=p)
-            if target == "footer": embed.set_footer(text=conf.get('footer'), icon_url=p)
+            if mode == "banner": embed.set_image(url=img_path)
+            elif mode == "thumb": embed.set_thumbnail(url=img_path)
+            elif mode == "footer": embed.set_footer(text=conf.get('footer'), icon_url=img_path)
 
-    get_img(conf.get('banner'), "banner")
-    get_img(conf.get('thumbnail'), "thumb")
-    get_img(conf.get('footer_icon'), "footer")
+    process_image(conf.get('banner'), "banner")
+    process_image(conf.get('thumbnail'), "thumb")
+    process_image(conf.get('footer_icon'), "footer")
     if not embed.footer.text: embed.set_footer(text=conf.get('footer'))
 
-    # Envoi avec mention (ping) du membre
-    await channel.send(content=f"Bienvenue {member.mention} !", embed=embed, files=files)
+    # Suppression de la mention textuelle doublée, on envoie juste l'embed avec le ping
+    await channel.send(content=member.mention, embed=embed, files=files_to_send)
 
 @app.route('/')
 def index(): return app.send_static_file('index.html')
@@ -118,34 +118,44 @@ def test():
         try:
             chan = bot.get_channel(int(conf.get('channel')))
             guild = bot.get_guild(GUILD_ID)
-            title = conf.get('title').replace("{user}", "TestUser").replace("{server}", guild.name).replace("{count}", str(guild.member_count))
-            desc = conf.get('desc').replace("{user}", "@TestUser").replace("{server}", guild.name).replace("{count}", str(guild.member_count))
-            col = int(conf.get('color').replace('#', ''), 16)
-            embed = discord.Embed(title=title, description=desc, color=col)
-            files = []
             
-            def handle_img(path, type):
-                if not path: return
-                if path.startswith('/uploads'):
-                    fname = path.split('/')[-1]
+            # Pour le TEST, on essaie de trouver l'utilisateur qui a configuré (le proprio ou un admin)
+            # Ici on simule avec le premier membre admin trouvé pour avoir un vrai ping
+            member_to_ping = guild.owner
+            mention = member_to_ping.mention if member_to_ping else "@TestUser"
+            name = member_to_ping.display_name if member_to_ping else "TestUser"
+
+            title = conf.get('title').replace("{user}", name).replace("{server}", guild.name).replace("{count}", str(guild.member_count))
+            desc = conf.get('desc').replace("{user}", mention).replace("{server}", guild.name).replace("{count}", str(guild.member_count))
+            col = int(conf.get('color').replace('#', ''), 16)
+            
+            embed = discord.Embed(title=title, description=desc, color=col)
+            files_to_send = []
+
+            def handle_img(p, t):
+                if not p: return
+                if p.startswith('/uploads'):
+                    fname = p.split('/')[-1]
                     fpath = os.path.join('public', 'uploads', fname)
                     if os.path.exists(fpath):
-                        files.append(discord.File(fpath, filename=fname))
-                        if type == "banner": embed.set_image(url=f"attachment://{fname}")
-                        if type == "thumb": embed.set_thumbnail(url=f"attachment://{fname}")
-                        if type == "footer": embed.set_footer(text=conf.get('footer'), icon_url=f"attachment://{fname}")
+                        att_name = f"test_{t}_{fname}"
+                        files_to_send.append(discord.File(fpath, filename=att_name))
+                        if t == "banner": embed.set_image(url=f"attachment://{att_name}")
+                        if t == "thumb": embed.set_thumbnail(url=f"attachment://{att_name}")
+                        if t == "footer": embed.set_footer(text=conf.get('footer'), icon_url=f"attachment://{att_name}")
                 else:
-                    if type == "banner": embed.set_image(url=path)
-                    if type == "thumb": embed.set_thumbnail(url=path)
-                    if type == "footer": embed.set_footer(text=conf.get('footer'), icon_url=path)
+                    if t == "banner": embed.set_image(url=p)
+                    if t == "thumb": embed.set_thumbnail(url=p)
+                    if t == "footer": embed.set_footer(text=conf.get('footer'), icon_url=p)
 
             handle_img(conf.get('banner'), "banner")
             handle_img(conf.get('thumbnail'), "thumb")
             handle_img(conf.get('footer_icon'), "footer")
             if not embed.footer.text: embed.set_footer(text=conf.get('footer'))
             
-            await chan.send(content="**[PING]** @TestUser\n**[TEST RAPIDE ELITE]**", embed=embed, files=files)
-        except Exception as e: print(f"Error: {e}")
+            # Envoi du message avec le VRAI ping
+            await chan.send(content=f"🔔 Test de notification pour {mention}", embed=embed, files=files_to_send)
+        except Exception as e: print(f"Error test: {e}")
 
     bot.loop.create_task(send_test())
     return jsonify({"status": "sent"})
