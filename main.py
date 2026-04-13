@@ -71,16 +71,6 @@ async def on_member_join(member):
         roles_to_add = [discord.utils.get(member.guild.roles, name=r) for r in conf.get("trigger_roles", [])]
         await member.add_roles(*[r for r in roles_to_add if r])
 
-@bot.event
-async def on_member_remove(member):
-    if member.guild.id != GUILD_ID: return
-    conf = load_config().get("leave")
-    if not conf or not conf.get("channel"): return
-    channel = bot.get_channel(int(conf.get("channel")))
-    if channel:
-        embed, files = await create_embed_gen(member, conf, "leave")
-        await channel.send(embed=embed, files=files)
-
 @app.route('/')
 def index(): return app.send_static_file('index.html')
 
@@ -106,7 +96,6 @@ def test_embed():
     data = request.json
     mode = data.get('mode', 'welcome')
     conf = load_config().get(mode)
-    if not conf or not conf.get("channel"): return jsonify({"error": "Salon non configuré"}), 400
     channel = bot.get_channel(int(conf.get("channel")))
     if channel:
         guild = bot.get_guild(GUILD_ID)
