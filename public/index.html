@@ -39,7 +39,7 @@
         input[type="color"] { height: 45px; padding: 5px; cursor: pointer; }
 
         .drop-btn { background: #000; border: 1px solid var(--border); padding: 14px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .drop-menu { display: none; background: #050505; border: 1px solid var(--border); border-radius: 10px; max-height: 200px; overflow-y: auto; margin-top: 5px; }
+        .drop-menu { display: none; background: #050505; border: 1px solid var(--border); border-radius: 10px; max-height: 200px; overflow-y: auto; margin-top: 5px; z-index: 100; }
         .drop-menu.show { display: block; }
         .role-item { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #111; cursor: pointer; }
         .role-item input { width: 18px; height: 18px; margin-right: 15px; }
@@ -71,18 +71,18 @@
 
     <main id="main-scroll" onclick="closeSidebar()">
         <div id="welcome" class="section active">
-            <div class="preview" id="pv-welcome">
+            <div id="pv-box-welcome" class="preview">
                 <div class="pv-top">
                     <div style="flex-grow:1">
-                        <div class="pv-title" style="color:#00a8fc; font-weight:bold;">Titre</div>
-                        <div class="pv-desc" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Description</div>
+                        <div id="pv-title-welcome" style="color:#00a8fc; font-weight:bold;">Titre</div>
+                        <div id="pv-desc-welcome" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Description</div>
                     </div>
                     <div class="pv-thumb" onclick="openPicker('welcome', 'thumbnail')"><img id="w-img-thumb"></div>
                 </div>
                 <div class="pv-banner" onclick="openPicker('welcome', 'banner')"><img id="w-img-banner"></div>
                 <div style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:12px; color:#b5bac1;">
                     <div class="pv-f-icon" onclick="openPicker('welcome', 'footer_icon')"><img id="w-img-footer"></div>
-                    <span class="pv-f-text">Footer</span>
+                    <span id="pv-footer-text-welcome">Footer</span>
                 </div>
             </div>
 
@@ -97,30 +97,32 @@
                 <div class="var-box"><b>{user}</b> : Mention | <b>{server}</b> : Nom | <b>{count}</b> : Membres</div>
                 <label>Texte Footer</label>
                 <input type="text" id="w-footer" oninput="sync('welcome')">
+                
                 <label>Rôles Déclencheurs</label>
                 <div class="drop-btn" onclick="toggleDrop(event, 'w-role-menu')"><span id="w-role-label">0 rôles</span> <i class="fas fa-chevron-down"></i></div>
                 <div id="w-role-menu" class="drop-menu"></div>
+                
                 <label>Salon Cible</label>
-                <select id="w-channel" class="chan-select"></select>
+                <select id="w-channel"></select>
 
                 <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
-                <button class="btn btn-test" onclick="test('welcome', this)"><i class="fab fa-discord"></i> TESTER BIENVENUE</button>
+                <button class="btn btn-test" id="w-btn-test" onclick="test('welcome')"><i class="fab fa-discord"></i> TESTER LE RENDU</button>
             </div>
         </div>
 
         <div id="leave" class="section">
-            <div class="preview" id="pv-leave">
+            <div id="pv-box-leave" class="preview">
                 <div class="pv-top">
                     <div style="flex-grow:1">
-                        <div class="pv-title" style="color:#00a8fc; font-weight:bold;">Au revoir</div>
-                        <div class="pv-desc" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Description</div>
+                        <div id="pv-title-leave" style="color:#00a8fc; font-weight:bold;">Au revoir</div>
+                        <div id="pv-desc-leave" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Description</div>
                     </div>
                     <div class="pv-thumb" onclick="openPicker('leave', 'thumbnail')"><img id="l-img-thumb"></div>
                 </div>
                 <div class="pv-banner" onclick="openPicker('leave', 'banner')"><img id="l-img-banner"></div>
                 <div style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:12px; color:#b5bac1;">
                     <div class="pv-f-icon" onclick="openPicker('leave', 'footer_icon')"><img id="l-img-footer"></div>
-                    <span class="pv-f-text">Footer</span>
+                    <span id="pv-footer-text-leave">Footer</span>
                 </div>
             </div>
 
@@ -132,14 +134,15 @@
                 <input type="text" id="l-title" oninput="sync('leave')">
                 <label>Message</label>
                 <textarea id="l-desc" rows="5" oninput="sync('leave')"></textarea>
-                <div class="var-box"><b>{user}</b> : Nom membre | <b>{server}</b> : Nom | <b>{count}</b> : Membres restants</div>
+                <div class="var-box"><b>{user}</b> : Nom | <b>{server}</b> : Nom | <b>{count}</b> : Membres</div>
                 <label>Texte Footer</label>
                 <input type="text" id="l-footer" oninput="sync('leave')">
+                
                 <label>Salon Cible</label>
-                <select id="l-channel" class="chan-select"></select>
+                <select id="l-channel"></select>
 
                 <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
-                <button class="btn btn-test" onclick="test('leave', this)"><i class="fab fa-discord"></i> TESTER DÉPART</button>
+                <button class="btn btn-test" id="l-btn-test" onclick="test('leave')"><i class="fab fa-discord"></i> TESTER LE RENDU</button>
             </div>
         </div>
 
@@ -169,48 +172,48 @@
             const res = await fetch('/api/get_data');
             db = await res.json();
             
-            // Setup Welcome
+            // Bienvenue
             const w = db.config.welcome;
             document.getElementById('w-title').value = w.title;
             document.getElementById('w-desc').value = w.desc;
             document.getElementById('w-footer').value = w.footer;
             document.getElementById('w-color').value = w.color;
+            document.getElementById('w-channel').innerHTML = db.channels.map(ch => `<option value="${ch.id}"># ${ch.name}</option>`).join('');
+            document.getElementById('w-channel').value = w.channel;
             setImg('welcome', 'thumbnail', w.thumbnail);
             setImg('welcome', 'banner', w.banner);
             setImg('welcome', 'footer_icon', w.footer_icon);
             
-            // Setup Leave
-            const l = db.config.leave || db.config.welcome;
+            // Départ
+            const l = db.config.leave || { title: "", desc: "", footer: "", color: "#ed4245", channel: "" };
             document.getElementById('l-title').value = l.title;
             document.getElementById('l-desc').value = l.desc;
             document.getElementById('l-footer').value = l.footer;
             document.getElementById('l-color').value = l.color;
+            document.getElementById('l-channel').innerHTML = db.channels.map(ch => `<option value="${ch.id}"># ${ch.name}</option>`).join('');
+            document.getElementById('l-channel').value = l.channel;
             setImg('leave', 'thumbnail', l.thumbnail);
             setImg('leave', 'banner', l.banner);
             setImg('leave', 'footer_icon', l.footer_icon);
 
-            // Salon selects
-            const chanHTML = db.channels.map(ch => `<option value="${ch.id}"># ${ch.name}</option>`).join('');
-            document.querySelectorAll('.chan-select').forEach(s => {
-                s.innerHTML = chanHTML;
-                s.value = (s.id === 'w-channel') ? w.channel : l.channel;
-            });
-
-            renderChecklist('w-role-menu', db.config.welcome.trigger_roles, 'w-role-label');
+            renderChecklist('w-role-menu', db.config.welcome.trigger_roles || [], 'w-role-label');
             renderChecklist('admin-menu', db.config.admin_roles || [], 'admin-label');
             renderGallery();
             sync('welcome'); sync('leave');
         }
 
+        function parseVars(text) {
+            if(!text) return "";
+            return text.replace(/{user}/g, "@User").replace(/{server}/g, db.server_info.name).replace(/{count}/g, db.server_info.member_count);
+        }
+
         function sync(mode) {
             const p = (mode === 'welcome') ? 'w' : 'l';
-            const box = document.getElementById(`pv-${mode}`);
-            box.style.borderLeftColor = document.getElementById(`${p}-color`).value;
-            const t = document.getElementById(`${p}-title`).value.replace(/{user}/g, "@User").replace(/{server}/g, db.server_info.name);
-            const d = document.getElementById(`${p}-desc`).value.replace(/{user}/g, "@User").replace(/{server}/g, db.server_info.name);
-            box.querySelector('.pv-title').innerText = t;
-            box.querySelector('.pv-desc').innerText = d;
-            box.querySelector('.pv-f-text').innerText = document.getElementById(`${p}-footer`).value;
+            const col = document.getElementById(`${p}-color`).value;
+            document.getElementById(`pv-box-${mode}`).style.borderLeftColor = col;
+            document.getElementById(`pv-title-${mode}`).innerText = parseVars(document.getElementById(`${p}-title`).value);
+            document.getElementById(`pv-desc-${mode}`).innerText = parseVars(document.getElementById(`${p}-desc`).value);
+            document.getElementById(`pv-footer-text-${mode}`).innerText = document.getElementById(`${p}-footer`).value;
         }
 
         function renderChecklist(menuId, selected, labelId) {
@@ -218,13 +221,14 @@
             updateCount(menuId, labelId);
         }
 
-        function toggleCheck(el, labelId) { el.querySelector('input').checked = !el.querySelector('input').checked; updateCount(el.parentElement.id, labelId); }
+        function toggleCheck(el, labelId) { const cb = el.querySelector('input'); cb.checked = !cb.checked; updateCount(el.parentElement.id, labelId); }
         function updateCount(menuId, labelId) { const n = document.querySelectorAll(`#${menuId} input:checked`).length; document.getElementById(labelId).innerText = n + " rôle(s)"; }
 
         function openPicker(m, t) { activeMode = m; activeType = t; lastTab = m; showTab('gallery'); }
         function setImg(m, t, u) {
             const p = (m === 'welcome') ? 'w' : 'l';
-            const el = document.getElementById(`${p}-img-${t}`);
+            const idMap = {'thumbnail':`${p}-img-thumb`,'banner':`${p}-img-banner`,'footer_icon':`${p}-img-footer`};
+            const el = document.getElementById(idMap[t]);
             if(u) { el.src = u; el.style.display = 'block'; el.dataset.url = u; }
             else { el.style.display = 'none'; el.dataset.url = ""; }
         }
@@ -245,27 +249,28 @@
                     title: document.getElementById('w-title').value, desc: document.getElementById('w-desc').value,
                     footer: document.getElementById('w-footer').value, color: document.getElementById('w-color').value,
                     channel: document.getElementById('w-channel').value,
-                    thumbnail: document.getElementById('w-img-thumb').dataset.url,
-                    banner: document.getElementById('w-img-banner').dataset.url,
-                    footer_icon: document.getElementById('w-img-footer').dataset.url,
+                    thumbnail: document.getElementById('w-img-thumb').dataset.url || "",
+                    banner: document.getElementById('w-img-banner').dataset.url || "",
+                    footer_icon: document.getElementById('w-img-footer').dataset.url || "",
                     trigger_roles: Array.from(document.querySelectorAll('#w-role-menu input:checked')).map(i => i.value)
                 },
                 leave: {
                     title: document.getElementById('l-title').value, desc: document.getElementById('l-desc').value,
                     footer: document.getElementById('l-footer').value, color: document.getElementById('l-color').value,
                     channel: document.getElementById('l-channel').value,
-                    thumbnail: document.getElementById('l-img-thumb').dataset.url,
-                    banner: document.getElementById('l-img-banner').dataset.url,
-                    footer_icon: document.getElementById('l-img-footer').dataset.url
+                    thumbnail: document.getElementById('l-img-thumb').dataset.url || "",
+                    banner: document.getElementById('l-img-banner').dataset.url || "",
+                    footer_icon: document.getElementById('l-img-footer').dataset.url || ""
                 },
                 admin_roles: Array.from(document.querySelectorAll('#admin-menu input:checked')).map(i => i.value)
             };
             await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
-            alert("Sauvegardé !");
+            alert("Enregistré !");
         }
 
-        async function test(mode, btn) {
+        async function test(mode) {
             const p = (mode === 'welcome') ? 'w' : 'l';
+            const btn = document.getElementById(`${p}-btn-test`);
             const conf = {
                 channel: document.getElementById(`${p}-channel`).value,
                 title: document.getElementById(`${p}-title`).value,
@@ -292,6 +297,7 @@
             if(el) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); }
             closeSidebar();
         }
+
         window.onclick = () => document.querySelectorAll('.drop-menu').forEach(m => m.classList.remove('show'));
         window.onload = init;
     </script>
