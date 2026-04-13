@@ -7,27 +7,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #0a0a0a; --card: #141414; --accent: #ed4245; --border: #252525; --d-bg: #2b2d31; }
-        
         * { box-sizing: border-box; }
         body { margin: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; }
 
-        /* HEADER */
         .header { position: fixed; top: 0; left: 0; right: 0; height: 65px; background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; z-index: 2500; }
         .burger { font-size: 22px; color: var(--accent); cursor: pointer; margin-right: 20px; }
         .logo { font-weight: 900; letter-spacing: 2px; color: var(--accent); }
 
-        /* SIDEBAR */
         #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #000; z-index: 3000; transition: 0.3s; border-right: 1px solid var(--border); }
         #sidebar.open { left: 0; }
         .nav-item { padding: 20px; border-bottom: 1px solid #111; cursor: pointer; display: flex; align-items: center; gap: 15px; color: #888; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: #ed424510; border-right: 4px solid var(--accent); }
 
-        /* CONTENT AREA - CORRECTIF DEFILEMENT */
-        main { height: 100vh; overflow-y: scroll; padding: 85px 15px 150px; -webkit-overflow-scrolling: touch; }
+        main { height: 100vh; overflow-y: auto; padding: 85px 15px 180px; -webkit-overflow-scrolling: touch; }
         .section { display: none; max-width: 600px; margin: 0 auto; }
         .section.active { display: block; }
 
-        /* PREVIEW DISCORD */
+        /* PREVIEW */
         .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; }
         .pv-top { display: flex; justify-content: space-between; gap: 10px; }
         .pv-thumb { width: 65px; height: 65px; border-radius: 4px; background: #222; border: 1px dashed #444; overflow: hidden; cursor: pointer; }
@@ -35,31 +31,26 @@
         .pv-f-icon { width: 20px; height: 20px; border-radius: 50%; background: #222; border: 1px dashed #444; overflow: hidden; cursor: pointer; }
         img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* CARD & INPUTS */
+        /* INPUTS */
         .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
         label { display: block; font-size: 11px; font-weight: 800; color: #555; text-transform: uppercase; margin: 15px 0 8px; }
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; font-size: 14px; outline: none; }
-        
-        /* CORRECTIF HAUTEUR COULEUR */
-        input[type="color"] { height: 38px; padding: 2px; cursor: pointer; background: #000; }
+        input[type="color"] { height: 45px; padding: 5px; cursor: pointer; }
 
-        /* MULTISELECT */
         .drop-btn { background: #000; border: 1px solid var(--border); padding: 14px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .drop-menu { display: none; background: #050505; border: 1px solid var(--border); border-radius: 10px; max-height: 200px; overflow-y: auto; margin-top: 5px; }
         .drop-menu.show { display: block; }
         .role-item { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #111; cursor: pointer; }
-        .role-item input { width: 20px; height: 20px; margin-right: 15px; accent-color: var(--accent); }
+        .role-item input { width: 20px; height: 20px; margin-right: 15px; }
 
-        /* BUTTONS */
         .btn { border: none; padding: 16px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-save { background: var(--accent); color: #fff; }
         .btn-test { background: #5865f2; color: #fff; }
-        .btn-close { background: #333; color: #fff; width: 40px; height: 40px; border-radius: 50%; float: right; border: none; cursor: pointer; }
+        .btn-close { background: #333; color: #fff; width: 40px; height: 40px; border-radius: 50%; float: right; border: none; }
 
-        /* GALLERY */
         .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
         .img-card { height: 100px; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; position: relative; background: #000; }
-        .del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; border-radius: 4px; padding: 5px; cursor: pointer; z-index: 5; }
+        .del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; border-radius: 4px; padding: 5px; z-index: 5; }
     </style>
 </head>
 <body>
@@ -118,32 +109,32 @@
                 <label>Salon Cible</label>
                 <select id="w-channel"></select>
 
-                <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER L'ELITE</button>
-                <button class="btn btn-test" onclick="test()"><i class="fab fa-discord"></i> ENVOYER UN TEST</button>
+                <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
+                <button class="btn btn-test" onclick="test()"><i class="fab fa-discord"></i> TESTER SUR DISCORD</button>
             </div>
         </div>
 
         <div id="admin" class="section">
             <div class="card">
-                <h2>Accès au Dashboard</h2>
-                <label>Rôles Autorisés</label>
+                <h2>Permissions</h2>
+                <label>Rôles Dashboard</label>
                 <div class="drop-container">
                     <div class="drop-btn" onclick="toggleDrop(event, 'admin-menu')">
                         <span id="admin-label">0 rôles</span> <i class="fas fa-chevron-down"></i>
                     </div>
                     <div id="admin-menu" class="drop-menu"></div>
                 </div>
-                <button class="btn btn-save" onclick="save()">APPLIQUER LES DROITS</button>
+                <button class="btn btn-save" onclick="save()">APPLIQUER</button>
             </div>
         </div>
 
         <div id="gallery" class="section">
             <button class="btn-close" onclick="showTab('welcome')">✕</button>
             <div class="card" style="clear:both; margin-top:10px;">
-                <h2>Médias</h2>
-                <label>Ajouter par URL</label>
-                <div style="display:flex; gap:10px;"><input type="text" id="url-input" placeholder="https://..."><button class="btn btn-save" style="width:80px; margin:0;" onclick="useUrl()">OK</button></div>
-                <label>Téléverser</label>
+                <h2>Galerie</h2>
+                <label>URL</label>
+                <div style="display:flex; gap:10px;"><input type="text" id="url-input"><button class="btn btn-save" style="width:80px; margin:0;" onclick="useUrl()">OK</button></div>
+                <label>Fichier</label>
                 <input type="file" id="file-input" onchange="uploadFile()">
                 <div id="gallery-list" class="gallery-grid"></div>
             </div>
@@ -172,6 +163,22 @@
             sync();
         }
 
+        // REMPLACEMENT DES VARIABLES DANS L'APERÇU
+        function parseVars(text) {
+            if(!text) return "";
+            return text.replace(/{user}/g, "PrénomUser")
+                       .replace(/{server}/g, db.server_info.name)
+                       .replace(/{count}/g, db.server_info.member_count);
+        }
+
+        function sync() {
+            const col = document.getElementById('w-color').value;
+            document.getElementById('pv-box').style.borderLeftColor = col;
+            document.getElementById('pv-title').innerText = parseVars(document.getElementById('w-title').value) || "Titre";
+            document.getElementById('pv-desc').innerText = parseVars(document.getElementById('w-desc').value) || "Description";
+            document.getElementById('pv-footer-text').innerText = document.getElementById('w-footer').value || "Footer";
+        }
+
         function renderChecklist(menuId, selected, labelId) {
             document.getElementById(menuId).innerHTML = db.roles.map(r => `
                 <div class="role-item" onclick="toggleCheck(this, '${labelId}')">
@@ -193,17 +200,10 @@
             document.getElementById(labelId).innerText = n + " rôle(s) sélectionné(s)";
         }
 
-        function sync() {
-            const col = document.getElementById('w-color').value;
-            document.getElementById('pv-box').style.borderLeftColor = col;
-            document.getElementById('pv-title').innerText = document.getElementById('w-title').value || "Titre";
-            document.getElementById('pv-desc').innerText = document.getElementById('w-desc').value || "Description";
-            document.getElementById('pv-footer-text').innerText = document.getElementById('w-footer').value || "Footer";
-        }
-
         function openPicker(t) { activePicker = t; showTab('gallery'); }
         function setImg(t, u) {
-            const el = document.getElementById({'thumbnail':'img-thumb','banner':'img-banner','footer_icon':'img-footer'}[t]);
+            const idMap = {'thumbnail':'img-thumb','banner':'img-banner','footer_icon':'img-footer'};
+            const el = document.getElementById(idMap[t]);
             if(u) { el.src = u; el.style.display = 'block'; el.dataset.url = u; }
             else { el.style.display = 'none'; el.dataset.url = ""; }
         }
@@ -246,9 +246,26 @@
         }
 
         async function test() {
-            const config = { welcome: { title: document.getElementById('w-title').value, desc: document.getElementById('w-desc').value, footer: document.getElementById('w-footer').value, color: document.getElementById('w-color').value, channel: document.getElementById('w-channel').value, thumbnail: document.getElementById('img-thumb').dataset.url, banner: document.getElementById('img-banner').dataset.url, footer_icon: document.getElementById('img-footer').dataset.url } };
-            await fetch('/api/test_message', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
-            alert("Test envoyé !");
+            const config = { 
+                welcome: { 
+                    title: document.getElementById('w-title').value, 
+                    desc: document.getElementById('w-desc').value, 
+                    footer: document.getElementById('w-footer').value, 
+                    color: document.getElementById('w-color').value, 
+                    channel: document.getElementById('w-channel').value, 
+                    thumbnail: document.getElementById('img-thumb').dataset.url, 
+                    banner: document.getElementById('img-banner').dataset.url, 
+                    footer_icon: document.getElementById('img-footer').dataset.url 
+                } 
+            };
+            const res = await fetch('/api/test_message', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify(config) 
+            });
+            const r = await res.json();
+            if(r.status === 'sent') alert("Embed envoyé sur Discord !");
+            else alert("Erreur : " + r.error);
         }
 
         function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('open'); }
@@ -259,7 +276,6 @@
             document.getElementById(id).classList.add('active');
             if(el) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); }
             closeSidebar();
-            document.getElementById('main-scroll').scrollTop = 0;
         }
 
         window.onclick = () => document.querySelectorAll('.drop-menu').forEach(m => m.classList.remove('show'));
