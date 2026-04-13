@@ -32,8 +32,9 @@
 
         .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
         label { display: block; font-size: 11px; font-weight: 800; color: #555; text-transform: uppercase; margin: 15px 0 8px; }
-        .vars-help { background: #000; padding: 10px; border-radius: 8px; font-size: 12px; color: #888; margin-top: 10px; border: 1px solid #222; }
-        .vars-help b { color: var(--accent); }
+        
+        .var-box { background: #000; padding: 12px; border-radius: 10px; margin-top: 8px; border: 1px solid #222; font-size: 12px; line-height: 1.6; }
+        .var-box b { color: var(--accent); font-family: monospace; }
 
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; font-size: 14px; outline: none; }
         input[type="color"] { height: 45px; padding: 5px; cursor: pointer; }
@@ -44,7 +45,8 @@
         .role-item { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #111; cursor: pointer; }
         .role-item input { width: 20px; height: 20px; margin-right: 15px; }
 
-        .btn { border: none; padding: 16px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn { border: none; padding: 16px; border-radius: 12px; font-weight: 800; width: 100%; cursor: pointer; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
         .btn-save { background: var(--accent); color: #fff; }
         .btn-test { background: #5865f2; color: #fff; }
         .btn-close { background: #333; color: #fff; width: 40px; height: 40px; border-radius: 50%; float: right; border: none; }
@@ -89,51 +91,58 @@
                 <h2>Configuration</h2>
                 <label>Couleur Embed</label>
                 <input type="color" id="w-color" oninput="sync()">
-                <label>Titre</label>
-                <input type="text" id="w-title" oninput="sync()">
-                <label>Message</label>
-                <textarea id="w-desc" rows="4" oninput="sync()"></textarea>
                 
-                <div class="vars-help">
-                    <b>{user}</b> : Mention membre | <b>{server}</b> : Nom Serveur | <b>{count}</b> : Nombre membres
+                <label>Titre de l'embed</label>
+                <input type="text" id="w-title" oninput="sync()">
+                
+                <label>Message de bienvenue</label>
+                <textarea id="w-desc" rows="5" oninput="sync()"></textarea>
+                
+                <div class="var-box">
+                    <b>{user}</b> : Mentionne le membre<br>
+                    <b>{server}</b> : Nom de votre serveur<br>
+                    <b>{count}</b> : Nombre total de membres
                 </div>
 
-                <label>Texte Footer</label>
+                <label>Texte du Footer</label>
                 <input type="text" id="w-footer" oninput="sync()">
-                <label>Rôles Dashboard</label>
+                
+                <label>Rôles Déclencheurs</label>
                 <div class="drop-container">
                     <div class="drop-btn" onclick="toggleDrop(event, 'role-menu')">
                         <span id="role-label">Sélectionner...</span> <i class="fas fa-chevron-down"></i>
                     </div>
                     <div id="role-menu" class="drop-menu"></div>
                 </div>
-                <label>Salon Cible</label>
+
+                <label>Salon d'envoi</label>
                 <select id="w-channel"></select>
+
                 <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
-                <button class="btn btn-test" onclick="test()"><i class="fab fa-discord"></i> TESTER LE RENDU</button>
+                <button class="btn btn-test" onclick="test()"><i class="fab fa-discord"></i> TESTER LE PING</button>
             </div>
         </div>
 
         <div id="admin" class="section">
             <div class="card">
-                <h2>Accès Admin</h2>
+                <h2>Rôles d'administration</h2>
                 <div class="drop-container">
                     <div class="drop-btn" onclick="toggleDrop(event, 'admin-menu')">
                         <span id="admin-label">0 rôles</span> <i class="fas fa-chevron-down"></i>
                     </div>
                     <div id="admin-menu" class="drop-menu"></div>
                 </div>
-                <button class="btn btn-save" onclick="save()">APPLIQUER</button>
+                <button class="btn btn-save" onclick="save()">APPLIQUER LES DROITS</button>
             </div>
         </div>
 
         <div id="gallery" class="section">
             <button class="btn-close" onclick="showTab('welcome')">✕</button>
             <div class="card" style="clear:both; margin-top:10px;">
-                <h2>Médias</h2>
-                <label>Lien Web</label>
-                <div style="display:flex; gap:10px;"><input type="text" id="url-input"><button class="btn btn-save" style="width:80px; margin:0;" onclick="useUrl()">OK</button></div>
-                <label>Local</label>
+                <h2>Ma Galerie</h2>
+                <label>URL d'une image</label>
+                <div style="display:flex; gap:10px;"><input type="text" id="url-input" placeholder="https://..."><button class="btn btn-save" style="width:80px; margin:0;" onclick="useUrl()">OK</button></div>
+                <label>Uploader un fichier</label>
                 <input type="file" id="file-input" onchange="uploadFile()">
                 <div id="gallery-list" class="gallery-grid"></div>
             </div>
@@ -164,8 +173,8 @@
 
         function parseVars(text) {
             if(!text) return "";
-            // Simule l'utilisateur connecté sur le dashboard dans l'aperçu
-            return text.replace(/{user}/g, "@Utilisateur")
+            // Simule l'utilisateur pour l'aperçu
+            return text.replace(/{user}/g, "@Jormungand21")
                        .replace(/{server}/g, db.server_info.name)
                        .replace(/{count}/g, db.server_info.member_count);
         }
@@ -241,7 +250,7 @@
                 admin_roles: Array.from(document.querySelectorAll('#admin-menu input:checked')).map(i => i.value)
             };
             await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
-            alert("Configuration enregistrée !");
+            alert("Configuration enregistrée avec succès !");
         }
 
         async function test() {
