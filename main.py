@@ -43,7 +43,8 @@ def get_data():
     roles = ["@JOIN"] + [r.name for r in guild.roles if not r.managed and r.name != "@everyone"]
     return jsonify({
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
-        "roles": roles, "config": load_config(), "images": images
+        "roles": roles, "config": load_config(), "images": images,
+        "server_info": {"name": guild.name, "member_count": guild.member_count}
     })
 
 @app.route('/api/upload', methods=['POST'])
@@ -71,15 +72,39 @@ def delete_image():
 @app.route('/api/test_message', methods=['POST'])
 def test():
     conf = request.json.get('welcome')
-    chan = bot.get_channel(int(conf.get('channel')))
-    if not chan: return jsonify({"error": "Salon invalide"}), 400
-    col = int(conf.get('color').replace('#', ''), 16)
-    embed = discord.Embed(title=conf.get('title'), description=conf.get('desc'), color=col)
-    if conf.get('banner'): embed.set_image(url=conf.get('banner'))
-    if conf.get('thumbnail'): embed.set_thumbnail(url=conf.get('thumbnail'))
-    embed.set_footer(text=conf.get('footer'), icon_url=conf.get('footer_icon'))
-    bot.loop.create_task(chan.send(embed=embed))
-    return jsonify({"status": "sent"})
+    try:
+        channel_id = int(conf.get('channel'))
+        chan = bot.get_channel(channel_id)
+        if not chan: 
+            return jsonify({"error": f"Salon {channel_id} introuvable"}), 400
+        
+        guild = bot.get_guild(GUILD_ID)
+        # Formatage des variables pour le test
+        title = conf.get('title').replace("{user}", "TestUser").replace("{server}", guild.name).replace("{count}", str(guild.member_count))
+        desc = conf.get('desc').replace("{user}", "TestUser").replace("{server}", guild.name).replace("{count}", str(guild.member_count))
+        
+        col = int(conf.get('color').replace('#', ''), 16)
+        embed = discord.Embed(title=title, description=desc, color=col)
+        
+        # Gestion propre des URLs (locales vs distantes)
+        def fix_url(u):
+            if not u: return None
+            if u.startswith('/uploads'): return f"http://{request.host}{u}"
+            return u
+
+        banner = fix_url(conf.get('banner'))
+        thumb = fix_url(conf.get('thumbnail'))
+        f_icon = fix_url(conf.get('footer_icon'))
+
+        if banner: embed.set_image(url=banner)
+        if thumb: embed.set_thumbnail(url=thumb)
+        embed.set_footer(text=conf.get('footer'), icon_url=f_icon)
+        
+        bot.loop.create_task(chan.send(content="**[TEST ELITE V9]**", embed=embed))
+        return jsonify({"status": "sent"})
+    except Exception as e:
+        print(f"Erreur Test: {e}")
+        return jsonify({"error": str(e)}), 500
 
 def run(): app.run(host='0.0.0.0', port=49501)
 threading.Thread(target=run, daemon=True).start()
