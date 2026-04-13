@@ -2,6 +2,7 @@ import os
 import json
 import discord
 import threading
+import asyncio
 from discord.ext import commands
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
@@ -27,10 +28,48 @@ def load_config():
             "welcome": {
                 "title": "Bienvenue {user}", "desc": "Bienvenue sur {server}", 
                 "footer": "Jormungand21", "footer_icon": "", "color": "#ed4245", 
-                "channel": "", "banner": "", "thumbnail": "", "trigger_roles": ["@JOIN"]
+                "channel": "", "banner": "", "thumbnail": "", "trigger_roles": []
             },
             "admin_roles": []
         }
+
+@bot.event
+async def on_member_join(member):
+    if member.guild.id != GUILD_ID: return
+    conf = load_config().get("welcome")
+    if not conf or not conf.get("channel"): return
+    
+    channel = bot.get_channel(int(conf.get("channel")))
+    if not channel: return
+
+    # Préparation rapide de l'embed
+    title = conf.get('title').replace("{user}", member.display_name).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
+    desc = conf.get('desc').replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
+    col = int(conf.get('color').replace('#', ''), 16)
+    embed = discord.Embed(title=title, description=desc, color=col)
+    
+    files = []
+    if conf.get('banner') and conf.get('banner').startswith('/uploads'):
+        fname = conf.get('banner').split('/')[-1]
+        files.append(discord.File(os.path.join('public', 'uploads', fname), filename=fname))
+        embed.set_image(url=f"attachment://{fname}")
+    elif conf.get('banner'): embed.set_image(url=conf.get('banner'))
+
+    if conf.get('thumbnail') and conf.get('thumbnail').startswith('/uploads'):
+        fname = conf.get('thumbnail').split('/')[-1]
+        files.append(discord.File(os.path.join('public', 'uploads', fname), filename=fname))
+        embed.set_thumbnail(url=f"attachment://{fname}")
+    elif conf.get('thumbnail'): embed.set_thumbnail(url=conf.get('thumbnail'))
+
+    footer_url = None
+    if conf.get('footer_icon') and conf.get('footer_icon').startswith('/uploads'):
+        fname = conf.get('footer_icon').split('/')[-1]
+        files.append(discord.File(os.path.join('public', 'uploads', fname), filename=fname))
+        footer_url = f"attachment://{fname}"
+    else: footer_url = conf.get('footer_icon')
+
+    embed.set_footer(text=conf.get('footer'), icon_url=footer_url)
+    await channel.send(embed=embed, files=files)
 
 @app.route('/')
 def index(): return app.send_static_file('index.html')
@@ -40,7 +79,8 @@ def get_data():
     guild = bot.get_guild(GUILD_ID)
     if not guild: return jsonify({"error": "Guild non trouvée"}), 404
     images = [f"/uploads/{f}" for f in os.listdir(UPLOAD_FOLDER) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
-    roles = ["@JOIN"] + [r.name for r in guild.roles if not r.managed and r.name != "@everyone"]
+    # RETRAIT DU RÔLE @JOIN DU SÉLECTEUR
+    roles = [r.name for r in guild.roles if not r.managed and r.name != "@everyone"]
     return jsonify({
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
         "roles": roles, "config": load_config(), "images": images,
@@ -72,50 +112,39 @@ def delete_image():
 @app.route('/api/test_message', methods=['POST'])
 def test():
     conf = request.json.get('welcome')
-    try:
-        channel_id = int(conf.get('channel'))
-        chan = bot.get_channel(channel_id)
-        if not chan: return jsonify({"error": "Salon introuvable"}), 400
-        
-        guild = bot.get_guild(GUILD_ID)
-        title = conf.get('title').replace("{user}", "TestUser").replace("{server}", guild.name).replace("{count}", str(guild.member_count))
-        desc = conf.get('desc').replace("{user}", "TestUser").replace("{server}", guild.name).replace("{count}", str(guild.member_count))
-        
-        col = int(conf.get('color').replace('#', ''), 16)
-        embed = discord.Embed(title=title, description=desc, color=col)
-        
-        files_to_send = []
+    async def send_test():
+        try:
+            chan = bot.get_channel(int(conf.get('channel')))
+            guild = bot.get_guild(GUILD_ID)
+            title = conf.get('title').replace("{user}", "TestUser").replace("{server}", guild.name).replace("{count}", str(guild.member_count))
+            desc = conf.get('desc').replace("{user}", "TestUser").replace("{server}", guild.name).replace("{count}", str(guild.member_count))
+            col = int(conf.get('color').replace('#', ''), 16)
+            embed = discord.Embed(title=title, description=desc, color=col)
+            files = []
+            
+            def handle_img(path, type):
+                if not path: return
+                if path.startswith('/uploads'):
+                    fname = path.split('/')[-1]
+                    files.append(discord.File(os.path.join('public', 'uploads', fname), filename=fname))
+                    if type == "banner": embed.set_image(url=f"attachment://{fname}")
+                    if type == "thumb": embed.set_thumbnail(url=f"attachment://{fname}")
+                    if type == "footer": embed.set_footer(text=conf.get('footer'), icon_url=f"attachment://{fname}")
+                else:
+                    if type == "banner": embed.set_image(url=path)
+                    if type == "thumb": embed.set_thumbnail(url=path)
+                    if type == "footer": embed.set_footer(text=conf.get('footer'), icon_url=path)
 
-        # Fonction pour attacher une image locale si nécessaire
-        def process_image(img_path, embed_type):
-            if not img_path: return
-            if img_path.startswith('/uploads'):
-                filename = img_path.split('/')[-1]
-                full_path = os.path.join('public', img_path.lstrip('/'))
-                if os.path.exists(full_path):
-                    d_file = discord.File(full_path, filename=filename)
-                    files_to_send.append(d_file)
-                    if embed_type == "banner": embed.set_image(url=f"attachment://{filename}")
-                    if embed_type == "thumb": embed.set_thumbnail(url=f"attachment://{filename}")
-                    if embed_type == "footer": embed.set_footer(text=conf.get('footer'), icon_url=f"attachment://{filename}")
-            else:
-                # Si c'est une URL externe (http...)
-                if embed_type == "banner": embed.set_image(url=img_path)
-                if embed_type == "thumb": embed.set_thumbnail(url=img_path)
-                if embed_type == "footer": embed.set_footer(text=conf.get('footer'), icon_url=img_path)
+            handle_img(conf.get('banner'), "banner")
+            handle_img(conf.get('thumbnail'), "thumb")
+            handle_img(conf.get('footer_icon'), "footer")
+            if not embed.footer.text: embed.set_footer(text=conf.get('footer'))
+            
+            await chan.send(content="**[TEST RAPIDE ELITE]**", embed=embed, files=files)
+        except Exception as e: print(f"Error: {e}")
 
-        process_image(conf.get('banner'), "banner")
-        process_image(conf.get('thumbnail'), "thumb")
-        process_image(conf.get('footer_icon'), "footer")
-        
-        if not embed.footer.text:
-            embed.set_footer(text=conf.get('footer'))
-
-        bot.loop.create_task(chan.send(content="**[TEST ELITE V9 - FIX IMAGES]**", embed=embed, files=files_to_send))
-        return jsonify({"status": "sent"})
-    except Exception as e:
-        print(f"Erreur Test: {e}")
-        return jsonify({"error": str(e)}), 500
+    bot.loop.create_task(send_test())
+    return jsonify({"status": "sent"})
 
 def run(): app.run(host='0.0.0.0', port=49501)
 threading.Thread(target=run, daemon=True).start()
