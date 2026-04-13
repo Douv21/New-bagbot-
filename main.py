@@ -31,7 +31,7 @@ def load_config():
                 "channel": "", "banner": "", "thumbnail": "", "trigger_roles": []
             },
             "leave": {
-                "title": "Au revoir {user}", "desc": "{user} nous a quitté...", 
+                "title": "Départ de {user}", "desc": "{user} nous a quitté.", 
                 "footer": "Jormungand21", "footer_icon": "", "color": "#ed4245", 
                 "channel": "", "banner": "", "thumbnail": ""
             },
@@ -62,7 +62,6 @@ async def create_embed_gen(member, conf, mode_type="welcome"):
             elif sub_mode == "thumb": embed.set_thumbnail(url=path)
             elif sub_mode == "footer": embed.set_footer(text=conf.get('footer'), icon_url=path)
 
-    # Optimisation rapidité via asyncio.gather
     await asyncio.gather(
         process_img(conf.get('banner'), "banner"),
         process_img(conf.get('thumbnail'), "thumb"),
