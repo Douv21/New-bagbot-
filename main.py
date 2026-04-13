@@ -33,10 +33,12 @@ def load_config():
             "title": "Bienvenue {user} !",
             "desc": "Content de te voir sur {guild}.",
             "footer": "Nous sommes désormais {count}",
+            "footer_icon": "",
+            "color": "#ed4245",
             "channel": "",
             "banner": "",
             "thumbnail": "",
-            "trigger_roles": ["@JOIN"] # Ajout par défaut du rôle virtuel @JOIN
+            "trigger_roles": ["@JOIN"]
         },
         "admin_roles": []
     }
@@ -45,7 +47,7 @@ def load_config():
     try:
         with open('config.json', 'r', encoding='utf-8') as f:
             data = json.load(f)
-            # Vérification de l'intégrité des clés pour éviter les erreurs JS
+            # Migration/Vérification des nouvelles clés (color, footer_icon)
             if "welcome" not in data: data["welcome"] = default_cfg["welcome"]
             for key in default_cfg["welcome"]:
                 if key not in data["welcome"]:
@@ -66,11 +68,9 @@ def get_data():
         return jsonify({"error": "Serveur introuvable"}), 404
 
     img_dir = 'public/uploads'
-    if not os.path.exists(img_dir):
-        os.makedirs(img_dir)
+    if not os.path.exists(img_dir): os.makedirs(img_dir)
     images = [f"/uploads/{f}" for f in os.listdir(img_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
 
-    # On ajoute "@JOIN" à la liste des rôles pour le déclenchement auto
     roles_list = ["@JOIN"] + [r.name for r in guild.roles if not r.managed and r.name != "@everyone"]
 
     return jsonify({
@@ -95,16 +95,34 @@ def save():
 def delete_image():
     try:
         img_path = request.json.get('path')
-        if not img_path or ".." in img_path: return jsonify({"error": "Invalid path"}), 400
         full_path = os.path.join('public', img_path.lstrip('/'))
-        if os.path.exists(full_path):
+        if os.path.exists(full_path) and "/uploads/" in img_path:
             os.remove(full_path)
             return jsonify({"status": "deleted"})
         return jsonify({"error": "Not found"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# --- RUN ---
+@app.route('/api/test_message', methods=['POST'])
+def test_message():
+    # Fonction pour envoyer un message test réel via le bot
+    config = request.json.get('welcome')
+    channel_id = config.get('channel')
+    if not channel_id: return jsonify({"error": "Aucun salon sélectionné"}), 400
+    
+    channel = bot.get_channel(int(channel_id))
+    if not channel: return jsonify({"error": "Salon introuvable"}), 404
+
+    # Simulation d'embed
+    color = int(config.get('color', '#ed4245').replace('#', ''), 16)
+    embed = discord.Embed(title=config.get('title'), description=config.get('desc'), color=color)
+    if config.get('banner'): embed.set_image(url=config.get('banner'))
+    if config.get('thumbnail'): embed.set_thumbnail(url=config.get('thumbnail'))
+    embed.set_footer(text=config.get('footer'), icon_url=config.get('footer_icon'))
+    
+    bot.loop.create_task(channel.send(content="✨ **Test du message de bienvenue**", embed=embed))
+    return jsonify({"status": "sent"})
+
 def run_flask():
     app.run(host='0.0.0.0', port=49501, use_reloader=False)
 
@@ -113,4 +131,4 @@ if __name__ == "__main__":
     t.daemon = True
     t.start()
     bot.run(TOKEN)
-    
+            
