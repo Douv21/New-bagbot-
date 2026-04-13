@@ -12,7 +12,6 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = int(os.getenv("GUILD_ID", 0))
 
-# Configuration pour pointer sur ton dossier public
 app = Flask(__name__, static_folder='public', static_url_path='/')
 app.secret_key = os.urandom(24)
 UPLOAD_FOLDER = 'public/uploads'
@@ -40,9 +39,10 @@ def load_config():
         }
 
 async def create_embed_gen(member, conf, mode_name):
-    title = conf.get('title').replace("{user}", member.display_name).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
-    desc = conf.get('desc').replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
-    col = int(conf.get('color').replace('#', ''), 16)
+    title = str(conf.get('title', '')).replace("{user}", member.display_name).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
+    desc = str(conf.get('desc', '')).replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
+    col_str = str(conf.get('color', '#ed4245')).replace('#', '')
+    col = int(col_str, 16)
     
     embed = discord.Embed(title=title, description=desc, color=col)
     files = []
@@ -131,7 +131,6 @@ def test():
     data = request.json
     mode = data.get('mode')
     conf = data.get('config')
-    
     async def send_test():
         guild = bot.get_guild(GUILD_ID)
         chan = bot.get_channel(int(conf.get('channel')))
@@ -139,7 +138,6 @@ def test():
         embed, files = await create_embed_gen(member, conf, mode)
         prefix = "🔔 **[BIENVENUE]**" if mode == "welcome" else "🚪 **[DÉPART]**"
         await chan.send(content=f"{prefix} Test pour {member.mention}", embed=embed, files=files)
-
     bot.loop.create_task(send_test())
     return jsonify({"status": "sent"})
 
