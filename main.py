@@ -1,4 +1,8 @@
-import os, json, discord, threading, asyncio
+import os
+import json
+import discord
+import threading
+import asyncio
 from discord.ext import commands
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
@@ -13,7 +17,8 @@ GUILD_ID = int(os.getenv("GUILD_ID", 0))
 app = Flask(__name__, static_folder='public', static_url_path='/')
 app.secret_key = os.urandom(24)
 UPLOAD_FOLDER = 'public/uploads'
-if not os.path.exists(UPLOAD_FOLDER): os.makedirs(UPLOAD_FOLDER)
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 # Configuration Bot Discord
 intents = discord.Intents.all()
@@ -22,8 +27,27 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 def load_config():
     if not os.path.exists('config.json'):
         return {
-            "welcome": {"title": "Bienvenue", "desc": "{user}", "footer": "BagBot", "color": "#ed4245", "channel": "", "banner": "", "thumbnail": "", "footer_icon": "", "trigger_roles": []},
-            "leave": {"title": "Au revoir", "desc": "{user}", "footer": "BagBot", "color": "#ed4245", "channel": "", "banner": "", "thumbnail": "", "footer_icon": ""},
+            "welcome": {
+                "title": "Bienvenue {user}",
+                "desc": "Bienvenue sur {server}\nTu es le {count} membres du serveur\nJ'espère que tu te plaira parmis nous",
+                "footer": "Jormungand21",
+                "color": "#ed4245",
+                "channel": "",
+                "banner": "",
+                "thumbnail": "",
+                "footer_icon": "",
+                "trigger_roles": []
+            },
+            "leave": {
+                "title": "Au revoir",
+                "desc": "{user} a quitté le serveur.",
+                "footer": "BagBot",
+                "color": "#ed4245",
+                "channel": "",
+                "banner": "",
+                "thumbnail": "",
+                "footer_icon": ""
+            },
             "admin_roles": []
         }
     with open('config.json', 'r', encoding='utf-8') as f:
@@ -43,34 +67,44 @@ async def create_embed_gen(member, conf, mode_name):
     files = []
 
     async def process_img(path, sub_mode):
-        if not path or path.strip() == "": return
+        if not path or path.strip() == "":
+            return
         if path.startswith('/uploads'):
             fname = path.split('/')[-1]
             fpath = os.path.join('public', 'uploads', fname)
             if os.path.exists(fpath):
                 att_name = f"{mode_name}_{sub_mode}_{fname}"
                 files.append(discord.File(fpath, filename=att_name))
-                if sub_mode == "banner": embed.set_image(url=f"attachment://{att_name}")
-                elif sub_mode == "thumb": embed.set_thumbnail(url=f"attachment://{att_name}")
-                elif sub_mode == "footer": embed.set_footer(text=conf.get('footer', ' '), icon_url=f"attachment://{att_name}")
+                if sub_mode == "banner":
+                    embed.set_image(url=f"attachment://{att_name}")
+                elif sub_mode == "thumb":
+                    embed.set_thumbnail(url=f"attachment://{att_name}")
+                elif sub_mode == "footer":
+                    embed.set_footer(text=conf.get('footer', ' '), icon_url=f"attachment://{att_name}")
         else:
-            if sub_mode == "banner": embed.set_image(url=path)
-            elif sub_mode == "thumb": embed.set_thumbnail(url=path)
-            elif sub_mode == "footer": embed.set_footer(text=conf.get('footer', ' '), icon_url=path)
+            if sub_mode == "banner":
+                embed.set_image(url=path)
+            elif sub_mode == "thumb":
+                embed.set_thumbnail(url=path)
+            elif sub_mode == "footer":
+                embed.set_footer(text=conf.get('footer', ' '), icon_url=path)
 
     await asyncio.gather(
         process_img(conf.get('banner'), "banner"),
         process_img(conf.get('thumbnail'), "thumb"),
         process_img(conf.get('footer_icon'), "footer")
     )
-    if not embed.footer.text: embed.set_footer(text=conf.get('footer', ' '))
+    if not embed.footer.text:
+        embed.set_footer(text=conf.get('footer', ' '))
     return embed, files
 
 @bot.event
 async def on_member_join(member):
-    if member.guild.id != GUILD_ID: return
+    if member.guild.id != GUILD_ID:
+        return
     conf = load_config().get("welcome")
-    if not conf or not conf.get("channel"): return
+    if not conf or not conf.get("channel"):
+        return
     channel = bot.get_channel(int(conf.get("channel")))
     if channel:
         embed, files = await create_embed_gen(member, conf, "welcome")
@@ -79,17 +113,21 @@ async def on_member_join(member):
         await member.add_roles(*[r for r in roles_to_add if r])
 
 @app.route('/')
-def index(): return app.send_static_file('index.html')
+def index():
+    return app.send_static_file('index.html')
 
 @app.route('/api/get_data')
 def get_data():
     guild = bot.get_guild(GUILD_ID)
-    if not guild: return jsonify({"error": "Guild non trouvée"}), 404
+    if not guild:
+        return jsonify({"error": "Guild non trouvée"}), 404
     images = [f"/uploads/{f}" for f in os.listdir(UPLOAD_FOLDER) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
     roles = [r.name for r in guild.roles if not r.managed and r.name != "@everyone"]
     return jsonify({
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
-        "roles": roles, "config": load_config(), "images": images
+        "roles": roles,
+        "config": load_config(),
+        "images": images
     })
 
 @app.route('/api/save', methods=['POST'])
@@ -103,6 +141,8 @@ def test_embed():
     data = request.json
     mode = data.get('mode', 'welcome')
     conf = load_config().get(mode)
+    if not conf or not conf.get("channel"):
+         return jsonify({"error": "Salon non configuré"}), 400
     channel = bot.get_channel(int(conf.get("channel")))
     if channel:
         guild = bot.get_guild(GUILD_ID)
@@ -131,6 +171,8 @@ def delete_image():
         return jsonify({"status": "deleted"})
     return jsonify({"error": "File not found"}), 404
 
-def run(): app.run(host='0.0.0.0', port=49501)
+def run():
+    app.run(host='0.0.0.0', port=49501)
+
 threading.Thread(target=run, daemon=True).start()
 bot.run(TOKEN)
