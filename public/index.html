@@ -19,15 +19,14 @@
         .nav-item.active { color: var(--accent); background: #ed424510; }
         .submenu { display: none; background: #050505; }
         .submenu.show { display: block; }
-        .sub-item { padding: 15px 55px; cursor: pointer; color: #666; font-size: 14px; border-bottom: 1px solid #0a0a0a; }
+        .sub-item { padding: 15px 55px; cursor: pointer; color: #666; font-size: 14px; }
         .sub-item.active { color: var(--accent); background: #111; }
 
         main { height: 100vh; overflow-y: auto; padding: 80px 15px 150px; }
         .section { display: none; max-width: 600px; margin: 0 auto; }
         .section.active { display: block; }
 
-        /* Preview Discord */
-        .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; }
         .pv-top { display: flex; justify-content: space-between; gap: 10px; }
         .pv-container { position: relative; }
         .pv-thumb { width: 65px; height: 65px; background: #222; border-radius: 4px; border: 1px dashed #444; overflow: hidden; cursor: pointer; }
@@ -37,17 +36,14 @@
         img { width: 100%; height: 100%; object-fit: cover; display: none; }
 
         .card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
-        h2 { font-size: 18px; margin: 0 0 20px; color: #fff; border-left: 3px solid var(--accent); padding-left: 10px; }
-        label { display: block; font-size: 11px; color: #777; text-transform: uppercase; margin: 15px 0 5px; font-weight: bold; letter-spacing: 1px; }
+        h2 { font-size: 18px; margin: 0 0 20px; color: #fff; }
+        label { display: block; font-size: 11px; color: #777; text-transform: uppercase; margin: 15px 0 5px; font-weight: bold; }
         
-        input[type="color"] { -webkit-appearance: none; border: none; width: 100%; height: 20px; background: #1a1a1a; border-radius: 10px; cursor: pointer; padding: 0; margin-bottom: 10px; }
-        input[type="text"], textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 5px; font-size: 14px; transition: 0.3s; }
-        input:focus, textarea:focus { border-color: var(--accent); }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 100%; height: 30px; background: #1a1a1a; border-radius: 10px; cursor: pointer; padding: 0; margin-bottom: 10px; }
+        input[type="text"], textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 5px; font-size: 14px; }
         
-        /* Variables Badges */
         .var-box { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 15px; }
-        .var-badge { background: #1e1f22; color: #00a8fc; padding: 4px 10px; border-radius: 5px; font-size: 12px; font-family: monospace; border: 1px solid #2b2d31; cursor: pointer; }
-        .var-badge:hover { background: #313338; }
+        .var-badge { background: #1e1f22; color: #00a8fc; padding: 6px 12px; border-radius: 5px; font-size: 12px; font-family: monospace; border: 1px solid #2b2d31; cursor: pointer; }
 
         .dropdown-select { background: #000; border: 1px solid var(--border); padding: 14px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .dropdown-content { display: none; background: #050505; border: 1px solid var(--border); border-radius: 10px; max-height: 200px; overflow-y: auto; margin-top: 5px; }
@@ -55,7 +51,7 @@
         .role-opt { padding: 12px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #111; cursor: pointer; }
 
         .btn-group { display: flex; gap: 10px; margin-top: 25px; }
-        .btn { border: none; padding: 16px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+        .btn { border: none; padding: 16px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-save { background: var(--accent); color: white; }
         .btn-test { background: #5865F2; color: white; }
 
@@ -68,11 +64,11 @@
 
     <div class="header">
         <i class="fas fa-bars burger" onclick="toggleSidebar(event)"></i>
-        <div style="margin-left: 20px; font-weight: 900; color: var(--accent); letter-spacing: 1px;">BAGBOT DASHBOARD</div>
+        <div style="margin-left: 20px; font-weight: 900; color: var(--accent); letter-spacing: 1px;">BAGBOT ELITE V9</div>
     </div>
 
     <div id="sidebar">
-        <div style="padding: 40px 20px; text-align: center; color: var(--accent); font-weight: 900; font-size: 18px;">V9 ELITE</div>
+        <div style="padding: 40px 20px; text-align: center; color: var(--accent); font-weight: 900; font-size: 18px;">MENU</div>
         <div class="nav-item" onclick="toggleSubmenu('sub-cd', event)">
             <span>CONFIGURATION</span><i class="fas fa-chevron-down"></i>
         </div>
@@ -81,11 +77,11 @@
             <div id="mi-leave" class="sub-item" onclick="showTab('leave', this)">Départ</div>
         </div>
         <div id="mi-admin" class="nav-item" onclick="showTab('admin', this)">PERMISSIONS</div>
-        <div id="mi-gallery" class="nav-item" onclick="showTab('gallery', this)">GALERIE MÉDIAS</div>
+        <div id="mi-gallery" class="nav-item" onclick="showTab('gallery', this)">GALERIE</div>
     </div>
 
     <main onclick="closeSidebar()">
-        <div id="welcome" class="section">
+        <div id="welcome" class="section active">
             <div class="preview" id="pv-box-welcome">
                 <div class="pv-top">
                     <div style="flex-grow:1">
@@ -103,25 +99,25 @@
                 </div>
                 <div style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:11px; color:#b5bac1;">
                     <div class="pv-container">
-                        <div class="remove-img" onclick="detachImg(event, 'welcome', 'footer_icon')" style="top:-3px; right:-3px;">×</div>
                         <div class="pv-f-icon" onclick="openPicker('welcome', 'footer_icon')"><img id="w-img-footer_icon"></div>
                     </div>
                     <span id="pv-w-footer">Footer</span>
                 </div>
             </div>
             <div class="card">
-                <h2>Message de Bienvenue</h2>
+                <h2>Bienvenue</h2>
                 <label>Couleur</label><input type="color" id="w-color" oninput="sync('welcome')">
-                <label>Titre</label><input type="text" id="w-title" oninput="sync('welcome')" placeholder="Bienvenue {user}">
-                <label>Description</label><textarea id="w-desc" rows="4" oninput="sync('welcome')" placeholder="On est {count} !"></textarea>
+                <label>Titre</label><input type="text" id="w-title" oninput="sync('welcome')">
+                <div class="var-box"><span class="var-badge" onclick="addVar('w-title', '{user}')">{user}</span></div>
                 
+                <label>Description</label><textarea id="w-desc" rows="4" oninput="sync('welcome')"></textarea>
                 <div class="var-box">
-                    <span class="var-badge" onclick="addVar('w-desc', '{user}')">{user} (mention)</span>
+                    <span class="var-badge" onclick="addVar('w-desc', '{user}')">{user}</span>
                     <span class="var-badge" onclick="addVar('w-desc', '{server}')">{server}</span>
                     <span class="var-badge" onclick="addVar('w-desc', '{count}')">{count}</span>
                 </div>
 
-                <label>Texte Footer</label><input type="text" id="w-footer" oninput="sync('welcome')">
+                <label>Footer</label><input type="text" id="w-footer" oninput="sync('welcome')">
                 <label>Salon</label><select id="w-channel"></select>
                 <label>Rôles Automatiques</label>
                 <div class="dropdown-select" onclick="toggleDropdown('w-roles-drop', event)"><span id="w-roles-label">0 sélectionnés</span><i class="fas fa-chevron-down"></i></div>
@@ -141,16 +137,11 @@
                 <div class="pv-banner" onclick="openPicker('leave', 'banner')"><img id="l-img-banner"></div>
             </div>
             <div class="card">
-                <h2>Message de Départ</h2>
+                <h2>Départ</h2>
                 <label>Couleur</label><input type="color" id="l-color" oninput="sync('leave')">
                 <label>Titre</label><input type="text" id="l-title" oninput="sync('leave')">
                 <label>Description</label><textarea id="l-desc" rows="4" oninput="sync('leave')"></textarea>
-                
-                <div class="var-box">
-                    <span class="var-badge" onclick="addVar('l-desc', '{user}')">{user}</span>
-                    <span class="var-badge" onclick="addVar('l-desc', '{server}')">{server}</span>
-                </div>
-
+                <div class="var-box"><span class="var-badge" onclick="addVar('l-desc', '{user}')">{user}</span><span class="var-badge" onclick="addVar('l-desc', '{server}')">{server}</span></div>
                 <label>Salon</label><select id="l-channel"></select>
                 <div class="btn-group">
                     <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
@@ -159,23 +150,8 @@
             </div>
         </div>
 
-        <div id="admin" class="section">
-            <div class="card">
-                <h2>Permissions Dashboard</h2>
-                <div class="dropdown-select" onclick="toggleDropdown('admin-roles-drop', event)"><span id="admin-roles-label">Choisir les rôles</span><i class="fas fa-chevron-down"></i></div>
-                <div id="admin-roles-drop" class="dropdown-content"></div>
-                <button class="btn btn-save" onclick="save()" style="margin-top:20px;">APPLIQUER</button>
-            </div>
-        </div>
-
-        <div id="gallery" class="section">
-            <div class="card">
-                <h2>Galerie Médias</h2>
-                <input type="file" id="f-in" onchange="uploadFile()" style="margin-bottom:20px;">
-                <div id="g-list" class="gallery-grid"></div>
-                <button class="btn btn-save" onclick="showTab(localStorage.getItem('lastTab') || 'welcome')" style="margin-top:20px;">RETOUR</button>
-            </div>
-        </div>
+        <div id="admin" class="section"><div class="card"><h2>Permissions</h2><div class="dropdown-select" onclick="toggleDropdown('admin-roles-drop', event)"><span id="admin-roles-label">Choisir les rôles</span><i class="fas fa-chevron-down"></i></div><div id="admin-roles-drop" class="dropdown-content"></div><button class="btn btn-save" onclick="save()" style="margin-top:20px;">APPLIQUER</button></div></div>
+        <div id="gallery" class="section"><div class="card"><h2>Galerie</h2><input type="file" id="f-in" onchange="uploadFile()" style="margin-bottom:20px;"><div id="g-list" class="gallery-grid"></div><button class="btn btn-save" onclick="showTab(localStorage.getItem('lastTab') || 'welcome')" style="margin-top:20px;">RETOUR</button></div></div>
     </main>
 
     <script>
@@ -194,11 +170,7 @@
                 const renderDrop = (listId, labelId, selected) => {
                     const cont = document.getElementById(listId);
                     if(!cont) return;
-                    cont.innerHTML = db.roles.map(r => `
-                        <div class="role-opt" onclick="toggleRoleCheck(this, '${labelId}')">
-                            <input type="checkbox" value="${r}" ${selected.includes(r)?'checked':''}>
-                            <span>${r}</span>
-                        </div>`).join('');
+                    cont.innerHTML = db.roles.map(r => `<div class="role-opt" onclick="toggleRoleCheck(this, '${labelId}')"><input type="checkbox" value="${r}" ${selected.includes(r)?'checked':''}><span>${r}</span></div>`).join('');
                     updateLabel(listId, labelId);
                 };
                 renderDrop('w-roles-drop', 'w-roles-label', db.config.welcome.trigger_roles || []);
@@ -207,14 +179,11 @@
                 ['welcome', 'leave'].forEach(m => {
                     const p = m[0], c = db.config[m];
                     if(!c) return;
-                    if(document.getElementById(p+'-title')) document.getElementById(p+'-title').value = c.title || "";
-                    if(document.getElementById(p+'-desc')) document.getElementById(p+'-desc').value = c.desc || "";
+                    document.getElementById(p+'-title').value = c.title || "";
+                    document.getElementById(p+'-desc').value = c.desc || "";
                     if(document.getElementById(p+'-footer')) document.getElementById(p+'-footer').value = c.footer || "";
-                    if(document.getElementById(p+'-color')) {
-                        let col = c.color || "#ed4245";
-                        document.getElementById(p+'-color').value = col.startsWith('#') ? col : '#' + col;
-                    }
-                    if(document.getElementById(p+'-channel')) document.getElementById(p+'-channel').value = c.channel || "";
+                    document.getElementById(p+'-color').value = c.color || "#ed4245";
+                    document.getElementById(p+'-channel').value = c.channel || "";
                     setImg(m, 'thumbnail', c.thumbnail);
                     setImg(m, 'banner', c.banner);
                     setImg(m, 'footer_icon', c.footer_icon);
@@ -223,16 +192,10 @@
                 renderGallery();
                 sync('welcome'); sync('leave');
                 showTab(localStorage.getItem('currentPage') || 'welcome');
-            } catch(e) { console.error(e); document.getElementById('welcome').classList.add('active'); }
+            } catch(e) { console.error("INIT ERROR:", e); }
         }
 
-        // Nouvelle fonction pour ajouter une variable au clic
-        function addVar(inputId, variable) {
-            const input = document.getElementById(inputId);
-            input.value += variable;
-            sync(inputId.startsWith('w') ? 'welcome' : 'leave');
-            input.focus();
-        }
+        function addVar(inputId, v) { const i = document.getElementById(inputId); i.value += v; sync(inputId.startsWith('w') ? 'welcome' : 'leave'); i.focus(); }
 
         function sync(mode) {
             const p = mode[0];
@@ -250,9 +213,7 @@
         }
 
         function setImg(mode, type, url) {
-            const p = mode[0];
-            const img = document.getElementById(p+'-img-'+type);
-            if(!img) return;
+            const p = mode[0]; const img = document.getElementById(p+'-img-'+type); if(!img) return;
             if(url && url.length > 2) { img.src = url; img.style.display = 'block'; img.dataset.url = url; }
             else { img.style.display = 'none'; img.dataset.url = ''; }
         }
@@ -274,39 +235,46 @@
             };
             const config = { welcome: getM('welcome'), leave: getM('leave'), admin_roles: Array.from(document.querySelectorAll('#admin-roles-drop input:checked')).map(i => i.value) };
             await fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
-            alert("✅ Configuration sauvegardée !");
+            alert("Sauvegardé !");
         }
 
-        async function sendTest(mode) { await save(); fetch('/api/test_embed', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({mode})}); alert("🚀 Test envoyé sur Discord !"); }
+        async function sendTest(mode) { await save(); fetch('/api/test_embed', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({mode})}); alert("Test envoyé !"); }
 
         function showTab(id, el) { 
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            localStorage.setItem('currentPage', id);
-            if(id !== 'gallery') localStorage.setItem('lastTab', id);
+            const target = document.getElementById(id); if(target) target.classList.add('active');
+            localStorage.setItem('currentPage', id); if(id !== 'gallery') localStorage.setItem('lastTab', id);
             closeSidebar();
         }
 
         function openPicker(m, t) { activeMode = m; activeType = t; showTab('gallery'); }
 
         async function uploadFile() {
-            const fileIn = document.getElementById('f-in');
-            if(!fileIn.files[0]) return;
-            const fd = new FormData(); fd.append('file', fileIn.files[0]);
+            const f = document.getElementById('f-in').files[0]; if(!f) return;
+            const fd = new FormData(); fd.append('file', f);
             const r = await (await fetch('/api/upload', {method:'POST', body:fd})).json();
             db.images.push(r.path); renderGallery(); selectImage(r.path);
         }
 
-        function renderGallery() {
-            document.getElementById('g-list').innerHTML = db.images.map(i => `
-                <div class="img-card">
-                    <button class="del-img-btn" onclick="deleteImg('${i}', event)">✕</button>
-                    <img src="${i}" style="display:block;cursor:pointer" onclick="selectImage('${i}')">
-                </div>`).join('');
-        }
+        function renderGallery() { document.getElementById('g-list').innerHTML = db.images.map(i => `<div class="img-card"><button class="del-img-btn" onclick="deleteImg('${i}', event)">✕</button><img src="${i}" style="display:block;cursor:pointer" onclick="selectImage('${i}')"></div>`).join(''); }
 
         async function deleteImg(path, e) {
-            e.stopPropagation();
-            if(!confirm("Supprimer l'image ?")) return;
-            const res = await fetch('/api/delete_image', {me
-                                                         }
+            e.stopPropagation(); if(!confirm("Supprimer l'image ?")) return;
+            const res = await fetch('/api/delete_image', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path})});
+            if(res.ok) { db.images = db.images.filter(img => img !== path); renderGallery(); }
+        }
+
+        function selectImage(url) { setImg(activeMode, activeType, url); showTab(localStorage.getItem('lastTab')); sync(activeMode); }
+        function detachImg(e, m, t) { e.stopPropagation(); setImg(m, t, ''); sync(m); }
+        function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('open'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show')); }
+        function toggleSubmenu(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
+        function toggleDropdown(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
+        function toggleRoleCheck(el, labelId) { const i = el.querySelector('input'); i.checked = !i.checked; updateLabel(el.parentElement.id, labelId); }
+        function updateLabel(listId, labelId) { document.getElementById(labelId).innerText = document.querySelectorAll('#'+listId+' input:checked').length + ' sélectionnés'; }
+
+        window.onload = init;
+    </script>
+</body>
+                    </html>
+    
