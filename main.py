@@ -8,6 +8,7 @@ from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
+# Chargement des variables d'environnement
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = int(os.getenv("GUILD_ID", 0))
@@ -18,6 +19,7 @@ UPLOAD_FOLDER = 'public/uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
+# Configuration du Bot
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -57,7 +59,11 @@ async def create_embed_gen(member, conf, mode_name):
             elif sub_mode == "thumb": embed.set_thumbnail(url=path)
             elif sub_mode == "footer": embed.set_footer(text=conf.get('footer', ' '), icon_url=path)
 
-    await asyncio.gather(process_img(conf.get('banner'), "banner"), process_img(conf.get('thumbnail'), "thumb"), process_img(conf.get('footer_icon'), "footer"))
+    await asyncio.gather(
+        process_img(conf.get('banner'), "banner"), 
+        process_img(conf.get('thumbnail'), "thumb"), 
+        process_img(conf.get('footer_icon'), "footer")
+    )
     if not embed.footer.text: embed.set_footer(text=conf.get('footer', ' '))
     return embed, files
 
@@ -82,7 +88,12 @@ def get_data():
     if not guild: return jsonify({"error": "Guild non trouvée"}), 404
     images = [f"/uploads/{f}" for f in os.listdir(UPLOAD_FOLDER) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
     roles = [r.name for r in guild.roles if not r.managed and r.name != "@everyone"]
-    return jsonify({"channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels], "roles": roles, "config": load_config(), "images": images})
+    return jsonify({
+        "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
+        "roles": roles,
+        "config": load_config(),
+        "images": images
+    })
 
 @app.route('/api/save', methods=['POST'])
 def save():
@@ -113,15 +124,6 @@ def upload():
         file.save(os.path.join(UPLOAD_FOLDER, fname))
         return jsonify({"path": f"/uploads/{fname}"})
     return jsonify({"error": "No file"}), 400
-
-@app.route('/api/delete_image', methods=['POST'])
-def delete_image():
-    path = request.json.get('path', '').lstrip('/')
-    full_path = os.path.join('public', path)
-    if os.path.exists(full_path):
-        os.remove(full_path)
-        return jsonify({"status": "deleted"})
-    return jsonify({"error": "File not found"}), 404
 
 def run(): app.run(host='0.0.0.0', port=49501)
 threading.Thread(target=run, daemon=True).start()
