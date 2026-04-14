@@ -4,92 +4,61 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
-// 1. Import de ton Economy Handler
-const economyHandler = require('./handlers/economyHandlers');
+// 1. Import du Handler
+const eco = require('./handlers/economyHandlers');
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMembers]
 });
 
-// Rendre l'économie accessible globalement pour tes fichiers de commandes
-global.handleEconomyAction = economyHandler.handleEconomyAction;
-global.getEconomyConfig = economyHandler.getEconomyConfig;
+// 2. Liaison Globale (pour que tes fichiers /commands voient ces fonctions)
+global.handleEconomyAction = eco.handleEconomyAction;
+global.getEconomyConfig = eco.getEconomyConfig;
 
-// Collection pour stocker les commandes
 client.commands = new Collection();
 
-const app = express();
-app.use(express.json());
-app.use(express.static('public'));
-
-// 2. Chargement récursif des commandes (pour aller chercher dans /actions)
+// 3. Chargement des commandes
 const foldersPath = path.join(__dirname, 'commands');
 if (fs.existsSync(foldersPath)) {
-    const commandFolders = fs.readdirSync(foldersPath);
-
-    for (const folder of commandFolders) {
-        const commandsPath = path.join(foldersPath, folder);
-        // On vérifie si c'est bien un dossier
-        if (fs.lstatSync(commandsPath).isDirectory()) {
-            const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-            for (const file of commandFiles) {
-                const filePath = path.join(commandsPath, file);
-                const command = require(filePath);
-                if ('data' in command && 'execute' in command) {
+    const folders = fs.readdirSync(foldersPath);
+    for (const folder of folders) {
+        const fullPath = path.join(foldersPath, folder);
+        if (fs.lstatSync(fullPath).isDirectory()) {
+            const files = fs.readdirSync(fullPath).filter(f => f.endsWith('.js'));
+            for (const file of files) {
+                const command = require(path.join(fullPath, file));
+                if (command.data) {
                     client.commands.set(command.data.name, command);
-                    console.log(`Loaded command: ${command.data.name}`);
+                    console.log(`✅ Commande chargée : ${command.data.name}`);
                 }
             }
         }
     }
 }
 
-// 3. Gestion des Interactions (Exécution + Autocomplétion)
+// 4. Gestion des interactions
 client.on(Events.InteractionCreate, async interaction => {
-    // Gestion des commandes Slash
     if (interaction.isChatInputCommand()) {
         const command = client.commands.get(interaction.commandName);
         if (!command) return;
-
         try {
             await command.execute(interaction);
-        } catch (error) {
-            console.error(error);
-            if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({ content: 'Une erreur est survenue !', ephemeral: true });
-            } else {
-                await interaction.reply({ content: 'Une erreur est survenue !', ephemeral: true });
-            }
+        } catch (err) {
+            console.error(err);
+            const msg = { content: "Erreur exécution !", ephemeral: true };
+            interaction.replied ? await interaction.followUp(msg) : await interaction.reply(msg);
         }
     }
 
-    // IMPORTANT : Gestion de l'autocomplétion pour tes zones (ex: /69)
     if (interaction.isAutocomplete()) {
         const command = client.commands.get(interaction.commandName);
-        if (!command || !command.autocomplete) return;
-
-        try {
-            await command.autocomplete(interaction);
-        } catch (error) {
-            console.error(error);
-        }
+        if (command?.autocomplete) await command.autocomplete(interaction);
     }
 });
 
-client.once(Events.ClientReady, (readyClient) => {
-    console.log(`✅ Bot prêt ! Connecté en tant que ${readyClient.user.tag}`);
-});
+client.once(Events.ClientReady, (c) => console.log(`🚀 ${c.user.tag} est en ligne !`));
 
-// Chargement de ton plugin autorole existant
-try {
-    const autorole = require('./plugins/autorole/index.js');
-    autorole(app, client);
-} catch (err) {
-    console.error("Erreur chargement plugin:", err.message);
-}
-
-app.listen(49500, '0.0.0.0', () => {
-    console.log("🌐 Dashboard sur le port 49500");
-});
+const app = express();
+app.listen(49500, '0.0.0.0', () => console.log("🌐 Web Port 49500"));
 
 client.login(process.env.DISCORD_TOKEN);
