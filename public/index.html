@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BAGBOT ELITE V9</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BAGBOT DASHBOARD ELITE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #0a0a0a; --card: #141414; --accent: #ed4245; --border: #252525; --d-bg: #2b2d31; }
@@ -17,10 +17,9 @@
         #sidebar.open { left: 0; }
         .nav-item { padding: 20px; border-bottom: 1px solid #111; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: #888; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: #ed424510; }
-        
         .submenu { display: none; background: #050505; }
         .submenu.show { display: block; }
-        .sub-item { padding: 15px 55px; cursor: pointer; color: #666; font-size: 14px; }
+        .sub-item { padding: 15px 55px; cursor: pointer; color: #666; font-size: 14px; border-bottom: 1px solid #0a0a0a; }
         .sub-item.active { color: var(--accent); background: #111; }
 
         main { height: 100vh; overflow-y: auto; padding: 80px 15px 150px; }
@@ -34,12 +33,12 @@
         .pv-thumb { width: 65px; height: 65px; background: #222; border-radius: 4px; border: 1px dashed #444; overflow: hidden; cursor: pointer; }
         .pv-banner { width: 100%; height: 140px; background: #222; border-radius: 8px; margin-top: 10px; border: 1px dashed #444; overflow: hidden; cursor: pointer; }
         .pv-f-icon { width: 20px; height: 20px; border-radius: 50%; background: #222; overflow: hidden; border: 1px dashed #444; cursor: pointer; }
-        .remove-img { position: absolute; top: -5px; right: -5px; background: var(--accent); color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; border: 2px solid var(--d-bg); font-weight: bold; z-index: 10; }
+        .remove-img { position: absolute; top: -5px; right: -5px; background: var(--accent); color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; border: 2px solid var(--d-bg); z-index: 10; font-weight: bold; }
         img { width: 100%; height: 100%; object-fit: cover; display: none; }
 
         .card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
-        h2 { font-size: 20px; margin: 0 0 20px; font-weight: 600; }
-        label { display: block; font-size: 11px; color: #555; text-transform: uppercase; margin: 15px 0 8px; font-weight: bold; }
+        h2 { font-size: 18px; margin: 0 0 20px; color: #fff; }
+        label { display: block; font-size: 11px; color: #555; text-transform: uppercase; margin: 15px 0 5px; font-weight: bold; }
         
         input[type="color"] { -webkit-appearance: none; border: none; width: 100%; height: 15px; background: #1a1a1a; border-radius: 10px; cursor: pointer; padding: 0; margin-bottom: 10px; }
         input[type="text"], textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 5px; font-size: 14px; }
@@ -49,13 +48,14 @@
         .dropdown-content.show { display: block; }
         .role-opt { padding: 12px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #111; cursor: pointer; }
 
-        .btn-group { display: flex; gap: 12px; margin-top: 25px; }
-        .btn { border: none; padding: 16px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 25px; }
+        .btn { border: none; padding: 16px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
         .btn-save { background: var(--accent); color: white; }
         .btn-test { background: #5865F2; color: white; }
 
-        .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
-        .img-card { height: 120px; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; background: #000; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+        .img-card { height: 110px; border-radius: 10px; border: 1px solid var(--border); position: relative; overflow: hidden; background: #000; }
+        .del-img-btn { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; border-radius: 5px; padding: 8px; cursor: pointer; z-index: 20; font-size: 12px; line-height: 1; }
     </style>
 </head>
 <body>
@@ -97,6 +97,7 @@
                 </div>
                 <div style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:11px; color:#b5bac1;">
                     <div class="pv-container">
+                        <div class="remove-img" onclick="detachImg(event, 'welcome', 'footer_icon')" style="top:-3px; right:-3px;">×</div>
                         <div class="pv-f-icon" onclick="openPicker('welcome', 'footer_icon')"><img id="w-img-footer_icon"></div>
                     </div>
                     <span id="pv-w-footer">Footer</span>
@@ -104,15 +105,13 @@
             </div>
             <div class="card">
                 <h2>Configuration Bienvenue</h2>
-                <label>COULEUR</label><input type="color" id="w-color" oninput="sync('welcome')">
-                <label>TITRE</label><input type="text" id="w-title" oninput="sync('welcome')" placeholder="Bienvenue {user}">
-                <label>MESSAGE</label><textarea id="w-desc" rows="4" oninput="sync('welcome')" placeholder="Bienvenue sur {server}..."></textarea>
-                <label>TEXTE FOOTER</label><input type="text" id="w-footer" oninput="sync('welcome')" placeholder="Jormungand21">
-                <label>SALON</label><select id="w-channel"></select>
-                <label>RÔLES AUTOMATIQUES</label>
-                <div class="dropdown-select" onclick="toggleDropdown('w-roles-drop', event)">
-                    <span id="w-roles-label">0 sélectionnés</span><i class="fas fa-chevron-down"></i>
-                </div>
+                <label>Couleur</label><input type="color" id="w-color" oninput="sync('welcome')">
+                <label>Titre</label><input type="text" id="w-title" oninput="sync('welcome')" placeholder="Bienvenue {user}">
+                <label>Description</label><textarea id="w-desc" rows="4" oninput="sync('welcome')" placeholder="Bienvenue sur {server}..."></textarea>
+                <label>Texte Footer</label><input type="text" id="w-footer" oninput="sync('welcome')">
+                <label>Salon</label><select id="w-channel"></select>
+                <label>Rôles Automatiques</label>
+                <div class="dropdown-select" onclick="toggleDropdown('w-roles-drop', event)"><span id="w-roles-label">0 sélectionnés</span><i class="fas fa-chevron-down"></i></div>
                 <div id="w-roles-drop" class="dropdown-content"></div>
                 <div class="btn-group">
                     <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
@@ -123,16 +122,16 @@
 
         <div id="leave" class="section">
             <div class="preview" id="pv-box-leave">
-                <div id="pv-l-title" style="color:#00a8fc; font-weight:bold;">Au revoir</div>
-                <div id="pv-l-desc" style="font-size:14px; margin-top:5px;">Message...</div>
+                <div id="pv-l-title" style="color:#00a8fc; font-weight:bold;">Titre</div>
+                <div id="pv-l-desc" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Message...</div>
                 <div class="pv-banner" onclick="openPicker('leave', 'banner')"><img id="l-img-banner"></div>
             </div>
             <div class="card">
                 <h2>Configuration Départ</h2>
-                <label>COULEUR</label><input type="color" id="l-color" oninput="sync('leave')">
-                <label>TITRE</label><input type="text" id="l-title" oninput="sync('leave')">
-                <label>MESSAGE</label><textarea id="l-desc" rows="4" oninput="sync('leave')"></textarea>
-                <label>SALON</label><select id="l-channel"></select>
+                <label>Couleur</label><input type="color" id="l-color" oninput="sync('leave')">
+                <label>Titre</label><input type="text" id="l-title" oninput="sync('leave')">
+                <label>Description</label><textarea id="l-desc" rows="4" oninput="sync('leave')"></textarea>
+                <label>Salon</label><select id="l-channel"></select>
                 <div class="btn-group">
                     <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
                     <button class="btn btn-test" onclick="sendTest('leave')"><i class="fas fa-syringe"></i> TEST</button>
@@ -152,7 +151,7 @@
         <div id="gallery" class="section">
             <div class="card">
                 <h2>Galerie Médias</h2>
-                <input type="file" id="f-in" onchange="uploadFile()">
+                <input type="file" id="f-in" onchange="uploadFile()" style="margin-bottom:20px;">
                 <div id="g-list" class="gallery-grid"></div>
                 <button class="btn btn-save" onclick="showTab(localStorage.getItem('lastTab') || 'welcome')" style="margin-top:20px;">RETOUR</button>
             </div>
@@ -161,35 +160,33 @@
 
     <script>
         let db = { channels: [], roles: [], config: {}, images: [] };
-        let activeMode = '', activeType = '';
+        let activeMode = ''; let activeType = '';
 
         async function init() {
             try {
                 const res = await fetch('/api/get_data');
                 db = await res.json();
                 
-                // Salons
                 const chans = db.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
                 document.getElementById('w-channel').innerHTML = chans;
                 document.getElementById('l-channel').innerHTML = chans;
 
-                // Rôles
-                const renderRoles = (listId, labelId, selected) => {
-                    const el = document.getElementById(listId);
-                    if(!el) return;
-                    el.innerHTML = db.roles.map(r => `
+                const renderDrop = (listId, labelId, selected) => {
+                    const cont = document.getElementById(listId);
+                    if(!cont) return;
+                    cont.innerHTML = db.roles.map(r => `
                         <div class="role-opt" onclick="toggleRoleCheck(this, '${labelId}')">
                             <input type="checkbox" value="${r}" ${selected.includes(r)?'checked':''}>
                             <span>${r}</span>
                         </div>`).join('');
                     updateLabel(listId, labelId);
                 };
-                renderRoles('w-roles-drop', 'w-roles-label', db.config.welcome.trigger_roles || []);
-                renderRoles('admin-roles-drop', 'admin-roles-label', db.config.admin_roles || []);
+                renderDrop('w-roles-drop', 'w-roles-label', db.config.welcome.trigger_roles || []);
+                renderDrop('admin-roles-drop', 'admin-roles-label', db.config.admin_roles || []);
 
-                // Inputs
                 ['welcome', 'leave'].forEach(m => {
                     const p = m[0], c = db.config[m];
+                    if(!c) return;
                     if(document.getElementById(p+'-title')) document.getElementById(p+'-title').value = c.title || "";
                     if(document.getElementById(p+'-desc')) document.getElementById(p+'-desc').value = c.desc || "";
                     if(document.getElementById(p+'-footer')) document.getElementById(p+'-footer').value = c.footer || "";
@@ -206,7 +203,7 @@
                 renderGallery();
                 sync('welcome'); sync('leave');
                 showTab(localStorage.getItem('currentPage') || 'welcome');
-            } catch (e) { console.error(e); document.getElementById('welcome').classList.add('active'); }
+            } catch(e) { console.error(e); document.getElementById('welcome').classList.add('active'); }
         }
 
         function sync(mode) {
@@ -253,6 +250,7 @@
         }
 
         async function sendTest(mode) { await save(); fetch('/api/test_embed', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({mode})}); alert("Test envoyé !"); }
+
         function showTab(id, el) { 
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
@@ -260,13 +258,32 @@
             if(id !== 'gallery') localStorage.setItem('lastTab', id);
             closeSidebar();
         }
+
         function openPicker(m, t) { activeMode = m; activeType = t; showTab('gallery'); }
+
         async function uploadFile() {
-            const fd = new FormData(); fd.append('file', document.getElementById('f-in').files[0]);
+            const fileIn = document.getElementById('f-in');
+            if(!fileIn.files[0]) return;
+            const fd = new FormData(); fd.append('file', fileIn.files[0]);
             const r = await (await fetch('/api/upload', {method:'POST', body:fd})).json();
             db.images.push(r.path); renderGallery(); selectImage(r.path);
         }
-        function renderGallery() { document.getElementById('g-list').innerHTML = db.images.map(i => `<div class="img-card"><img src="${i}" style="display:block;cursor:pointer" onclick="selectImage('${i}')"></div>`).join(''); }
+
+        function renderGallery() {
+            document.getElementById('g-list').innerHTML = db.images.map(i => `
+                <div class="img-card">
+                    <button class="del-img-btn" onclick="deleteImg('${i}', event)">✕</button>
+                    <img src="${i}" style="display:block;cursor:pointer" onclick="selectImage('${i}')">
+                </div>`).join('');
+        }
+
+        async function deleteImg(path, e) {
+            e.stopPropagation();
+            if(!confirm("Supprimer l'image ?")) return;
+            const res = await fetch('/api/delete_image', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path})});
+            if(res.ok) { db.images = db.images.filter(img => img !== path); renderGallery(); }
+        }
+
         function selectImage(url) { setImg(activeMode, activeType, url); showTab(localStorage.getItem('lastTab')); sync(activeMode); }
         function detachImg(e, m, t) { e.stopPropagation(); setImg(m, t, ''); sync(m); }
         function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('open'); }
@@ -279,5 +296,4 @@
         window.onload = init;
     </script>
 </body>
-    </html>
-    
+</html>
