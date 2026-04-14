@@ -24,8 +24,8 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 def load_config():
     if not os.path.exists('config.json'):
         return {
-            "welcome": {"title": "Bienvenue {user}", "desc": "Bienvenue sur {server}\nTu es le {count} membres du serveur\nJ'espère que tu te plaira parmis nous", "footer": "Jormungand21", "color": "#ed4245", "channel": "", "banner": "", "thumbnail": "", "footer_icon": "", "trigger_roles": []},
-            "leave": {"title": "Au revoir", "desc": "{user} a quitté le serveur.", "footer": "BagBot", "color": "#ed4245", "channel": "", "banner": "", "thumbnail": "", "footer_icon": ""},
+            "welcome": {"title": "Bienvenue {user}", "desc": "Bienvenue sur {server}", "footer": "BagBot", "color": "#ed4245", "channel": "", "banner": "", "thumbnail": "", "footer_icon": "", "trigger_roles": []},
+            "leave": {"title": "Au revoir", "desc": "{user} est parti", "footer": "BagBot", "color": "#ed4245", "channel": "", "banner": "", "thumbnail": "", "footer_icon": ""},
             "admin_roles": []
         }
     with open('config.json', 'r', encoding='utf-8') as f:
