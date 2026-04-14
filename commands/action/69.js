@@ -4,32 +4,34 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('69')
     .setDescription('Position 69 avec quelqu\'un')
-    .addUserOption(opt => opt.setName('cible').setDescription('La personne').setRequired(true))
-    .addStringOption(opt => opt.setName('zone').setDescription('Le lieu').setAutocomplete(true))
-    .setDMPermission(true),
+    .addUserOption(opt => opt.setName('cible').setDescription('La cible').setRequired(true))
+    .addStringOption(opt => opt.setName('zone').setDescription('Le lieu').setAutocomplete(true)),
 
   async autocomplete(interaction) {
     try {
-      const guildId = interaction.guild?.id;
-      if (!guildId || !global.getEconomyConfig) return interaction.respond([]);
-
-      const config = await global.getEconomyConfig(guildId);
-      const zones = config.welcome?.zones || ["Lit", "Canapé", "Douche"]; // Fallback si vide
-      
+      // On évite de bloquer l'autocomplete
+      const choices = ["Lit", "Canapé", "Table", "Douche"]; 
       const focused = interaction.options.getFocused().toLowerCase();
-      const choices = zones
-        .filter(z => z.toLowerCase().includes(focused))
-        .map(z => ({ name: z, value: z }));
-
-      return interaction.respond(choices.slice(0, 25));
-    } catch (e) { return interaction.respond([]); }
+      const filtered = choices.filter(c => c.toLowerCase().includes(focused));
+      return await interaction.respond(filtered.map(c => ({ name: c, value: c })));
+    } catch (e) { console.error(e); }
   },
 
   async execute(interaction) {
-    // On appelle la fonction globale définie dans index.js
+    // ÉTAPE 1 : On dit immédiatement à Discord qu'on a reçu la commande
+    // Ça empêche le message "L'application ne répond pas"
+    await interaction.deferReply(); 
+
+    // ÉTAPE 2 : On appelle la logique
     if (global.handleEconomyAction) {
-        return await global.handleEconomyAction(interaction, 'sixtynine');
+        try {
+            return await global.handleEconomyAction(interaction, 'sixtynine');
+        } catch (err) {
+            console.error(err);
+            return await interaction.editReply("Erreur de liaison.");
+        }
     }
-    return interaction.reply({ content: "Système d'économie indisponible.", ephemeral: true });
+    
+    return await interaction.editReply("Système d'économie introuvable.");
   }
 };
