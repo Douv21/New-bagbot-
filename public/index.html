@@ -35,8 +35,9 @@
 
         .card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
         label { display: block; font-size: 11px; color: #555; text-transform: uppercase; margin: 15px 0 5px; font-weight: bold; }
+        .var-hint { font-size: 10px; color: var(--accent); margin-bottom: 10px; opacity: 0.8; }
         
-        input[type="color"] { -webkit-appearance: none; border: none; width: 100%; height: 10px; background: #1a1a1a; border-radius: 10px; cursor: pointer; padding: 0; }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 100%; height: 10px; background: #1a1a1a; border-radius: 10px; cursor: pointer; padding: 0; margin: 5px 0 15px; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 10px; }
 
         input[type="text"], textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; outline: none; margin-bottom: 5px; }
@@ -50,10 +51,9 @@
         .btn-save { background: var(--accent); color: white; }
         .btn-test { background: #5865F2; color: white; }
 
-        /* Fix Galerie */
         .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
         .img-card { height: 110px; border-radius: 8px; border: 1px solid var(--border); position: relative; overflow: hidden; background: #000; }
-        .del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; z-index: 10; font-size: 12px; font-weight: bold; }
+        .del-img { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; z-index: 10; }
     </style>
 </head>
 <body>
@@ -65,7 +65,7 @@
 
     <div id="sidebar">
         <div style="padding: 40px 20px; text-align: center; color: var(--accent); font-weight: 900;">V9 ELITE</div>
-        <div class="nav-item active" onclick="toggleSubmenu('sub-cd', event)">
+        <div class="nav-item" onclick="toggleSubmenu('sub-cd', event)">
             <span>BIENVENUE / DÉPART</span><i class="fas fa-chevron-down"></i>
         </div>
         <div id="sub-cd" class="submenu show">
@@ -79,72 +79,48 @@
     <main onclick="closeSidebar()">
         <div id="welcome" class="section">
             <div class="preview" id="pv-box-welcome">
-                <div class="pv-top">
-                    <div style="flex-grow:1">
-                        <div id="pv-w-title" style="color:#00a8fc; font-weight:bold;">Titre</div>
-                        <div id="pv-w-desc" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Message...</div>
-                    </div>
-                    <div class="pv-thumb" onclick="openPicker('welcome', 'thumbnail')"><img id="w-img-thumb"></div>
-                </div>
+                <div class="pv-top"><div style="flex-grow:1"><div id="pv-w-title" style="color:#00a8fc; font-weight:bold;">Titre</div><div id="pv-w-desc" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Message...</div></div><div class="pv-thumb" onclick="openPicker('welcome', 'thumbnail')"><img id="w-img-thumb"></div></div>
                 <div class="pv-banner" onclick="openPicker('welcome', 'banner')"><img id="w-img-banner"></div>
-                <div style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:11px; color:#b5bac1;">
-                    <div class="pv-f-icon" onclick="openPicker('welcome', 'footer_icon')"><img id="w-img-footer"></div>
-                    <span id="pv-w-footer">Footer</span>
-                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:11px; color:#b5bac1;"><div class="pv-f-icon" onclick="openPicker('welcome', 'footer_icon')"><img id="w-img-footer"></div><span id="pv-w-footer">Footer</span></div>
             </div>
             <div class="card">
-                <h2>Bienvenue</h2>
-                <label>Couleur Embed</label><input type="color" id="w-color" oninput="sync('welcome')">
-                <label>Titre</label><input type="text" id="w-title" oninput="sync('welcome')">
-                <label>Message</label><textarea id="w-desc" rows="3" oninput="sync('welcome')"></textarea>
+                <h2>Configuration Bienvenue</h2>
+                <div class="var-hint">Variables : {user} = Joueur | {server} = Serveur | {count} = Nombre</div>
+                <label>Couleur</label><input type="color" id="w-color" oninput="sync('welcome')">
+                <label>Titre</label><input type="text" id="w-title" oninput="sync('welcome')" placeholder="Bienvenue {user} !">
+                <label>Message</label><textarea id="w-desc" rows="3" oninput="sync('welcome')" placeholder="Tu es le {count}ème membre sur {server}"></textarea>
                 <label>Footer</label><input type="text" id="w-footer" oninput="sync('welcome')">
                 <label>Salon</label><select id="w-channel"></select>
                 <label>Rôles Automatiques</label>
-                <div class="dropdown-select" onclick="toggleDropdown('w-roles-drop', event)">
-                    <span id="w-roles-label">0 sélectionnés</span><i class="fas fa-chevron-down"></i>
-                </div>
+                <div class="dropdown-select" onclick="toggleDropdown('w-roles-drop', event)"><span id="w-roles-label">0 sélectionnés</span><i class="fas fa-chevron-down"></i></div>
                 <div id="w-roles-drop" class="dropdown-content"></div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-save" style="flex:2" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
-                    <button class="btn btn-test" style="flex:1" onclick="sendTest('welcome')"><i class="fas fa-vial"></i> TEST</button>
-                </div>
+                <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
+                <button class="btn btn-test" onclick="sendTest('welcome')"><i class="fas fa-vial"></i> TESTER SUR DISCORD</button>
             </div>
         </div>
 
         <div id="leave" class="section">
             <div class="preview" id="pv-box-leave">
-                <div class="pv-top">
-                    <div style="flex-grow:1">
-                        <div id="pv-l-title" style="color:#00a8fc; font-weight:bold;">Départ</div>
-                        <div id="pv-l-desc" style="font-size:14px; margin-top:5px;">Message...</div>
-                    </div>
-                    <div class="pv-thumb" onclick="openPicker('leave', 'thumbnail')"><img id="l-img-thumb"></div>
-                </div>
+                <div class="pv-top"><div style="flex-grow:1"><div id="pv-l-title" style="color:#00a8fc; font-weight:bold;">Titre</div><div id="pv-l-desc" style="font-size:14px; margin-top:5px;">Message...</div></div><div class="pv-thumb" onclick="openPicker('leave', 'thumbnail')"><img id="l-img-thumb"></div></div>
                 <div class="pv-banner" onclick="openPicker('leave', 'banner')"><img id="l-img-banner"></div>
-                <div style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:11px; color:#b5bac1;">
-                    <div class="pv-f-icon" onclick="openPicker('leave', 'footer_icon')"><img id="l-img-footer"></div>
-                    <span id="pv-l-footer">Footer</span>
-                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:11px; color:#b5bac1;"><div class="pv-f-icon" onclick="openPicker('leave', 'footer_icon')"><img id="l-img-footer"></div><span id="pv-l-footer">Footer</span></div>
             </div>
             <div class="card">
-                <h2>Départ</h2>
-                <label>Couleur Embed</label><input type="color" id="l-color" oninput="sync('leave')">
+                <h2>Configuration Départ</h2>
+                <div class="var-hint">Variables : {user} = Joueur | {server} = Serveur | {count} = Nombre</div>
+                <label>Couleur</label><input type="color" id="l-color" oninput="sync('leave')">
                 <label>Titre</label><input type="text" id="l-title" oninput="sync('leave')">
                 <label>Message</label><textarea id="l-desc" rows="3" oninput="sync('leave')"></textarea>
                 <label>Salon</label><select id="l-channel"></select>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-save" style="flex:2" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
-                    <button class="btn btn-test" style="flex:1" onclick="sendTest('leave')"><i class="fas fa-vial"></i> TEST</button>
-                </div>
+                <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
+                <button class="btn btn-test" onclick="sendTest('leave')"><i class="fas fa-vial"></i> TESTER SUR DISCORD</button>
             </div>
         </div>
 
         <div id="admin" class="section">
             <div class="card">
                 <h2>Accès Dashboard</h2>
-                <div class="dropdown-select" onclick="toggleDropdown('admin-roles-drop', event)">
-                    <span id="admin-roles-label">Choisir les rôles</span><i class="fas fa-chevron-down"></i>
-                </div>
+                <div class="dropdown-select" onclick="toggleDropdown('admin-roles-drop', event)"><span id="admin-roles-label">Choisir les rôles</span><i class="fas fa-chevron-down"></i></div>
                 <div id="admin-roles-drop" class="dropdown-content"></div>
                 <button class="btn btn-save" onclick="save()">APPLIQUER</button>
             </div>
@@ -165,49 +141,59 @@
         let activeMode = ''; let activeType = '';
 
         async function init() {
-            const res = await fetch('/api/get_data');
-            db = await res.json();
-            
-            const chans = db.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-            document.getElementById('w-channel').innerHTML = chans;
-            document.getElementById('l-channel').innerHTML = chans;
+            try {
+                const res = await fetch('/api/get_data');
+                db = await res.json();
+                
+                const chans = db.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                document.getElementById('w-channel').innerHTML = chans;
+                document.getElementById('l-channel').innerHTML = chans;
 
-            const renderDrop = (listId, labelId, selected) => {
-                document.getElementById(listId).innerHTML = db.roles.map(r => `
-                    <div class="role-opt" onclick="toggleRoleCheck(this, '${labelId}')">
-                        <input type="checkbox" value="${r}" ${selected.includes(r)?'checked':''} onclick="event.stopPropagation()">
-                        <span>${r}</span>
-                    </div>`).join('');
-                updateLabel(listId, labelId);
-            };
-            renderDrop('w-roles-drop', 'w-roles-label', db.config.welcome.trigger_roles || []);
-            renderDrop('admin-roles-drop', 'admin-roles-label', db.config.admin_roles || []);
+                const renderDrop = (listId, labelId, selected) => {
+                    document.getElementById(listId).innerHTML = db.roles.map(r => `
+                        <div class="role-opt" onclick="toggleRoleCheck(this, '${labelId}')">
+                            <input type="checkbox" value="${r}" ${selected.includes(r)?'checked':''} onclick="event.stopPropagation()">
+                            <span>${r}</span>
+                        </div>`).join('');
+                    updateLabel(listId, labelId);
+                };
+                renderDrop('w-roles-drop', 'w-roles-label', db.config.welcome.trigger_roles || []);
+                renderDrop('admin-roles-drop', 'admin-roles-label', db.config.admin_roles || []);
 
-            ['welcome', 'leave'].forEach(m => {
-                const p = m[0]; const c = db.config[m];
-                document.getElementById(`${p}-title`).value = c.title || "";
-                document.getElementById(`${p}-desc`).value = c.desc || "";
-                if(document.getElementById(`${p}-footer`)) document.getElementById(`${p}-footer`).value = c.footer || "";
-                if (c.color) document.getElementById(`${p}-color`).value = c.color.startsWith('#') ? c.color : '#' + c.color;
-                document.getElementById(`${p}-channel`).value = c.channel || "";
-                setImg(m, 'thumbnail', c.thumbnail);
-                setImg(m, 'banner', c.banner);
-                setImg(m, 'footer_icon', c.footer_icon);
-            });
+                ['welcome', 'leave'].forEach(m => {
+                    const p = m[0], c = db.config[m];
+                    document.getElementById(`${p}-title`).value = c.title || "";
+                    document.getElementById(`${p}-desc`).value = c.desc || "";
+                    if(document.getElementById(`${p}-footer`)) document.getElementById(`${p}-footer`).value = c.footer || "";
+                    if (c.color) document.getElementById(`${p}-color`).value = c.color.startsWith('#') ? c.color : '#' + c.color;
+                    document.getElementById(`${p}-channel`).value = c.channel || "";
+                    setImg(m, 'thumbnail', c.thumbnail); setImg(m, 'banner', c.banner); setImg(m, 'footer_icon', c.footer_icon);
+                });
 
-            renderGallery(); sync('welcome'); sync('leave');
-            const lastPage = localStorage.getItem('currentPage') || 'welcome';
-            showTab(lastPage, document.getElementById('mi-' + lastPage));
+                renderGallery(); sync('welcome'); sync('leave');
+                
+                // Correction écran noir : on s'assure qu'une page est bien chargée
+                const lastPage = localStorage.getItem('currentPage') || 'welcome';
+                showTab(lastPage);
+            } catch(e) { console.error(e); showTab('welcome'); }
         }
 
         function showTab(id, el) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            localStorage.setItem('currentPage', id);
-            if(id !== 'gallery') localStorage.setItem('lastTab', id);
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(s => s.classList.remove('active'));
+            
+            const target = document.getElementById(id);
+            if(target) {
+                target.classList.add('active');
+                localStorage.setItem('currentPage', id);
+                if(id !== 'gallery') localStorage.setItem('lastTab', id);
+            } else {
+                document.getElementById('welcome').classList.add('active');
+            }
+
             document.querySelectorAll('.nav-item, .sub-item').forEach(n => n.classList.remove('active'));
-            if(el) el.classList.add('active');
-            else { const target = document.getElementById('mi-' + id); if(target) target.classList.add('active'); }
+            const menuEl = el || document.getElementById('mi-' + id) || document.getElementById('mi-welcome');
+            if(menuEl) menuEl.classList.add('active');
             closeSidebar();
         }
 
@@ -236,57 +222,38 @@
                 };
             };
             const config = { welcome: getConf('welcome'), leave: getConf('leave'), admin_roles: Array.from(document.querySelectorAll('#admin-roles-drop input:checked')).map(i => i.value) };
-            const res = await fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
-            if((await res.json()).status === 'ok') alert("✅ Sauvegardé !");
+            await fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
+            alert("✅ Configuration sauvegardée !");
         }
 
         async function sendTest(mode) {
-            await save(); 
+            await save();
             const res = await fetch('/api/test_embed', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ mode })});
-            if((await res.json()).status === 'sent') alert("🧪 Test envoyé !");
+            if(res.ok) alert("🧪 Test envoyé sur Discord !");
         }
 
         function setImg(mode, type, url) {
-            const p = mode[0];
-            const idMap = { 'thumbnail': `${p}-img-thumb`, 'banner': `${p}-img-banner`, 'footer_icon': `${p}-img-footer` };
-            const el = document.getElementById(idMap[type]);
-            if(!el) return;
-            if(url && url.trim() !== "") { el.src = url; el.style.display = 'block'; el.dataset.url = url; }
+            const p = mode[0], idMap = { 'thumbnail': `${p}-img-thumb`, 'banner': `${p}-img-banner`, 'footer_icon': `${p}-img-footer` };
+            const el = document.getElementById(idMap[type]); if(!el) return;
+            if(url) { el.src = url; el.style.display = 'block'; el.dataset.url = url; }
             else { el.style.display = 'none'; el.dataset.url = ""; }
         }
 
         function openPicker(m, t) { activeMode = m; activeType = t; showTab('gallery'); }
-
         async function uploadFile() {
-            const f = document.getElementById('f-in').files[0]; if(!f) return;
-            const fd = new FormData(); fd.append('file', f);
+            const fd = new FormData(); fd.append('file', document.getElementById('f-in').files[0]);
             const r = await (await fetch('/api/upload', {method:'POST', body:fd})).json();
-            db.images.push(r.path); renderGallery();
+            db.images.push(r.path); renderGallery(); selectImage(r.path);
         }
-
         async function deleteImg(path, e) {
-            e.stopPropagation();
-            if(!confirm("Supprimer cette image ?")) return;
-            const res = await fetch('/api/delete_image', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path})});
-            if(res.ok) { db.images = db.images.filter(i => i !== path); renderGallery(); }
+            e.stopPropagation(); if(!confirm("Supprimer ?")) return;
+            await fetch('/api/delete_image', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path})});
+            db.images = db.images.filter(i => i !== path); renderGallery();
         }
-
         function renderGallery() {
-            document.getElementById('g-list').innerHTML = db.images.map(i => `
-                <div class="img-card">
-                    <button class="del-img" onclick="deleteImg('${i}', event)">✕</button>
-                    <img src="${i}" style="display:block; cursor:pointer;" onclick="selectImage('${i}')">
-                </div>`).join('');
+            document.getElementById('g-list').innerHTML = db.images.map(i => `<div class="img-card"><button class="del-img" onclick="deleteImg('${i}', event)">✕</button><img src="${i}" style="display:block;cursor:pointer" onclick="selectImage('${i}')"></div>`).join('');
         }
-
-        function selectImage(url) {
-            if(activeMode && activeType) {
-                setImg(activeMode, activeType, url);
-                showTab(localStorage.getItem('lastTab') || 'welcome');
-                sync(activeMode);
-            }
-        }
-
+        function selectImage(url) { if(activeMode && activeType) { setImg(activeMode, activeType, url); showTab(localStorage.getItem('lastTab')); sync(activeMode); } }
         function toggleRoleCheck(el, labelId) { el.querySelector('input').checked = !el.querySelector('input').checked; updateLabel(el.parentElement.id, labelId); }
         function updateLabel(listId, labelId) { document.getElementById(labelId).innerText = `${document.querySelectorAll(`#${listId} input:checked`).length} sélectionnés`; }
         function toggleDropdown(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
