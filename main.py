@@ -8,7 +8,6 @@ from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
-# Chargement des variables d'environnement
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = int(os.getenv("GUILD_ID", 0))
@@ -19,7 +18,6 @@ UPLOAD_FOLDER = 'public/uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-# Configuration du Bot
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -124,6 +122,15 @@ def upload():
         file.save(os.path.join(UPLOAD_FOLDER, fname))
         return jsonify({"path": f"/uploads/{fname}"})
     return jsonify({"error": "No file"}), 400
+
+@app.route('/api/delete_image', methods=['POST'])
+def delete_image():
+    path = request.json.get('path', '').lstrip('/')
+    full_path = os.path.join('public', path)
+    if os.path.exists(full_path):
+        os.remove(full_path)
+        return jsonify({"status": "deleted"})
+    return jsonify({"error": "File not found"}), 404
 
 def run(): app.run(host='0.0.0.0', port=49501)
 threading.Thread(target=run, daemon=True).start()
