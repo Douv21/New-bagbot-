@@ -4,15 +4,18 @@ from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
+# Chargement des variables d'environnement
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = int(os.getenv("GUILD_ID", 0))
 
+# Configuration Flask
 app = Flask(__name__, static_folder='public', static_url_path='/')
 app.secret_key = os.urandom(24)
 UPLOAD_FOLDER = 'public/uploads'
 if not os.path.exists(UPLOAD_FOLDER): os.makedirs(UPLOAD_FOLDER)
 
+# Configuration Bot Discord
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -29,14 +32,18 @@ def load_config():
 async def create_embed_gen(member, conf, mode_name):
     title = str(conf.get('title', ' ')).replace("{user}", member.display_name).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
     desc = str(conf.get('desc', ' ')).replace("{user}", member.mention).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
+    
     col_hex = str(conf.get('color', '#ed4245')).replace('#', '')
-    col = int(col_hex, 16) if col_hex else 0xed4245
+    try:
+        col = int(col_hex, 16)
+    except:
+        col = 0xed4245
     
     embed = discord.Embed(title=title, description=desc, color=col)
     files = []
 
     async def process_img(path, sub_mode):
-        if not path: return
+        if not path or path.strip() == "": return
         if path.startswith('/uploads'):
             fname = path.split('/')[-1]
             fpath = os.path.join('public', 'uploads', fname)
@@ -45,7 +52,7 @@ async def create_embed_gen(member, conf, mode_name):
                 files.append(discord.File(fpath, filename=att_name))
                 if sub_mode == "banner": embed.set_image(url=f"attachment://{att_name}")
                 elif sub_mode == "thumb": embed.set_thumbnail(url=f"attachment://{att_name}")
-                elif sub_mode == "footer": embed.set_footer(text=conf.get('footer'), icon_url=f"attachment://{att_name}")
+                elif sub_mode == "footer": embed.set_footer(text=conf.get('footer', ' '), icon_url=f"attachment://{att_name}")
         else:
             if sub_mode == "banner": embed.set_image(url=path)
             elif sub_mode == "thumb": embed.set_thumbnail(url=path)
@@ -118,8 +125,9 @@ def upload():
 @app.route('/api/delete_image', methods=['POST'])
 def delete_image():
     path = request.json.get('path', '').lstrip('/')
-    if os.path.exists(path):
-        os.remove(path)
+    full_path = os.path.join('public', path)
+    if os.path.exists(full_path):
+        os.remove(full_path)
         return jsonify({"status": "deleted"})
     return jsonify({"error": "File not found"}), 404
 
