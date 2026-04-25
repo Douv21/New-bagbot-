@@ -2,229 +2,203 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BAGBOT DASHBOARD ELITE V9</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAGBOT ELITE V9 - DEBUG</title>
     <style>
-        :root { --bg: #0a0a0a; --card: #141414; --accent: #ed4245; --border: #252525; --d-bg: #2b2d31; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { margin: 0; background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
-
+        /* CSS INTERNE COMPLET */
+        :root { --bg: #0a0a0a; --accent: #ed4245; --card: #141414; --border: #252525; }
+        body { margin: 0; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; }
+        
         /* HEADER */
-        .header { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; z-index: 2500; }
-        .burger { font-size: 22px; color: var(--accent); cursor: pointer; z-index: 3001; }
-        .logo-text { margin-left: 20px; font-weight: 900; color: var(--accent); letter-spacing: 1px; }
+        .header { height: 60px; background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; position: fixed; width: 100%; top: 0; z-index: 100; }
+        .burger { font-size: 24px; color: var(--accent); cursor: pointer; margin-right: 20px; border: 1px solid var(--accent); padding: 5px 10px; border-radius: 5px; }
 
-        /* SIDEBAR - Correction de l'affichage */
-        #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #000; z-index: 3000; transition: 0.3s; border-right: 1px solid var(--border); }
+        /* SIDEBAR */
+        #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #000; border-right: 1px solid var(--border); transition: 0.3s; z-index: 200; padding-top: 20px; }
         #sidebar.open { left: 0; }
-        .nav-item { padding: 20px; border-bottom: 1px solid #111; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: #888; font-weight: bold; }
-        .nav-item.active { color: var(--accent); background: #ed424510; }
-        .submenu { display: block; background: #050505; }
-        .sub-item { padding: 15px 55px; cursor: pointer; color: #666; font-size: 14px; }
-        .sub-item.active { color: var(--accent); background: #111; border-left: 3px solid var(--accent); }
+        .nav-item { padding: 15px 20px; border-bottom: 1px solid #111; cursor: pointer; color: #888; font-weight: bold; }
+        .nav-item:hover { background: #111; color: white; }
+        .nav-item.active { color: var(--accent); background: rgba(237, 66, 69, 0.1); }
 
-        /* CONTENT */
-        main { height: 100vh; overflow-y: auto; padding: 80px 15px 150px; }
-        .section { display: none; max-width: 600px; margin: 0 auto; }
+        /* CONTENU */
+        main { padding: 80px 20px; height: 100vh; overflow-y: auto; box-sizing: border-box; }
+        .section { display: none; max-width: 700px; margin: 0 auto; }
         .section.active { display: block; }
 
-        /* PREVIEW STYLE DISCORD */
-        .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; }
-        .pv-top { display: flex; justify-content: space-between; gap: 10px; }
-        .pv-thumb { width: 65px; height: 65px; background: #222; border-radius: 4px; border: 1px dashed #444; overflow: hidden; }
-        .pv-banner { width: 100%; height: 140px; background: #222; border-radius: 8px; margin-top: 10px; border: 1px dashed #444; overflow: hidden; }
-        .pv-f-icon { width: 20px; height: 20px; border-radius: 50%; background: #222; overflow: hidden; border: 1px dashed #444; }
-        img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        /* PREVIEW DISCORD */
+        .preview { background: #2b2d31; border-left: 4px solid var(--accent); padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        .pv-title { color: #00a8fc; font-weight: bold; margin-bottom: 5px; }
+        .pv-img { width: 100%; height: 120px; background: #222; margin-top: 10px; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #444; border: 1px dashed #444; }
+        .pv-img img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* FORM */
-        .card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
-        label { display: block; font-size: 11px; color: #777; text-transform: uppercase; margin: 15px 0 5px; font-weight: bold; }
-        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 5px; }
-        .var-badge { background: #1e1f22; color: #00a8fc; padding: 6px 12px; border-radius: 5px; font-size: 12px; margin-right: 5px; cursor: pointer; display: inline-block; }
-
-        .btn { border: none; padding: 16px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
-        .btn-save { background: var(--accent); color: white; }
+        /* FORMULAIRE */
+        .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 15px; margin-bottom: 20px; }
+        label { display: block; font-size: 12px; color: #777; margin: 10px 0 5px; text-transform: uppercase; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; box-sizing: border-box; }
+        .btn { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         
-        .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .img-card { height: 110px; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
+        .gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .g-item { height: 100px; background: #000; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; cursor: pointer; }
+        .g-item img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <i class="fas fa-bars burger" id="burger-btn"></i>
-        <div class="logo-text">BAGBOT ELITE V9</div>
+        <div class="burger" onclick="toggleMenu()">☰</div>
+        <div style="font-weight: bold; color: var(--accent);">BAGBOT ELITE V9</div>
     </div>
 
     <div id="sidebar">
-        <div style="padding: 40px 20px; text-align: center; color: var(--accent); font-weight: 900; font-size: 18px;">MENU</div>
-        <div class="nav-item"><span>MESSAGES</span><i class="fas fa-chevron-down"></i></div>
-        <div class="submenu">
-            <div class="sub-item active" onclick="tab('welcome')">Bienvenue</div>
-            <div class="sub-item" onclick="tab('leave')">Départ</div>
-        </div>
-        <div class="nav-item" onclick="tab('admin')">PERMISSIONS</div>
-        <div class="nav-item" onclick="tab('gallery')">GALERIE</div>
+        <div style="text-align: center; padding: 20px; color: var(--accent); font-weight: bold; border-bottom: 1px solid var(--border);">MENU</div>
+        <div class="nav-item active" onclick="showSection('welcome')">BIENVENUE</div>
+        <div class="nav-item" onclick="showSection('leave')">DÉPART</div>
+        <div class="nav-item" onclick="showSection('gallery')">GALERIE</div>
     </div>
 
-    <main id="main-content">
-        
+    <main>
         <div id="welcome" class="section active">
-            <div class="preview" id="pv-w-box">
-                <div class="pv-top">
-                    <div style="flex-grow:1">
-                        <div id="pv-w-t" style="color:#00a8fc; font-weight:bold;">Titre</div>
-                        <div id="pv-w-d" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Message...</div>
-                    </div>
-                    <div class="pv-thumb"><img id="img-w-thumb"></div>
-                </div>
-                <div class="pv-banner"><img id="img-w-banner"></div>
-                <div style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:11px; color:#b5bac1;">
-                    <div class="pv-f-icon"><img id="img-w-footer"></div>
-                    <span id="pv-w-f">Footer</span>
-                </div>
+            <div class="preview" id="preview-w">
+                <div class="pv-title" id="pv-w-title">Titre Bienvenue</div>
+                <div id="pv-w-desc">Message de bienvenue...</div>
+                <div class="pv-img" id="pv-w-banner-box">Bannière</div>
             </div>
-
             <div class="card">
-                <h2>Bienvenue</h2>
-                <label>Couleur</label><input type="color" id="w-color" oninput="sync()">
-                <label>Titre</label><input type="text" id="w-title" oninput="sync()">
-                <label>Description</label><textarea id="w-desc" rows="4" oninput="sync()"></textarea>
-                <div class="var-badge" onclick="addV('w-desc','{user}')">{user}</div>
-                <label>Footer</label><input type="text" id="w-footer" oninput="sync()">
-                <label>Images (Cliquez pour changer)</label>
-                <button class="btn" style="background:#333; color:#fff" onclick="pick('welcome','banner')">Bannière</button>
-                <button class="btn" style="background:#333; color:#fff" onclick="pick('welcome','thumbnail')">Vignette</button>
-                <button class="btn btn-save" onclick="save()">SAUVEGARDER</button>
+                <label>Titre</label>
+                <input type="text" id="w-title" oninput="live()" placeholder="Bienvenue {user} !">
+                <label>Description</label>
+                <textarea id="w-desc" rows="4" oninput="live()" placeholder="Bienvenue sur le serveur {server}"></textarea>
+                <label>Couleur</label>
+                <input type="color" id="w-color" oninput="live()" value="#ed4245">
+                <button class="btn" onclick="save()">SAUVEGARDER</button>
             </div>
         </div>
 
         <div id="leave" class="section">
-            <div class="preview" id="pv-l-box">
-                <div id="pv-l-t" style="color:#00a8fc; font-weight:bold;">Titre</div>
-                <div id="pv-l-d" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Message...</div>
-                <div class="pv-banner"><img id="img-l-banner"></div>
+            <div class="preview" id="preview-l">
+                <div class="pv-title" id="pv-l-title">Titre Départ</div>
+                <div id="pv-l-desc">Message de départ...</div>
             </div>
             <div class="card">
-                <h2>Départ</h2>
-                <label>Couleur</label><input type="color" id="l-color" oninput="sync()">
-                <label>Titre</label><input type="text" id="l-title" oninput="sync()">
-                <label>Description</label><textarea id="l-desc" rows="4" oninput="sync()"></textarea>
-                <button class="btn" style="background:#333; color:#fff" onclick="pick('leave','banner')">Bannière</button>
-                <button class="btn btn-save" onclick="save()">SAUVEGARDER</button>
+                <label>Titre</label>
+                <input type="text" id="l-title" oninput="live()">
+                <label>Description</label>
+                <textarea id="l-desc" rows="4" oninput="live()"></textarea>
+                <button class="btn" onclick="save()">SAUVEGARDER</button>
             </div>
         </div>
 
         <div id="gallery" class="section">
             <div class="card">
-                <h2>Galerie</h2>
-                <div id="g-list" class="gallery-grid"></div>
-                <button class="btn btn-save" onclick="tab(localStorage.getItem('last') || 'welcome')">RETOUR</button>
+                <h3>Images disponibles</h3>
+                <div id="gallery-list" class="gallery"></div>
+                <button class="btn" style="background:#444" onclick="showSection('welcome')">RETOUR</button>
             </div>
         </div>
-
     </main>
 
     <script>
-        // Variables Globales
-        let db = { config: { welcome: {}, leave: {} }, images: [] };
-        let activeM = 'welcome', activeT = 'banner';
-
-        // Fonctions de Navigation
-        document.getElementById('burger-btn').onclick = () => {
-            document.getElementById('sidebar').classList.toggle('open');
+        // DONNEES PAR DEFAUT (Si l'API échoue)
+        let data = {
+            config: {
+                welcome: { title: "Bienvenue !", desc: "Heureux de vous voir", color: "#ed4245" },
+                leave: { title: "Au revoir", desc: "À bientôt !", color: "#ed4245" }
+            },
+            images: []
         };
 
-        function tab(id) {
+        // FONCTION NAVIGATION
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function showSection(id) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            if(id !== 'gallery') localStorage.setItem('last', id);
+            document.querySelectorAll('.nav-item').forEach(n => {
+                if(n.innerText.toLowerCase() === id) n.classList.add('active');
+                else n.classList.remove('active');
+            });
             document.getElementById('sidebar').classList.remove('open');
         }
 
-        // Synchronisation Visuelle
-        function sync() {
-            ['welcome', 'leave'].forEach(m => {
-                const p = m[0];
-                const color = document.getElementById(p+'-color').value;
-                document.getElementById('pv-'+p+'-box').style.borderLeftColor = color;
-                document.getElementById('pv-'+p+'-t').innerText = document.getElementById(p+'-title').value || "Titre";
-                document.getElementById('pv-'+p+'-d').innerText = document.getElementById(p+'-desc').value || "Message...";
-                if(p === 'w') document.getElementById('pv-w-f').innerText = document.getElementById('w-footer').value || "Footer";
-            });
+        // MISE A JOUR EN DIRECT
+        function live() {
+            // Bienvenue
+            const wt = document.getElementById('w-title').value;
+            const wd = document.getElementById('w-desc').value;
+            const wc = document.getElementById('w-color').value;
+            document.getElementById('pv-w-title').innerText = wt || "Titre Bienvenue";
+            document.getElementById('pv-w-desc').innerText = wd || "Message...";
+            document.getElementById('preview-w').style.borderLeftColor = wc;
+
+            // Départ
+            const lt = document.getElementById('l-title').value;
+            const ld = document.getElementById('l-desc').value;
+            document.getElementById('pv-l-title').innerText = lt || "Titre Départ";
+            document.getElementById('pv-l-desc').innerText = ld || "Message...";
         }
 
-        // Chargement des images
-        function setImg(m, t, url) {
-            const img = document.getElementById('img-'+m[0]+'-'+t);
-            if(img && url) { img.src = url; img.style.display = 'block'; img.dataset.url = url; }
-        }
-
-        function pick(m, t) { activeM = m; activeT = t; tab('gallery'); }
-
-        function selectImg(url) {
-            setImg(activeM, activeT, url);
-            tab(localStorage.getItem('last'));
-        }
-
-        // INIT & DONNEES
-        async function init() {
+        // INITIALISATION
+        async function load() {
             try {
+                console.log("Tentative de chargement...");
                 const res = await fetch('/api/get_data');
-                const data = await res.json();
-                db = data;
+                const cloudData = await res.json();
+                if(cloudData) data = cloudData;
+                
+                // Remplissage des champs
+                document.getElementById('w-title').value = data.config.welcome.title || "";
+                document.getElementById('w-desc').value = data.config.welcome.desc || "";
+                document.getElementById('w-color').value = data.config.welcome.color || "#ed4245";
 
-                // Remplissage Bienvenue
-                const w = db.config.welcome || {};
-                document.getElementById('w-title').value = w.title || "";
-                document.getElementById('w-desc').value = w.desc || "";
-                document.getElementById('w-color').value = w.color || "#ed4245";
-                document.getElementById('w-footer').value = w.footer || "";
-                setImg('welcome', 'banner', w.banner);
-                setImg('welcome', 'thumbnail', w.thumbnail);
+                document.getElementById('l-title').value = data.config.leave.title || "";
+                document.getElementById('l-desc').value = data.config.leave.desc || "";
 
-                // Remplissage Départ
-                const l = db.config.leave || {};
-                document.getElementById('l-title').value = l.title || "";
-                document.getElementById('l-desc').value = l.desc || "";
-                document.getElementById('l-color').value = l.color || "#ed4245";
-                setImg('leave', 'banner', l.banner);
+                // Galerie
+                const gList = document.getElementById('gallery-list');
+                if(data.images && data.images.length > 0) {
+                    gList.innerHTML = data.images.map(img => `<div class="g-item"><img src="${img}"></div>`).join('');
+                } else {
+                    gList.innerHTML = "<p style='color:#777'>Aucune image.</p>";
+                }
 
-                // Remplissage Galerie
-                document.getElementById('g-list').innerHTML = (db.images || []).map(i => `
-                    <div class="img-card" onclick="selectImg('${i}')"><img src="${i}" style="display:block"></div>
-                `).join('');
-
-                sync();
-            } catch(e) { console.log("Erreur de chargement des données"); }
+                live();
+                console.log("Chargement réussi");
+            } catch (e) {
+                console.error("Erreur API :", e);
+                live(); // On lance quand même l'aperçu avec les données par défaut
+            }
         }
 
+        // SAUVEGARDE
         async function save() {
-            const config = {
+            const payload = {
                 welcome: {
                     title: document.getElementById('w-title').value,
                     desc: document.getElementById('w-desc').value,
-                    color: document.getElementById('w-color').value,
-                    footer: document.getElementById('w-footer').value,
-                    banner: document.getElementById('img-w-banner').dataset.url || "",
-                    thumbnail: document.getElementById('img-w-thumbnail').dataset.url || ""
+                    color: document.getElementById('w-color').value
                 },
                 leave: {
                     title: document.getElementById('l-title').value,
-                    desc: document.getElementById('l-desc').value,
-                    color: document.getElementById('l-color').value,
-                    banner: document.getElementById('img-l-banner').dataset.url || ""
+                    desc: document.getElementById('l-desc').value
                 }
             };
-            await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config) });
-            alert("Sauvegardé !");
+            
+            try {
+                const res = await fetch('/api/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if(res.ok) alert("✅ Sauvegardé !");
+            } catch (e) {
+                alert("❌ Erreur lors de l'envoi");
+            }
         }
 
-        function addV(id, v) { document.getElementById(id).value += v; sync(); }
-
-        window.onload = init;
+        // Lancement immédiat au chargement
+        window.onload = load;
     </script>
 </body>
 </html>
-
