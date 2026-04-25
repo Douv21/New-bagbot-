@@ -3,128 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BAGBOT DASHBOARD ELITE</title>
+    <title>BAGBOT DASHBOARD ELITE V9</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #0a0a0a; --card: #141414; --accent: #ed4245; --border: #252525; --d-bg: #2b2d31; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
+
         .header { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; z-index: 2500; }
         .burger { font-size: 22px; color: var(--accent); cursor: pointer; }
+        
         #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #000; z-index: 3000; transition: 0.3s; border-right: 1px solid var(--border); }
         #sidebar.open { left: 0; }
         .nav-item { padding: 20px; border-bottom: 1px solid #111; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: #888; font-weight: bold; }
         .nav-item.active { color: var(--accent); background: #ed424510; }
+        .submenu { display: none; background: #050505; }
+        .submenu.show { display: block; }
+        .sub-item { padding: 15px 55px; cursor: pointer; color: #666; font-size: 14px; }
+
         main { height: 100vh; overflow-y: auto; padding: 80px 15px 150px; }
         .section { display: none; max-width: 600px; margin: 0 auto; }
         .section.active { display: block; }
+
+        .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; }
+        .pv-top { display: flex; justify-content: space-between; gap: 10px; }
+        .pv-container { position: relative; }
+        .pv-thumb { width: 65px; height: 65px; background: #222; border-radius: 4px; border: 1px dashed #444; overflow: hidden; cursor: pointer; }
+        .pv-banner { width: 100%; height: 140px; background: #222; border-radius: 8px; margin-top: 10px; border: 1px dashed #444; overflow: hidden; cursor: pointer; }
+        .pv-f-icon { width: 20px; height: 20px; border-radius: 50%; background: #222; overflow: hidden; border: 1px dashed #444; cursor: pointer; }
+        .remove-img { position: absolute; top: -5px; right: -5px; background: var(--accent); color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; z-index: 10; border: 2px solid var(--d-bg); }
+        img { width: 100%; height: 100%; object-fit: cover; display: none; }
+
         .card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
-        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; margin-bottom: 10px; }
-        .btn { border: none; padding: 16px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; background: var(--accent); color: white; }
-        .shop-item { background: #000; padding: 15px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; }
+        h2 { font-size: 18px; margin: 0 0 20px; color: #fff; }
+        label { display: block; font-size: 11px; color: #777; text-transform: uppercase; margin: 15px 0 5px; font-weight: bold; }
+        
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 5px; font-size: 14px; }
+        input[type="color"] { height: 40px; padding: 2px; cursor: pointer; }
+        
+        .var-box { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 15px; }
+        .var-badge { background: #1e1f22; color: #00a8fc; padding: 6px 12px; border-radius: 5px; font-size: 12px; font-family: monospace; border: 1px solid #2b2d31; cursor: pointer; }
+
+        .dropdown-select { background: #000; border: 1px solid var(--border); padding: 14px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; }
+        .dropdown-content { display: none; background: #050505; border: 1px solid var(--border); border-radius: 10px; max-height: 200px; overflow-y: auto; margin-top: 5px; }
+        .dropdown-content.show { display: block; }
+        .role-opt { padding: 12px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #111; cursor: pointer; }
+
+        .btn { border: none; padding: 16px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+        .btn-save { background: var(--accent); color: white; }
+        .btn-test { background: #5865F2; color: white; }
+
+        .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .img-card { height: 110px; border-radius: 10px; border: 1px solid var(--border); position: relative; overflow: hidden; background: #000; }
+        
+        .shop-item-card { background: #000; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <i class="fas fa-bars burger" onclick="toggleSidebar(event)"></i>
-        <div style="margin-left: 20px; font-weight: 900; color: var(--accent);">BAGBOT ELITE V9</div>
+        <div style="margin-left: 20px; font-weight: 900; color: var(--accent); letter-spacing: 1px;">BAGBOT ELITE V9</div>
     </div>
 
     <div id="sidebar">
-        <div style="padding: 40px 20px; text-align: center; color: var(--accent); font-weight: 900;">MENU</div>
-        <div class="nav-item" onclick="showTab('welcome')"><span>BIENVENUE</span><i class="fas fa-door-open"></i></div>
+        <div style="padding: 40px 20px; text-align: center; color: var(--accent); font-weight: 900; font-size: 18px;">MENU</div>
+        <div class="nav-item" onclick="toggleSubmenu('sub-cd', event)">
+            <span>Bienvenue/Départ</span><i class="fas fa-chevron-down"></i>
+        </div>
+        <div id="sub-cd" class="submenu show">
+            <div class="sub-item" onclick="showTab('welcome')">Bienvenue</div>
+            <div class="sub-item" onclick="showTab('leave')">Départ</div>
+        </div>
         <div class="nav-item" onclick="showTab('boutique')"><span>BOUTIQUE</span><i class="fas fa-shopping-cart"></i></div>
+        <div class="nav-item" onclick="showTab('admin')"><span>PERMISSIONS</span><i class="fas fa-lock"></i></div>
         <div class="nav-item" onclick="showTab('gallery')"><span>GALERIE</span><i class="fas fa-image"></i></div>
     </div>
 
     <main onclick="closeSidebar()">
         <div id="welcome" class="section active">
+            <div class="preview" id="pv-box-welcome">
+                <div class="pv-top">
+                    <div style="flex-grow:1">
+                        <div id="pv-w-title" style="color:#00a8fc; font-weight:bold;">Titre</div>
+                        <div id="pv-w-desc" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Message...</div>
+                    </div>
+                    <div class="pv-container">
+                        <div class="remove-img" onclick="detachImg(event, 'welcome', 'thumbnail')">×</div>
+                        <div class="pv-thumb" onclick="openPicker('welcome', 'thumbnail')"><img id="w-img-thumbnail"></div>
+                    </div>
+                </div>
+                <div class="pv-container">
+                    <div class="remove-img" onclick="detachImg(event, 'welcome', 'banner')">×</div>
+                    <div class="pv-banner" onclick="openPicker('welcome', 'banner')"><img id="w-img-banner"></div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:11px; color:#b5bac1;">
+                    <div class="pv-container">
+                        <div class="pv-f-icon" onclick="openPicker('welcome', 'footer_icon')"><img id="w-img-footer_icon"></div>
+                    </div>
+                    <span id="pv-w-footer">Footer</span>
+                </div>
+            </div>
             <div class="card">
                 <h2>Bienvenue</h2>
-                <label>Titre</label><input type="text" id="w-title">
-                <label>Description</label><textarea id="w-desc" rows="4"></textarea>
-                <button class="btn" onclick="save()">SAUVEGARDER</button>
+                <label>Couleur</label><input type="color" id="w-color" oninput="sync('welcome')">
+                <label>Titre</label><input type="text" id="w-title" oninput="sync('welcome')">
+                <div class="var-box"><span class="var-badge" onclick="addVar('w-title', '{user}')">{user}</span></div>
+                <label>Description</label><textarea id="w-desc" rows="4" oninput="sync('welcome')"></textarea>
+                <div class="var-box">
+                    <span class="var-badge" onclick="addVar('w-desc', '{user}')">{user}</span>
+                    <span class="var-badge" onclick="addVar('w-desc', '{server}')">{server}</span>
+                </div>
+                <label>Footer</label><input type="text" id="w-footer" oninput="sync('welcome')">
+                <label>Salon</label><select id="w-channel"></select>
+                <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
             </div>
         </div>
 
         <div id="boutique" class="section">
             <div class="card">
                 <h2>📦 Ajouter un article</h2>
-                <input type="text" id="shop-name" placeholder="Nom">
-                <input type="number" id="shop-price" placeholder="Prix">
-                <input type="text" id="shop-roleid" placeholder="ID Rôle">
-                <button class="btn" onclick="addShopItem()">AJOUTER</button>
+                <label>Nom</label><input type="text" id="shop-name" placeholder="Ex: Grade VIP">
+                <label>Prix</label><input type="number" id="shop-price" placeholder="Ex: 5000">
+                <label>Type</label>
+                <select id="shop-type">
+                    <option value="role_perm">Rôle Permanent</option>
+                    <option value="role_temp">Rôle Temporaire</option>
+                    <option value="item">Item simple</option>
+                </select>
+                <label>ID du Rôle</label><input type="text" id="shop-roleid" placeholder="ID Discord">
+                <button class="btn btn-save" onclick="addShopItem()"><i class="fas fa-plus"></i> AJOUTER</button>
             </div>
             <div class="card">
-                <h2>🛒 En vente</h2>
-                <div id="shop-list"></div>
+                <h2>🛒 Articles en vente</h2>
+                <div id="shop-list-container"></div>
             </div>
         </div>
 
         <div id="gallery" class="section">
-            <div class="card"><h2>Galerie</h2><div id="g-list"></div></div>
+            <div class="card">
+                <h2>Galerie</h2>
+                <input type="file" id="f-in" onchange="uploadFile()">
+                <div id="g-list" class="gallery-grid" style="margin-top:20px;"></div>
+                <button class="btn btn-save" onclick="showTab(localStorage.getItem('lastTab') || 'welcome')">RETOUR</button>
+            </div>
         </div>
+
     </main>
 
     <script>
-        let db = { config: {}, shop_config: { items: [] }, roles: [], channels: [], images: [] };
+        let db = { channels: [], roles: [], config: {}, shop_config: { items: [] }, images: [] };
+        let activeMode = ''; let activeType = '';
 
         async function init() {
             try {
                 const res = await fetch('/api/get_data');
                 db = await res.json();
                 
-                // Charger Welcome
-                document.getElementById('w-title').value = db.config.welcome?.title || "";
-                document.getElementById('w-desc').value = db.config.welcome?.desc || "";
+                const chans = db.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                document.getElementById('w-channel').innerHTML = chans;
 
-                // Charger Boutique
-                renderShop();
+                // Remplissage Bienvenue
+                const w = db.config.welcome || {};
+                document.getElementById('w-title').value = w.title || "";
+                document.getElementById('w-desc').value = w.desc || "";
+                document.getElementById('w-footer').value = w.footer || "";
+                document.getElementById('w-color').value = w.color || "#ed4245";
+                document.getElementById('w-channel').value = w.channel || "";
                 
+                setImg('welcome', 'thumbnail', w.thumbnail);
+                setImg('welcome', 'banner', w.banner);
+                setImg('welcome', 'footer_icon', w.footer_icon);
+
+                renderGallery();
+                renderShop();
+                sync('welcome');
                 showTab(localStorage.getItem('currentPage') || 'welcome');
-            } catch(e) { console.error("Erreur init:", e); }
+            } catch(e) { console.error("INIT ERROR:", e); }
+        }
+
+        function sync(mode) {
+            const p = mode[0];
+            const color = document.getElementById(p+'-color').value;
+            document.getElementById('pv-box-'+mode).style.borderLeftColor = color;
+            document.getElementById('pv-'+p+'-title').innerText = document.getElementById(p+'-title').value || "Titre";
+            document.getElementById('pv-'+p+'-desc').innerText = document.getElementById(p+'-desc').value || "Message...";
+            if(document.getElementById('pv-'+p+'-footer')) document.getElementById('pv-'+p+'-footer').innerText = document.getElementById(p+'-footer').value || "Footer";
         }
 
         function renderShop() {
-            const cont = document.getElementById('shop-list');
+            const cont = document.getElementById('shop-list-container');
             const items = db.shop_config.items || [];
             cont.innerHTML = items.map((it, idx) => `
-                <div class="shop-item">
-                    <div><b>${it.name}</b><br><small>${it.price} coins</small></div>
-                    <i class="fas fa-trash" onclick="deleteShopItem(${idx})"></i>
+                <div class="shop-item-card">
+                    <div><b>${it.name}</b><br><small>${it.price} 💰 | ${it.type}</small></div>
+                    <i class="fas fa-trash" style="color:var(--accent);cursor:pointer" onclick="deleteShopItem(${idx})"></i>
                 </div>
             `).join('');
         }
 
         async function addShopItem() {
             const name = document.getElementById('shop-name').value;
-            const price = document.getElementById('shop-price').value;
-            if(!name || !price) return alert("Champs vides");
-            db.shop_config.items.push({ name, price, role_id: document.getElementById('shop-roleid').value });
-            await fetch('/api/save_shop', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(db.shop_config) });
+            const price = parseInt(document.getElementById('shop-price').value);
+            if(!name || !price) return alert("Nom et prix requis");
+            db.shop_config.items.push({ name, price, type: document.getElementById('shop-type').value, role_id: document.getElementById('shop-roleid').value });
+            await fetch('/api/save_shop', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(db.shop_config)});
+            renderShop();
+        }
+
+        async function deleteShopItem(idx) {
+            db.shop_config.items.splice(idx, 1);
+            await fetch('/api/save_shop', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(db.shop_config)});
             renderShop();
         }
 
         async function save() {
-            db.config.welcome.title = document.getElementById('w-title').value;
-            db.config.welcome.desc = document.getElementById('w-desc').value;
-            await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(db.config) });
-            alert("OK");
+            db.config.welcome = {
+                title: document.getElementById('w-title').value,
+                desc: document.getElementById('w-desc').value,
+                footer: document.getElementById('w-footer').value,
+                color: document.getElementById('w-color').value,
+                channel: document.getElementById('w-channel').value,
+                thumbnail: document.getElementById('w-img-thumbnail').dataset.url || "",
+                banner: document.getElementById('w-img-banner').dataset.url || "",
+                footer_icon: document.getElementById('w-img-footer_icon').dataset.url || ""
+            };
+            await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(db.config)});
+            alert("Sauvegardé !");
         }
 
         function showTab(id) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             localStorage.setItem('currentPage', id);
+            if(id !== 'gallery') localStorage.setItem('lastTab', id);
             closeSidebar();
         }
 
+        function setImg(mode, type, url) {
+            const p = mode[0]; const img = document.getElementById(p+'-img-'+type);
+            if(url) { img.src = url; img.style.display = 'block'; img.dataset.url = url; }
+            else { img.style.display = 'none'; img.dataset.url = ''; }
+        }
+
+        function openPicker(m, t) { activeMode = m; activeType = t; showTab('gallery'); }
+        function selectImage(url) { setImg(activeMode, activeType, url); showTab(localStorage.getItem('lastTab')); sync(activeMode); }
+        function detachImg(e, m, t) { e.stopPropagation(); setImg(m, t, ''); sync(m); }
+        function renderGallery() { document.getElementById('g-list').innerHTML = db.images.map(i => `<div class="img-card"><img src="${i}" style="display:block;cursor:pointer" onclick="selectImage('${i}')"></div>`).join(''); }
+        
+        async function uploadFile() {
+            const fd = new FormData(); fd.append('file', document.getElementById('f-in').files[0]);
+            const r = await (await fetch('/api/upload', {method:'POST', body:fd})).json();
+            db.images.push(r.path); renderGallery(); selectImage(r.path);
+        }
+
+        function addVar(id, v) { const el = document.getElementById(id); el.value += v; sync('welcome'); }
         function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('open'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
+        function toggleSubmenu(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
 
         window.onload = init;
     </script>
 </body>
 </html>
-
