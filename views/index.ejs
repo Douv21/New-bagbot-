@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Bot Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .discord-blurple {
+            background-color: #5865F2;
+        }
+        .discord-blurple:hover {
+            background-color: #4752C4;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Navigation -->
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fab fa-discord text-3xl text-indigo-500 mr-3"></i>
+                    <span class="text-xl font-bold">Discord Bot Dashboard</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <% if (user) { %>
+                        <img src="<%= user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png' %>" 
+                             alt="Avatar" class="w-8 h-8 rounded-full">
+                        <span class="text-sm"><%= user.username %></span>
+                        <a href="/dashboard" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md text-sm font-medium">
+                            Dashboard
+                        </a>
+                        <a href="/logout" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-sm font-medium">
+                            Déconnexion
+                        </a>
+                    <% } else { %>
+                        <a href="/login" class="discord-blurple hover:bg-indigo-700 px-4 py-2 rounded-md text-sm font-medium">
+                            <i class="fab fa-discord mr-2"></i>Connexion Discord
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="gradient-bg py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                Bot Discord avec Dashboard
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 opacity-90">
+                Gérez votre bot Discord facilement avec une interface web complète
+            </p>
+            <% if (!user) { %>
+                <a href="/login" class="discord-blurple inline-flex items-center px-8 py-3 text-lg font-medium rounded-lg hover:bg-indigo-700 transition">
+                    <i class="fab fa-discord mr-3"></i>
+                    Commencez maintenant
+                </a>
+            <% } else { %>
+                <a href="/dashboard" class="discord-blurple inline-flex items-center px-8 py-3 text-lg font-medium rounded-lg hover:bg-indigo-700 transition">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Accéder au Dashboard
+                </a>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="py-20 bg-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-12">Fonctionnalités</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="bg-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-robot text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Bot Discord Puissant</h3>
+                    <p class="text-gray-400">Commandes slash, modération, utilitaires et bien plus encore</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-chart-line text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Dashboard Complet</h3>
+                    <p class="text-gray-400">Interface web moderne pour gérer votre bot et vos serveurs</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-shield-alt text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Sécurité OAuth2</h3>
+                    <p class="text-gray-400">Authentification sécurisée via Discord avec OAuth2</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Commands Section -->
+    <div class="py-20 bg-gray-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-12">Commandes Disponibles</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2">
+                        <i class="fas fa-question-circle text-indigo-500 mr-2"></i>/help
+                    </h3>
+                    <p class="text-gray-400">Affiche la liste de toutes les commandes disponibles</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2">
+                        <i class="fas fa-table-tennis text-indigo-500 mr-2"></i>/ping
+                    </h3>
+                    <p class="text-gray-400">Vérifie la latence du bot et de l'API Discord</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-2">
+                        <i class="fas fa-server text-indigo-500 mr-2"></i>/server
+                    </h3>
+                    <p class="text-gray-400">Affiche des informations détaillées sur le serveur</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400">
+                Créé avec <i class="fas fa-heart text-red-500"></i> pour la communauté Discord
+            </p>
+        </div>
+    </footer>
+</body>
+</html>
