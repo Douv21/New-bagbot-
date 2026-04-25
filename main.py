@@ -4,7 +4,6 @@ import os
 
 app = Flask(__name__)
 
-# Dossiers pour les données et images
 DATA_FILE = 'data.json'
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -16,11 +15,11 @@ def load_db():
             "roles": ["Admin", "Modo", "Membre"],
             "images": [],
             "config": {
-                "welcome": {"title": "Bienvenue {user}", "desc": "Bienvenue sur {server}", "color": "#ed4245", "footer": "BagBot Elite"},
-                "leave": {"title": "Départ", "desc": "{user} nous a quitté", "color": "#ed4245"}
+                "welcome": {"title": "", "desc": "", "color": "#ed4245", "footer": "", "channel": "", "banner": "", "thumbnail": "", "footer_icon": ""},
+                "leave": {"title": "", "desc": "", "color": "#ed4245", "channel": "", "banner": ""}
             }
         }
-    with open(DATA_FILE, 'r') as f:
+    with open(DATA_FILE, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 @app.route('/')
@@ -34,26 +33,24 @@ def get_data():
 @app.route('/api/save', methods=['POST'])
 def save_data():
     db = load_db()
-    new_config = request.json
-    db['config'] = new_config
-    with open(DATA_FILE, 'w') as f:
+    db['config'] = request.json
+    with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(db, f, indent=4)
     return jsonify({"status": "success"})
 
 @app.route('/api/upload', methods=['POST'])
 def upload():
+    if 'file' not in request.files: return jsonify({"error": "no file"}), 400
     file = request.files['file']
-    if file:
-        path = os.path.join(UPLOAD_FOLDER, file.filename)
-        file.save(path)
-        db = load_db()
-        img_url = '/' + path
-        if img_url not in db['images']:
-            db['images'].append(img_url)
-            with open(DATA_FILE, 'w') as f:
-                json.dump(db, f, indent=4)
-        return jsonify({"path": img_url})
-    return jsonify({"error": "failed"}), 400
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+    db = load_db()
+    img_url = '/' + path
+    if img_url not in db['images']:
+        db['images'].append(img_url)
+        with open(DATA_FILE, 'w', encoding='utf-8') as f:
+            json.dump(db, f, indent=4)
+    return jsonify({"path": img_url})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
