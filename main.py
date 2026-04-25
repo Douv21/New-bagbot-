@@ -8,20 +8,26 @@ from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
+# Chargement de l'environnement
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 GUILD_ID = int(os.getenv("GUILD_ID", 0))
 
+# Configuration Flask
 app = Flask(__name__, static_folder='public', static_url_path='/')
 app.secret_key = os.urandom(24)
 UPLOAD_FOLDER = 'public/uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
+# Configuration Discord
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+# --- GESTION DES CONFIGURATIONS ---
+
 def load_config():
+    """Charge la config de bienvenue/départ (config.json)"""
     if not os.path.exists('config.json'):
         return {
             "welcome": {"title": "Bienvenue {user}", "desc": "Bienvenue sur {server}", "footer": "BagBot", "color": "#ed4245", "channel": "", "banner": "", "thumbnail": "", "footer_icon": "", "trigger_roles": []},
@@ -30,6 +36,15 @@ def load_config():
         }
     with open('config.json', 'r', encoding='utf-8') as f:
         return json.load(f)
+
+def load_shop_config():
+    """Charge la config de la boutique (shop_config.json)"""
+    if not os.path.exists('shop_config.json'):
+        return {"items": []}
+    with open('shop_config.json', 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+# --- LOGIQUE EMBED (Bienvenue/Départ) ---
 
 async def create_embed_gen(member, conf, mode_name):
     title = str(conf.get('title', ' ')).replace("{user}", member.display_name).replace("{server}", member.guild.name).replace("{count}", str(member.guild.member_count))
@@ -77,6 +92,8 @@ async def on_member_join(member):
         roles_to_add = [discord.utils.get(member.guild.roles, name=r) for r in conf.get("trigger_roles", [])]
         await member.add_roles(*[r for r in roles_to_add if r])
 
+# --- ROUTES API FLASK ---
+
 @app.route('/')
 def index(): return app.send_static_file('index.html')
 
@@ -90,14 +107,26 @@ def get_data():
         "channels": [{"id": str(c.id), "name": c.name} for c in guild.text_channels],
         "roles": roles,
         "config": load_config(),
+        "shop_config": load_shop_config(), # Ajout de la boutique dans les datas
         "images": images
     })
 
 @app.route('/api/save', methods=['POST'])
 def save():
+    """Sauvegarde la config générale (welcome/leave)"""
     with open('config.json', 'w', encoding='utf-8') as f:
         json.dump(request.json, f, indent=4, ensure_ascii=False)
     return jsonify({"status": "ok"})
+
+@app.route('/api/save_shop', methods=['POST'])
+def save_shop():
+    """Sauvegarde uniquement la boutique (shop_config.json)"""
+    try:
+        with open('shop_config.json', 'w', encoding='utf-8') as f:
+            json.dump(request.json, f, indent=4, ensure_ascii=False)
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/test_embed', methods=['POST'])
 def test_embed():
@@ -132,6 +161,12 @@ def delete_image():
         return jsonify({"status": "deleted"})
     return jsonify({"error": "File not found"}), 404
 
-def run(): app.run(host='0.0.0.0', port=49501)
-threading.Thread(target=run, daemon=True).start()
-bot.run(TOKEN)
+# --- LANCEMENT ---
+
+def run(): 
+    app.run(host='0.0.0.0', port=49501)
+
+if __name__ == "__main__":
+    threading.Thread(target=run, daemon=True).start()
+    bot.run(TOKEN)
+    
