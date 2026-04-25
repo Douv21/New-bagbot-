@@ -19,12 +19,14 @@
         .nav-item.active { color: var(--accent); background: #ed424510; }
         .submenu { display: none; background: #050505; }
         .submenu.show { display: block; }
-        .sub-item { padding: 15px 55px; cursor: pointer; color: #666; font-size: 14px; }
+        .sub-item { padding: 15px 55px; cursor: pointer; color: #666; font-size: 14px; border-bottom: 1px solid #111; }
+        .sub-item:hover { color: var(--accent); }
 
         main { height: 100vh; overflow-y: auto; padding: 80px 15px 150px; }
         .section { display: none; max-width: 600px; margin: 0 auto; }
         .section.active { display: block; }
 
+        /* Preview Style Discord */
         .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; }
         .pv-top { display: flex; justify-content: space-between; gap: 10px; }
         .pv-container { position: relative; }
@@ -39,15 +41,10 @@
         label { display: block; font-size: 11px; color: #777; text-transform: uppercase; margin: 15px 0 5px; font-weight: bold; }
         
         input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 5px; font-size: 14px; }
-        input[type="color"] { height: 40px; padding: 2px; cursor: pointer; }
+        input[type="color"] { height: 45px; padding: 5px; cursor: pointer; }
         
         .var-box { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 15px; }
         .var-badge { background: #1e1f22; color: #00a8fc; padding: 6px 12px; border-radius: 5px; font-size: 12px; font-family: monospace; border: 1px solid #2b2d31; cursor: pointer; }
-
-        .dropdown-select { background: #000; border: 1px solid var(--border); padding: 14px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; }
-        .dropdown-content { display: none; background: #050505; border: 1px solid var(--border); border-radius: 10px; max-height: 200px; overflow-y: auto; margin-top: 5px; }
-        .dropdown-content.show { display: block; }
-        .role-opt { padding: 12px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #111; cursor: pointer; }
 
         .btn { border: none; padding: 16px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
         .btn-save { background: var(--accent); color: white; }
@@ -105,7 +102,7 @@
                 </div>
             </div>
             <div class="card">
-                <h2>Bienvenue</h2>
+                <h2>Configuration Bienvenue</h2>
                 <label>Couleur</label><input type="color" id="w-color" oninput="sync('welcome')">
                 <label>Titre</label><input type="text" id="w-title" oninput="sync('welcome')">
                 <div class="var-box"><span class="var-badge" onclick="addVar('w-title', '{user}')">{user}</span></div>
@@ -120,18 +117,34 @@
             </div>
         </div>
 
+        <div id="leave" class="section">
+            <div class="preview" id="pv-box-leave">
+                <div id="pv-l-title" style="color:#00a8fc; font-weight:bold;">Titre Départ</div>
+                <div id="pv-l-desc" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Message...</div>
+                <div class="pv-banner" onclick="openPicker('leave', 'banner')"><img id="l-img-banner"></div>
+            </div>
+            <div class="card">
+                <h2>Configuration Départ</h2>
+                <label>Couleur</label><input type="color" id="l-color" oninput="sync('leave')">
+                <label>Titre</label><input type="text" id="l-title" oninput="sync('leave')">
+                <label>Description</label><textarea id="l-desc" rows="4" oninput="sync('leave')"></textarea>
+                <label>Salon</label><select id="l-channel"></select>
+                <button class="btn btn-save" onclick="save()"><i class="fas fa-save"></i> SAUVEGARDER</button>
+            </div>
+        </div>
+
         <div id="boutique" class="section">
             <div class="card">
                 <h2>📦 Ajouter un article</h2>
                 <label>Nom</label><input type="text" id="shop-name" placeholder="Ex: Grade VIP">
-                <label>Prix</label><input type="number" id="shop-price" placeholder="Ex: 5000">
+                <label>Prix (💰)</label><input type="number" id="shop-price" placeholder="Ex: 5000">
                 <label>Type</label>
                 <select id="shop-type">
                     <option value="role_perm">Rôle Permanent</option>
                     <option value="role_temp">Rôle Temporaire</option>
                     <option value="item">Item simple</option>
                 </select>
-                <label>ID du Rôle</label><input type="text" id="shop-roleid" placeholder="ID Discord">
+                <label>ID du Rôle Discord</label><input type="text" id="shop-roleid" placeholder="ID">
                 <button class="btn btn-save" onclick="addShopItem()"><i class="fas fa-plus"></i> AJOUTER</button>
             </div>
             <div class="card">
@@ -140,19 +153,27 @@
             </div>
         </div>
 
+        <div id="admin" class="section">
+            <div class="card">
+                <h2>Permissions Administrateur</h2>
+                <p style="font-size: 13px; color: #666;">Choisissez les rôles autorisés à utiliser ce dashboard.</p>
+                <div id="admin-roles-list"></div>
+                <button class="btn btn-save" onclick="save()">APPLIQUER</button>
+            </div>
+        </div>
+
         <div id="gallery" class="section">
             <div class="card">
-                <h2>Galerie</h2>
+                <h2>Galerie d'images</h2>
                 <input type="file" id="f-in" onchange="uploadFile()">
                 <div id="g-list" class="gallery-grid" style="margin-top:20px;"></div>
                 <button class="btn btn-save" onclick="showTab(localStorage.getItem('lastTab') || 'welcome')">RETOUR</button>
             </div>
         </div>
-
     </main>
 
     <script>
-        let db = { channels: [], roles: [], config: {}, shop_config: { items: [] }, images: [] };
+        let db = { channels: [], roles: [], config: { welcome: {}, leave: {} }, shop_config: { items: [] }, images: [] };
         let activeMode = ''; let activeType = '';
 
         async function init() {
@@ -160,24 +181,41 @@
                 const res = await fetch('/api/get_data');
                 db = await res.json();
                 
+                // Salons
                 const chans = db.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
                 document.getElementById('w-channel').innerHTML = chans;
+                document.getElementById('l-channel').innerHTML = chans;
 
-                // Remplissage Bienvenue
+                // Rôles Admin
+                document.getElementById('admin-roles-list').innerHTML = db.roles.map(r => `
+                    <div class="role-opt">
+                        <input type="checkbox" value="${r}" ${ (db.config.admin_roles || []).includes(r) ? 'checked' : '' }>
+                        <span>${r}</span>
+                    </div>
+                `).join('');
+
+                // Charger données Bienvenue
                 const w = db.config.welcome || {};
                 document.getElementById('w-title').value = w.title || "";
                 document.getElementById('w-desc').value = w.desc || "";
                 document.getElementById('w-footer').value = w.footer || "";
                 document.getElementById('w-color').value = w.color || "#ed4245";
                 document.getElementById('w-channel').value = w.channel || "";
-                
                 setImg('welcome', 'thumbnail', w.thumbnail);
                 setImg('welcome', 'banner', w.banner);
                 setImg('welcome', 'footer_icon', w.footer_icon);
 
+                // Charger données Départ
+                const l = db.config.leave || {};
+                document.getElementById('l-title').value = l.title || "";
+                document.getElementById('l-desc').value = l.desc || "";
+                document.getElementById('l-color').value = l.color || "#ed4245";
+                document.getElementById('l-channel').value = l.channel || "";
+                setImg('leave', 'banner', l.banner);
+
                 renderGallery();
                 renderShop();
-                sync('welcome');
+                sync('welcome'); sync('leave');
                 showTab(localStorage.getItem('currentPage') || 'welcome');
             } catch(e) { console.error("INIT ERROR:", e); }
         }
@@ -185,10 +223,14 @@
         function sync(mode) {
             const p = mode[0];
             const color = document.getElementById(p+'-color').value;
-            document.getElementById('pv-box-'+mode).style.borderLeftColor = color;
+            const box = document.getElementById('pv-box-'+mode);
+            if(box) box.style.borderLeftColor = color;
+            
             document.getElementById('pv-'+p+'-title').innerText = document.getElementById(p+'-title').value || "Titre";
             document.getElementById('pv-'+p+'-desc').innerText = document.getElementById(p+'-desc').value || "Message...";
-            if(document.getElementById('pv-'+p+'-footer')) document.getElementById('pv-'+p+'-footer').innerText = document.getElementById(p+'-footer').value || "Footer";
+            if(document.getElementById('pv-'+p+'-footer')) {
+                document.getElementById('pv-'+p+'-footer').innerText = document.getElementById(p+'-footer').value || "Footer";
+            }
         }
 
         function renderShop() {
@@ -200,6 +242,31 @@
                     <i class="fas fa-trash" style="color:var(--accent);cursor:pointer" onclick="deleteShopItem(${idx})"></i>
                 </div>
             `).join('');
+        }
+
+        async function save() {
+            const config = {
+                welcome: {
+                    title: document.getElementById('w-title').value,
+                    desc: document.getElementById('w-desc').value,
+                    footer: document.getElementById('w-footer').value,
+                    color: document.getElementById('w-color').value,
+                    channel: document.getElementById('w-channel').value,
+                    thumbnail: document.getElementById('w-img-thumbnail').dataset.url || "",
+                    banner: document.getElementById('w-img-banner').dataset.url || "",
+                    footer_icon: document.getElementById('w-img-footer_icon').dataset.url || ""
+                },
+                leave: {
+                    title: document.getElementById('l-title').value,
+                    desc: document.getElementById('l-desc').value,
+                    color: document.getElementById('l-color').value,
+                    channel: document.getElementById('l-channel').value,
+                    banner: document.getElementById('l-img-banner').dataset.url || ""
+                },
+                admin_roles: Array.from(document.querySelectorAll('#admin-roles-list input:checked')).map(i => i.value)
+            };
+            await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
+            alert("Configuration sauvegardée !");
         }
 
         async function addShopItem() {
@@ -217,19 +284,11 @@
             renderShop();
         }
 
-        async function save() {
-            db.config.welcome = {
-                title: document.getElementById('w-title').value,
-                desc: document.getElementById('w-desc').value,
-                footer: document.getElementById('w-footer').value,
-                color: document.getElementById('w-color').value,
-                channel: document.getElementById('w-channel').value,
-                thumbnail: document.getElementById('w-img-thumbnail').dataset.url || "",
-                banner: document.getElementById('w-img-banner').dataset.url || "",
-                footer_icon: document.getElementById('w-img-footer_icon').dataset.url || ""
-            };
-            await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(db.config)});
-            alert("Sauvegardé !");
+        function setImg(mode, type, url) {
+            const p = mode[0]; const img = document.getElementById(p+'-img-'+type);
+            if(!img) return;
+            if(url) { img.src = url; img.style.display = 'block'; img.dataset.url = url; }
+            else { img.style.display = 'none'; img.dataset.url = ''; }
         }
 
         function showTab(id) {
@@ -238,12 +297,6 @@
             localStorage.setItem('currentPage', id);
             if(id !== 'gallery') localStorage.setItem('lastTab', id);
             closeSidebar();
-        }
-
-        function setImg(mode, type, url) {
-            const p = mode[0]; const img = document.getElementById(p+'-img-'+type);
-            if(url) { img.src = url; img.style.display = 'block'; img.dataset.url = url; }
-            else { img.style.display = 'none'; img.dataset.url = ''; }
         }
 
         function openPicker(m, t) { activeMode = m; activeType = t; showTab('gallery'); }
