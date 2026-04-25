@@ -1,0 +1,121 @@
+/* Styles personnalisés pour le dashboard */
+
+:root {
+    --discord-blurple: #5865F2;
+    --discord-blurple-hover: #4752C4;
+    --discord-green: #3BA55C;
+    --discord-yellow: #FAA61A;
+    --discord-red: #ED4245;
+    --discord-dark: #2C2F33;
+    --discord-darker: #23272A;
+    --discord-light: #99AAB5;
+}
+
+body {
+    background-color: #36393F;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.discord-blurple {
+    background-color: var(--discord-blurple) !important;
+}
+
+.discord-blurple:hover {
+    background-color: var(--discord-blurple-hover) !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #2C2F33;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--discord-blurple);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--discord-blurple-hover);
+}
+
+/* Cards hover effects */
+.card-hover {
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Status indicators */
+.status-online {
+    width: 8px;
+    height: 8px;
+    background-color: #3BA55C;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-idle {
+    width: 8px;
+    height: 8px;
+    background-color: #FAA61A;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-dnd {
+    width: 8px;
+    height: 8px;
+    background-color: #ED4245;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-offline {
+    width: 8px;
+    height: 8px;
+    background-color: #747F8D;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Loading animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading {
+    animation: spin 1s linear infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .mobile-hidden {
+        display: none;
+    }
+    
+    .mobile-full {
+        width: 100% !important;
+    }
+}
