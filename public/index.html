@@ -3,247 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BAGBOT ELITE V9 - FINAL</title>
+    <title>BAGBOT DASHBOARD - V9 FINAL FIX</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #0a0a0a; --card: #141414; --accent: #ed4245; --border: #252525; --d-bg: #2b2d31; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: #fff; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        :root { --bg: #0a0a0a; --card: #111; --accent: #ed4245; --border: #222; --d-bg: #2b2d31; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; background: var(--bg); color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        .header { height: 60px; background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; z-index: 2500; }
-        .burger { font-size: 22px; color: var(--accent); cursor: pointer; }
-        
+        /* HEADER */
+        .header { height: 60px; background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; z-index: 2000; flex-shrink: 0; }
+        .burger { font-size: 22px; color: var(--accent); cursor: pointer; margin-right: 15px; }
+
+        /* SIDEBAR */
         #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #000; z-index: 3000; transition: 0.3s; border-right: 1px solid var(--border); }
         #sidebar.open { left: 0; }
-        .nav-item { padding: 20px; border-bottom: 1px solid #111; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: #888; font-weight: bold; }
-        .nav-item.active { color: var(--accent); background: #ed424510; }
+        .nav-item { padding: 18px 25px; border-bottom: 1px solid #111; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: #777; font-weight: bold; }
+        .nav-item.active { color: var(--accent); background: #ed424508; }
         .submenu { background: #050505; }
-        .sub-item { padding: 15px 55px; cursor: pointer; color: #666; font-size: 14px; }
-        .sub-item.active { color: var(--accent); background: #111; border-left: 3px solid var(--accent); }
+        .sub-item { padding: 15px 50px; cursor: pointer; color: #555; font-size: 14px; transition: 0.2s; }
+        .sub-item.active { color: #fff; border-left: 3px solid var(--accent); background: #111; }
 
-        main { flex-grow: 1; overflow-y: auto; padding: 20px 15px 100px; }
-        .section { display: none; max-width: 600px; margin: 0 auto; animation: fadeIn 0.3s; }
+        /* CONTENT */
+        main { flex-grow: 1; overflow-y: auto; padding: 20px 15px 100px; scroll-behavior: smooth; }
+        .section { display: none; max-width: 650px; margin: 0 auto; animation: fadeIn 0.3s; }
         .section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* EMBED PREVIEW */
-        .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; }
-        .pv-title { color: #fff; font-weight: bold; margin-bottom: 5px; }
-        .pv-desc { font-size: 14px; color: #dbdee1; white-space: pre-wrap; }
-        .pv-container { position: relative; margin-top: 10px; }
-        .pv-thumb { width: 65px; height: 65px; background: #1e1f22; border-radius: 4px; border: 1px dashed #444; overflow: hidden; float: right; }
-        .pv-banner { width: 100%; height: 140px; background: #1e1f22; border-radius: 8px; border: 1px dashed #444; overflow: hidden; margin-top: 10px; }
-        .remove-img { position: absolute; top: -5px; right: -5px; background: var(--accent); color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; z-index: 10; border: 2px solid var(--d-bg); }
-        img { width: 100%; height: 100%; object-fit: cover; }
+        /* DISCORD EMBED PREVIEW */
+        .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 16px; margin-bottom: 25px; position: relative; }
+        .pv-title { color: #fff; font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+        .pv-desc { color: #dbdee1; font-size: 14px; white-space: pre-wrap; line-height: 1.3; }
+        .pv-img-cont { position: relative; margin-top: 10px; border-radius: 8px; overflow: hidden; background: #1e1f22; border: 1px dashed #444; }
+        .pv-banner { width: 100%; height: 150px; display: block; object-fit: cover; }
+        .pv-thumb { width: 70px; height: 70px; float: right; margin-left: 10px; border-radius: 4px; border: 1px dashed #444; object-fit: cover; }
+        .remove-img { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; z-index: 10; border: 2px solid var(--d-bg); }
 
-        /* INPUTS */
+        /* CARDS & FORMS */
         .card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
-        label { display: block; font-size: 11px; color: #777; text-transform: uppercase; margin: 15px 0 5px; font-weight: bold; }
-        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; outline: none; font-size: 14px; }
-        input[type="color"] { height: 45px; padding: 5px; cursor: pointer; }
-        
-        .var-badge { display: inline-block; background: #1e1f22; color: #00a8fc; padding: 5px 10px; border-radius: 5px; font-size: 12px; margin: 5px 5px 10px 0; cursor: pointer; border: 1px solid #2b2d31; }
-        
-        .btn { border: none; padding: 16px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
-        .btn-save { background: var(--accent); color: white; }
-        .btn-test { background: #4e5058; color: white; }
+        h2 { font-size: 18px; margin: 0 0 20px; display: flex; align-items: center; gap: 10px; }
+        label { display: block; font-size: 11px; color: #555; text-transform: uppercase; margin: 15px 0 5px; font-weight: 800; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 12px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--accent); }
+        .var-badge { display: inline-block; background: #1a1a1a; color: #00a8fc; padding: 6px 12px; border-radius: 6px; font-size: 12px; margin: 5px 5px 0 0; cursor: pointer; border: 1px solid #222; }
+
+        .btn { border: none; padding: 16px; border-radius: 14px; font-weight: 700; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+        .btn-save { background: var(--accent); color: white; margin-top: 15px; }
+        .btn-test { background: #333; color: white; margin-top: 10px; }
+        .btn:active { transform: scale(0.98); }
 
         /* GALLERY & SHOP */
-        .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .img-card { height: 100px; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; position: relative; }
-        .shop-item { background: #080808; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+        .img-item { height: 110px; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; background: #000; cursor: pointer; }
+        .shop-row { background: #050505; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
-<body onload="init()">
+<body>
 
     <div class="header">
         <i class="fas fa-bars burger" onclick="toggleSidebar()"></i>
-        <div style="margin-left: 20px; font-weight: 900; color: #fff;">BAGBOT <span style="color:var(--accent)">ELITE V9</span></div>
+        <div style="font-weight: 900; letter-spacing: 1px;">BAGBOT <span style="color:var(--accent)">ELITE V9</span></div>
     </div>
 
     <div id="sidebar">
-        <div style="padding: 30px; text-align: center; color: var(--accent); font-weight: 900;">DASHBOARD</div>
-        <div class="nav-item" onclick="document.getElementById('sub-em').classList.toggle('hidden')">
-            <span>CONFIG EMBEDS</span><i class="fas fa-chevron-down"></i>
+        <div style="padding: 40px 20px; text-align: center; color: var(--accent); font-weight: 900; font-size: 20px;">DASHBOARD</div>
+        <div class="nav-item" onclick="toggleSub()"><span>CONFIGURATIONS</span> <i class="fas fa-chevron-down"></i></div>
+        <div id="sub-menu" class="submenu">
+            <div id="btn-w" class="sub-item" onclick="showTab('welcome')">Bienvenue</div>
+            <div id="btn-l" class="sub-item" onclick="showTab('leave')">Départ</div>
         </div>
-        <div id="sub-em" class="submenu">
-            <div id="nav-welcome" class="sub-item" onclick="showTab('welcome')">Bienvenue</div>
-            <div id="nav-leave" class="sub-item" onclick="showTab('leave')">Départ</div>
-        </div>
-        <div class="nav-item" onclick="showTab('boutique')"><span>BOUTIQUE</span><i class="fas fa-shopping-cart"></i></div>
-        <div class="nav-item" onclick="showTab('admin')"><span>PERMISSIONS</span><i class="fas fa-shield-alt"></i></div>
-        <div class="nav-item" onclick="showTab('gallery')"><span>GALERIE</span><i class="fas fa-images"></i></div>
+        <div class="nav-item" onclick="showTab('boutique')"><span>BOUTIQUE</span> <i class="fas fa-shopping-cart"></i></div>
+        <div class="nav-item" onclick="showTab('admin')"><span>ROLES ADMIN</span> <i class="fas fa-shield-alt"></i></div>
+        <div class="nav-item" onclick="showTab('gallery')"><span>GALERIE</span> <i class="fas fa-images"></i></div>
     </div>
 
     <main onclick="closeSidebar()">
         <div id="welcome" class="section active">
             <div class="preview" id="pv-box-welcome">
-                <div class="pv-thumb"><img id="w-img-thumbnail"></div>
-                <div id="pv-w-title" class="pv-title">Chargement...</div>
-                <div id="pv-w-desc" class="pv-desc">...</div>
-                <div class="pv-banner"><img id="w-img-banner"></div>
+                <img id="w-pv-thumb" class="pv-thumb" style="display:none">
+                <div id="w-pv-title" class="pv-title">Chargement...</div>
+                <div id="w-pv-desc" class="pv-desc">Chargement des données...</div>
+                <div class="pv-img-cont" id="w-pv-banner-box" style="display:none">
+                    <img id="w-pv-banner" class="pv-banner">
+                </div>
             </div>
             <div class="card">
-                <h2>Configuration Bienvenue</h2>
-                <label>Couleur Embed</label><input type="color" id="w-color" oninput="sync('welcome')">
+                <h2><i class="fas fa-door-open"></i> Bienvenue</h2>
+                <label>Couleur</label><input type="color" id="w-color" oninput="sync('welcome')">
                 <label>Titre</label><input type="text" id="w-title" oninput="sync('welcome')">
                 <div class="var-badge" onclick="addVar('w-title','{user}')">{user}</div>
-                <label>Description</label><textarea id="w-desc" rows="4" oninput="sync('welcome')"></textarea>
-                <div>
-                    <span class="var-badge" onclick="addVar('w-desc','{user}')">{user}</span>
-                    <span class="var-badge" onclick="addVar('w-desc','{server}')">{server}</span>
-                    <span class="var-badge" onclick="addVar('w-desc','{count}')">{count}</span>
+                <label>Message</label><textarea id="w-desc" rows="4" oninput="sync('welcome')"></textarea>
+                <div class="var-badge" onclick="addVar('w-desc','{user}')">{user}</div>
+                <div class="var-badge" onclick="addVar('w-desc','{server}')">{server}</div>
+                <label>Salon</label><select id="w-channel"></select>
+                <label>Images</label>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <button class="btn btn-test" onclick="pick('welcome','banner')">Bannière</button>
+                    <button class="btn btn-test" onclick="pick('welcome','thumbnail')">Miniature</button>
                 </div>
-                <label>Salon d'envoi</label><select id="w-channel"></select>
-                <div class="btn-group">
-                    <button class="btn btn-save" onclick="save()">ENREGISTRER</button>
-                    <button class="btn btn-test" onclick="sendTest('welcome')">TESTER</button>
-                </div>
+                <button class="btn btn-save" onclick="save()">ENREGISTRER</button>
             </div>
         </div>
 
         <div id="leave" class="section">
             <div class="preview" id="pv-box-leave">
-                <div id="pv-l-title" class="pv-title">Chargement...</div>
-                <div id="pv-l-desc" class="pv-desc">...</div>
-                <div class="pv-banner"><img id="l-img-banner"></div>
+                <div id="l-pv-title" class="pv-title">Chargement...</div>
+                <div id="l-pv-desc" class="pv-desc">...</div>
+                <div class="pv-img-cont" id="l-pv-banner-box" style="display:none">
+                    <img id="l-pv-banner" class="pv-banner">
+                </div>
             </div>
             <div class="card">
-                <h2>Configuration Départ</h2>
-                <label>Couleur Embed</label><input type="color" id="l-color" oninput="sync('leave')">
+                <h2><i class="fas fa-door-closed"></i> Départ</h2>
+                <label>Couleur</label><input type="color" id="l-color" oninput="sync('leave')">
                 <label>Titre</label><input type="text" id="l-title" oninput="sync('leave')">
-                <label>Description</label><textarea id="l-desc" rows="4" oninput="sync('leave')"></textarea>
-                <div class="var-badge" onclick="addVar('l-desc','{user}')">{user}</div>
-                <label>Salon d'envoi</label><select id="l-channel"></select>
-                <label>Image de fond (Bannière)</label>
-                <button class="btn btn-test" onclick="openPicker('leave','banner')">Choisir une image</button>
-                <div class="btn-group">
-                    <button class="btn btn-save" onclick="save()">ENREGISTRER</button>
-                    <button class="btn btn-test" onclick="sendTest('leave')">TESTER</button>
-                </div>
+                <label>Message</label><textarea id="l-desc" rows="4" oninput="sync('leave')"></textarea>
+                <label>Salon</label><select id="l-channel"></select>
+                <button class="btn btn-test" onclick="pick('leave','banner')">Changer la bannière</button>
+                <button class="btn btn-save" onclick="save()">ENREGISTRER</button>
             </div>
         </div>
 
         <div id="boutique" class="section">
             <div class="card">
-                <h2>Nouvel Article</h2>
-                <input type="text" id="sh-name" placeholder="Nom de l'item">
+                <h2>Ajouter un article</h2>
+                <input type="text" id="sh-name" placeholder="Nom de l'objet">
                 <input type="number" id="sh-price" placeholder="Prix" style="margin-top:10px">
                 <button class="btn btn-save" onclick="addShop()">AJOUTER</button>
             </div>
-            <div id="shop-container"></div>
+            <div id="shop-list"></div>
         </div>
 
         <div id="gallery" class="section">
             <div class="card">
-                <h2>Ma Galerie</h2>
-                <input type="file" id="f-upload" onchange="uploadFile()">
-                <div class="gallery-grid" id="gallery-list" style="margin-top:20px"></div>
+                <h2>Galerie</h2>
+                <input type="file" id="up" onchange="uploadFile()">
+                <div class="grid" id="gallery-list"></div>
+                <button class="btn btn-test" onclick="back()">RETOUR</button>
             </div>
         </div>
     </main>
 
     <script>
-        let db = { channels:[], roles:[], config:{welcome:{}, leave:{}}, shop:{items:[]}, images:[] };
-        let activeM = 'welcome', activeT = 'banner';
+        let data = { channels:[], config:{welcome:{}, leave:{}}, shop:{items:[]}, images:[] };
+        let currentM = 'welcome', currentT = 'banner';
 
         async function init() {
             try {
                 const res = await fetch('/api/get_data');
-                const data = await res.json();
-                if(data) db = data;
+                data = await res.json();
                 
-                // Salons
-                const opts = db.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                // Remplissage salons
+                const opts = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
                 document.getElementById('w-channel').innerHTML = opts;
                 document.getElementById('l-channel').innerHTML = opts;
 
-                // Chargement des données configurées
+                // Forcer l'affichage des données configurées
                 ['welcome', 'leave'].forEach(m => {
-                    const conf = db.config[m] || {};
+                    const c = data.config[m] || {};
                     const p = m[0];
-                    document.getElementById(p+'-title').value = conf.title || "Titre par défaut";
-                    document.getElementById(p+'-desc').value = conf.desc || "Description par défaut";
-                    document.getElementById(p+'-color').value = conf.color || "#ed4245";
-                    document.getElementById(p+'-channel').value = conf.channel || "";
+                    document.getElementById(p+'-title').value = c.title || "";
+                    document.getElementById(p+'-desc').value = c.desc || "";
+                    document.getElementById(p+'-color').value = c.color || "#ed4245";
+                    document.getElementById(p+'-channel').value = c.channel || "";
                     
-                    if(conf.banner) {
-                        const img = document.getElementById(p+'-img-banner');
-                        img.src = conf.banner; img.style.display = 'block';
-                    }
+                    // Chargement images persistantes
+                    if(c.banner) setImg(m, 'banner', c.banner);
+                    if(m === 'welcome' && c.thumbnail) setImg(m, 'thumbnail', c.thumbnail);
                 });
 
                 renderShop();
                 renderGallery();
                 sync('welcome'); sync('leave');
-            } catch(e) { console.error("Erreur de chargement", e); }
+            } catch(e) { console.error(e); }
         }
 
         function sync(m) {
             const p = m[0];
-            const title = document.getElementById(p+'-title').value;
-            const desc = document.getElementById(p+'-desc').value;
-            const color = document.getElementById(p+'-color').value;
+            const t = document.getElementById(p+'-title').value;
+            const d = document.getElementById(p+'-desc').value;
+            const c = document.getElementById(p+'-color').value;
 
-            document.getElementById('pv-box-'+m).style.borderLeftColor = color;
-            document.getElementById('pv-'+p+'-title').innerText = title || "Titre";
-            document.getElementById('pv-'+p+'-desc').innerText = desc || "Message...";
+            document.getElementById('pv-box-'+m).style.borderLeftColor = c;
+            document.getElementById(p+'-pv-title').innerText = t || (m==='welcome'?'Bienvenue':'Départ');
+            document.getElementById(p+'-pv-desc').innerText = d || 'Votre message ici...';
+        }
+
+        function setImg(m, t, url) {
+            const p = m[0];
+            const img = document.getElementById(p+'-pv-'+t);
+            const box = document.getElementById(p+'-pv-'+t+'-box') || img;
+            if(url) { 
+                img.src = url; 
+                if(img.style) img.style.display = 'block';
+                if(box.style) box.style.display = 'block';
+                data.config[m][t] = url;
+            }
+        }
+
+        function renderShop() {
+            document.getElementById('shop-list').innerHTML = (data.shop.items || []).map((it, i) => `
+                <div class="shop-row">
+                    <div><b>${it.name}</b><br><small>${it.price} coins</small></div>
+                    <i class="fas fa-trash" onclick="delShop(${i})" style="color:var(--accent); cursor:pointer;"></i>
+                </div>
+            `).join('');
+        }
+
+        function renderGallery() {
+            document.getElementById('gallery-list').innerHTML = (data.images || []).map(img => `
+                <div class="img-item" onclick="selectImg('${img}')"><img src="${img}" style="width:100%;height:100%;object-fit:cover;"></div>
+            `).join('');
         }
 
         function showTab(id) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.sub-item, .nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             if(id !== 'gallery') localStorage.setItem('lastTab', id);
             closeSidebar();
         }
 
+        function pick(m, t) { currentM = m; currentT = t; showTab('gallery'); }
+        function selectImg(url) { setImg(currentM, currentT, url); back(); sync(currentM); }
+        function back() { showTab(localStorage.getItem('lastTab') || 'welcome'); }
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
-
-        function openPicker(m, t) { activeM = m; activeT = t; showTab('gallery'); }
-
-        function selectImg(url) {
-            const p = activeM[0];
-            const img = document.getElementById(p+'-img-'+activeT);
-            img.src = url; img.style.display = 'block';
-            db.config[activeM][activeT] = url;
-            showTab(localStorage.getItem('lastTab') || 'welcome');
-            sync(activeM);
-        }
-
-        function renderGallery() {
-            document.getElementById('gallery-list').innerHTML = db.images.map(img => `
-                <div class="img-card" onclick="selectImg('${img}')"><img src="${img}"></div>
-            `).join('');
-        }
-
-        function renderShop() {
-            document.getElementById('shop-container').innerHTML = (db.shop.items || []).map((it, i) => `
-                <div class="shop-item">
-                    <div><b>${it.name}</b><br><small>${it.price} coins</small></div>
-                    <i class="fas fa-trash" onclick="delShop(${i})"></i>
-                </div>
-            `).join('');
-        }
+        function toggleSub() { document.getElementById('sub-menu').classList.toggle('hidden'); }
+        function addVar(id, v) { const el = document.getElementById(id); el.value += v; sync(id.startsWith('w')?'welcome':'leave'); }
 
         async function save() {
             ['welcome', 'leave'].forEach(m => {
                 const p = m[0];
-                db.config[m].title = document.getElementById(p+'-title').value;
-                db.config[m].desc = document.getElementById(p+'-desc').value;
-                db.config[m].color = document.getElementById(p+'-color').value;
-                db.config[m].channel = document.getElementById(p+'-channel').value;
-                // Les images sont déjà dans db via selectImg
+                data.config[m].title = document.getElementById(p+'-title').value;
+                data.config[m].desc = document.getElementById(p+'-desc').value;
+                data.config[m].color = document.getElementById(p+'-color').value;
+                data.config[m].channel = document.getElementById(p+'-channel').value;
             });
-            await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(db.config) });
-            alert("Données sauvegardées !");
-        }
-
-        function addVar(id, v) { 
-            const el = document.getElementById(id); 
-            el.value += v; 
-            sync(id.startsWith('w') ? 'welcome' : 'leave'); 
+            await fetch('/api/save', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data.config) });
+            alert("Configuration enregistrée !");
         }
 
         window.onload = init;
