@@ -13,9 +13,7 @@ module.exports = {
         .setDescription('Zone spécifique (ex: lit, canapé...)')
         .setRequired(false)
         .setAutocomplete(true))
-    .setDMPermission(true)
-    .setContexts([0, 1, 2])
-    .setIntegrationTypes([0, 1]),
+    .setDMPermission(true),
 
   async autocomplete(interaction) {
     try {
@@ -43,26 +41,27 @@ module.exports = {
   },
 
   async execute(interaction) {
-    // 1. On sécurise l'interaction immédiatement (plus de "ne répond pas")
+    // 1. On sécurise l'interaction immédiatement
     await interaction.deferReply();
 
     try {
-      // 2. Si le handler d'économie est là, on l'utilise
+      // 2. On récupère les choix de l'utilisateur
+      const cible = interaction.options.getUser('cible');
+      const zone = interaction.options.getString('zone') || 'le lit';
+
+      // 3. Si le handler d'économie est là, on l'utilise pour la logique (argent, logs, etc.)
       if (global.handleEconomyAction) {
         return await global.handleEconomyAction(interaction, 'sixtynine');
       } 
       
-      // 3. Fallback (si le handler a un souci, on affiche quand même l'action)
-      const cible = interaction.options.getUser('cible');
-      const zone = interaction.options.getString('zone') || 'le lit';
-      
+      // 4. Message de secours (celui qui s'affichera si l'économie n'est pas encore liée)
       return await interaction.editReply({ 
         content: `🔥 **${interaction.user.username}** fait un 69 avec **${cible.username}** dans **${zone}** !` 
       });
 
     } catch (err) {
       console.error('[69 Execute Error]:', err);
-      return await interaction.editReply({ content: '❌ Une erreur est survenue.' });
+      return await interaction.editReply({ content: '❌ Une erreur est survenue lors de l\'action.' });
     }
   }
 };
