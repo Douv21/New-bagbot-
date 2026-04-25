@@ -3,35 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BAGBOT DASHBOARD ELITE V9</title>
+    <title>BAGBOT ELITE V9</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #0a0a0a; --card: #141414; --accent: #ed4245; --border: #252525; --d-bg: #2b2d31; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-
-        /* --- HEADER --- */
-        .header { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; z-index: 2500; }
+        
+        /* HEADER */
+        .header { height: 60px; background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; z-index: 2500; }
         .burger { font-size: 22px; color: var(--accent); cursor: pointer; }
         .logo-text { margin-left: 20px; font-weight: 900; color: var(--accent); letter-spacing: 1px; }
 
-        /* --- SIDEBAR --- */
-        #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #000; z-index: 3000; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-right: 1px solid var(--border); overflow-y: auto; }
+        /* SIDEBAR */
+        #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: #000; z-index: 3000; transition: 0.3s; border-right: 1px solid var(--border); }
         #sidebar.open { left: 0; }
         .nav-item { padding: 20px; border-bottom: 1px solid #111; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: #888; font-weight: bold; }
-        .nav-item.active { color: var(--accent); background: #ed424510; }
+        .nav-item.active { color: var(--accent); background: rgba(237, 66, 69, 0.1); }
         .submenu { background: #050505; }
         .sub-item { padding: 15px 55px; cursor: pointer; color: #666; font-size: 14px; border-left: 3px solid transparent; }
         .sub-item.active { color: var(--accent); background: #111; border-left-color: var(--accent); }
 
-        /* --- CONTENT --- */
+        /* CONTENT */
         main { flex-grow: 1; overflow-y: auto; padding: 80px 15px 150px; }
-        .section { display: none; max-width: 600px; margin: 0 auto; animation: fadeIn 0.3s ease; }
+        .section { display: none; max-width: 600px; margin: 0 auto; }
         .section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- PREVIEW DISCORD --- */
-        .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; position: relative; }
+        /* PREVIEW DISCORD */
+        .preview { background: var(--d-bg); border-left: 4px solid var(--accent); border-radius: 4px; padding: 15px; margin-bottom: 25px; }
         .pv-top { display: flex; justify-content: space-between; gap: 10px; }
         .pv-thumb { width: 65px; height: 65px; background: #1e1f22; border-radius: 4px; border: 1px dashed #444; overflow: hidden; }
         .pv-banner { width: 100%; height: 140px; background: #1e1f22; border-radius: 8px; margin-top: 10px; border: 1px dashed #444; overflow: hidden; }
@@ -39,46 +38,38 @@
         .pv-footer-cont { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 11px; color: #b5bac1; }
         img { width: 100%; height: 100%; object-fit: cover; display: none; }
 
-        /* --- CARDS & FORMS --- */
+        /* FORM */
         .card { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
-        h2 { font-size: 18px; margin: 0 0 20px; display: flex; align-items: center; gap: 10px; color: #fff; }
         label { display: block; font-size: 11px; color: #777; text-transform: uppercase; margin: 15px 0 5px; font-weight: bold; }
-        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 5px; font-size: 14px; }
-        
-        .var-box { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 15px; }
-        .var-badge { background: #1e1f22; color: #00a8fc; padding: 6px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; border: 1px solid #2b2d31; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 5px; }
+        .var-badge { background: #1e1f22; color: #00a8fc; padding: 6px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; display: inline-block; margin: 5px 5px 10px 0; border: 1px solid #2b2d31; }
+        .btn-save { background: var(--accent); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 20px; }
+        .btn-img { background: #333; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; margin-top: 5px; width: 100%; font-size: 12px; }
 
-        .btn { border: none; padding: 16px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
-        .btn-save { background: var(--accent); color: white; margin-top: 20px; }
-        .btn-img { background: #333; color: #ccc; margin-top: 5px; font-size: 13px; }
-
-        /* --- GALERIE --- */
+        /* GALLERY */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .g-img { height: 110px; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; cursor: pointer; background: #000; position: relative; }
-        .btn-del { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10px; }
+        .g-img { height: 110px; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; cursor: pointer; background: #000; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <i class="fas fa-bars burger" onclick="toggleSidebar()"></i>
+        <i class="fas fa-bars burger" id="burger-btn"></i>
         <div class="logo-text">BAGBOT ELITE V9</div>
     </div>
 
     <div id="sidebar">
-        <div style="padding:40px 20px; text-align:center; color:var(--accent); font-weight:900; font-size:18px; border-bottom:1px solid #111;">PANEL ELITE</div>
+        <div style="padding:40px 20px; text-align:center; color:var(--accent); font-weight:900;">PANEL CONFIG</div>
         <div class="nav-item"><span>MESSAGES</span><i class="fas fa-chevron-down"></i></div>
         <div class="submenu">
-            <div id="m-welcome" class="sub-item active" onclick="showTab('welcome', this)">Bienvenue</div>
-            <div id="m-leave" class="sub-item" onclick="showTab('leave', this)">Départ</div>
+            <div class="sub-item active" onclick="tab('welcome')">Bienvenue</div>
+            <div class="sub-item" onclick="tab('leave')">Départ</div>
         </div>
-        <div class="nav-item" onclick="showTab('admin', this)"><span>PERMISSIONS</span><i class="fas fa-shield-alt"></i></div>
-        <div class="nav-item" onclick="showTab('gallery', this)"><span>GALERIE</span><i class="fas fa-images"></i></div>
+        <div class="nav-item" onclick="tab('gallery')"><span>GALERIE</span><i class="fas fa-images"></i></div>
     </div>
 
-    <main onclick="closeSidebar()">
-        
-        <div id="welcome" class="section active">
+    <main>
+        <section id="welcome" class="section active">
             <div class="preview" id="pv-w-box">
                 <div class="pv-top">
                     <div style="flex-grow:1">
@@ -90,176 +81,52 @@
                 <div class="pv-banner"><img id="img-w-banner"></div>
                 <div class="pv-footer-cont">
                     <div class="pv-f-icon"><img id="img-w-footer_icon"></div>
-                    <span id="pv-w-footer">BagBot Elite</span>
+                    <span id="pv-w-footer">Footer</span>
                 </div>
             </div>
-
             <div class="card">
                 <h2>Configuration Bienvenue</h2>
-                <label>Couleur</label><input type="color" id="w-color" oninput="sync('welcome')">
-                <label>Titre</label><input type="text" id="w-title" oninput="sync('welcome')">
-                <div class="var-box"><span class="var-badge" onclick="addVar('w-title','{user}')">{user}</span></div>
-                <label>Description</label><textarea id="w-desc" rows="4" oninput="sync('welcome')"></textarea>
-                <div class="var-box">
-                    <span class="var-badge" onclick="addVar('w-desc','{user}')">{user}</span>
-                    <span class="var-badge" onclick="addVar('w-desc','{server}')">{server}</span>
-                    <span class="var-badge" onclick="addVar('w-desc','{count}')">{count}</span>
-                </div>
-                <label>Texte Footer</label><input type="text" id="w-footer" oninput="sync('welcome')">
+                <label>Couleur</label><input type="color" id="w-color" oninput="sync()">
+                <label>Titre</label><input type="text" id="w-title" oninput="sync()">
+                <label>Description</label><textarea id="w-desc" rows="4" oninput="sync()"></textarea>
+                <div class="var-badge" onclick="addV('w-desc','{user}')">{user}</div>
+                <div class="var-badge" onclick="addV('w-desc','{server}')">{server}</div>
+                <label>Texte Footer</label><input type="text" id="w-footer" oninput="sync()">
                 <label>Salon</label><select id="w-channel"></select>
-                <label>Images</label>
-                <button class="btn btn-img" onclick="openGallery('welcome','banner')">Changer Bannière</button>
-                <button class="btn btn-img" onclick="openGallery('welcome','thumbnail')">Changer Miniature</button>
-                <button class="btn btn-img" onclick="openGallery('welcome','footer_icon')">Changer Icône Footer</button>
-                <button class="btn btn-save" onclick="save()">SAUVEGARDER</button>
+                <button class="btn-img" onclick="pick('welcome','banner')">Changer Bannière</button>
+                <button class="btn-img" onclick="pick('welcome','thumbnail')">Changer Miniature</button>
+                <button class="btn-img" onclick="pick('welcome','footer_icon')">Changer Icone Footer</button>
+                <button class="btn-save" onclick="save()">SAUVEGARDER</button>
             </div>
-        </div>
+        </section>
 
-        <div id="leave" class="section">
+        <section id="leave" class="section">
             <div class="preview" id="pv-l-box">
                 <div id="pv-l-title" style="color:#00a8fc; font-weight:bold;">Titre</div>
-                <div id="pv-l-desc" style="font-size:14px; margin-top:5px; white-space:pre-wrap;">Message...</div>
+                <div id="pv-l-desc" style="font-size:14px; margin-top:5px;">Message...</div>
                 <div class="pv-banner"><img id="img-l-banner"></div>
             </div>
             <div class="card">
                 <h2>Configuration Départ</h2>
-                <label>Couleur</label><input type="color" id="l-color" oninput="sync('leave')">
-                <label>Titre</label><input type="text" id="l-title" oninput="sync('leave')">
-                <label>Description</label><textarea id="l-desc" rows="4" oninput="sync('leave')"></textarea>
+                <label>Couleur</label><input type="color" id="l-color" oninput="sync()">
+                <label>Titre</label><input type="text" id="l-title" oninput="sync()">
+                <label>Description</label><textarea id="l-desc" rows="4" oninput="sync()"></textarea>
                 <label>Salon</label><select id="l-channel"></select>
-                <button class="btn btn-img" onclick="openGallery('leave','banner')">Changer Bannière</button>
-                <button class="btn btn-save" onclick="save()">SAUVEGARDER</button>
+                <button class="btn-img" onclick="pick('leave','banner')">Changer Bannière</button>
+                <button class="btn-save" onclick="save()">SAUVEGARDER</button>
             </div>
-        </div>
+        </section>
 
-        <div id="admin" class="section">
+        <section id="gallery" class="section">
             <div class="card">
-                <h2>Permissions Dashboard</h2>
-                <p style="font-size:12px; color:#666">Rôles autorisés à modifier cette page.</p>
-                <div id="admin-roles-list"></div>
-                <button class="btn btn-save" onclick="save()">APPLIQUER</button>
+                <h2>Galerie d'images</h2>
+                <input type="file" id="up-input" onchange="upload()">
+                <div id="g-list" class="grid" style="margin-top:20px;"></div>
+                <button class="btn-save" style="background:#444" onclick="tab(localStorage.getItem('last'))">RETOUR</button>
             </div>
-        </div>
-
-        <div id="gallery" class="section">
-            <div class="card">
-                <h2>Galerie</h2>
-                <input type="file" id="f-upload" onchange="uploadImage()" style="margin-bottom:20px;">
-                <div id="g-list" class="grid"></div>
-                <button class="btn btn-img" style="margin-top:20px" onclick="showTab(localStorage.getItem('lastTab')||'welcome')">RETOUR</button>
-            </div>
-        </div>
-
+        </section>
     </main>
 
-    <script>
-        let db = { channels:[], config:{welcome:{}, leave:{}}, images:[], roles:[] };
-        let activeMode = 'welcome', activeType = 'banner';
-
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
-
-        function showTab(id, el) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item, .sub-item').forEach(i => i.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(el) el.classList.add('active');
-            if(id !== 'gallery') localStorage.setItem('lastTab', id);
-            closeSidebar();
-        }
-
-        function sync(mode) {
-            const p = mode[0];
-            const color = document.getElementById(p+'-color').value;
-            document.getElementById('pv-'+p+'-box').style.borderLeftColor = color;
-            document.getElementById('pv-'+p+'-title').innerText = document.getElementById(p+'-title').value || "Titre";
-            document.getElementById('pv-'+p+'-desc').innerText = document.getElementById(p+'-desc').value || "Message...";
-            if(p === 'w') document.getElementById('pv-w-footer').innerText = document.getElementById('w-footer').value || "BagBot Elite";
-        }
-
-        function setImg(mode, type, url) {
-            const img = document.getElementById('img-'+mode[0]+'-'+type);
-            if(!img) return;
-            if(url && url.length > 5) { img.src = url; img.style.display = 'block'; img.dataset.url = url; }
-            else { img.style.display = 'none'; img.dataset.url = ''; }
-        }
-
-        function openGallery(m, t) { activeMode = m; activeType = t; showTab('gallery'); }
-        function selectImage(url) { setImg(activeMode, activeType, url); showTab(localStorage.getItem('lastTab')); sync(activeMode); }
-
-        async function init() {
-            try {
-                const res = await fetch('/api/get_data');
-                db = await res.json();
-                
-                const chans = db.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
-                document.getElementById('w-channel').innerHTML = chans;
-                document.getElementById('l-channel').innerHTML = chans;
-
-                ['welcome', 'leave'].forEach(m => {
-                    const p = m[0], conf = db.config[m] || {};
-                    document.getElementById(p+'-title').value = conf.title || "";
-                    document.getElementById(p+'-desc').value = conf.desc || "";
-                    document.getElementById(p+'-color').value = conf.color || "#ed4245";
-                    document.getElementById(p+'-channel').value = conf.channel || "";
-                    if(p === 'w') document.getElementById('w-footer').value = conf.footer || "";
-                    
-                    setImg(m, 'banner', conf.banner);
-                    setImg(m, 'thumbnail', conf.thumbnail);
-                    setImg(m, 'footer_icon', conf.footer_icon);
-                });
-
-                renderGallery();
-                sync('welcome'); sync('leave');
-            } catch(e) { console.error("Erreur Init:", e); }
-        }
-
-        function renderGallery() {
-            document.getElementById('g-list').innerHTML = (db.images || []).map(i => `
-                <div class="g-img"><img src="${i}" style="display:block" onclick="selectImage('${i}')"><button class="btn-del" onclick="deleteImg('${i}', event)">✕</button></div>
-            `).join('');
-        }
-
-        async function save() {
-            const config = {
-                welcome: {
-                    title: document.getElementById('w-title').value,
-                    desc: document.getElementById('w-desc').value,
-                    color: document.getElementById('w-color').value,
-                    footer: document.getElementById('w-footer').value,
-                    channel: document.getElementById('w-channel').value,
-                    banner: document.getElementById('img-w-banner').dataset.url,
-                    thumbnail: document.getElementById('img-w-thumbnail').dataset.url,
-                    footer_icon: document.getElementById('img-w-footer_icon').dataset.url
-                },
-                leave: {
-                    title: document.getElementById('l-title').value,
-                    desc: document.getElementById('l-desc').value,
-                    color: document.getElementById('l-color').value,
-                    channel: document.getElementById('l-channel').value,
-                    banner: document.getElementById('img-l-banner').dataset.url
-                }
-            };
-            await fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
-            alert("✅ Configuration enregistrée !");
-        }
-
-        async function uploadImage() {
-            const f = document.getElementById('f-upload').files[0]; if(!f) return;
-            const fd = new FormData(); fd.append('file', f);
-            const r = await (await fetch('/api/upload', {method:'POST', body:fd})).json();
-            db.images.push(r.path); renderGallery(); selectImage(r.path);
-        }
-
-        async function deleteImg(path, e) {
-            e.stopPropagation();
-            await fetch('/api/delete_image', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path})});
-            db.images = db.images.filter(i => i !== path); renderGallery();
-        }
-
-        function addVar(id, v) { const el = document.getElementById(id); el.value += v; sync(id.startsWith('w')?'welcome':'leave'); el.focus(); }
-
-        window.onload = init;
-    </script>
+    <script src="/static/index.js"></script>
 </body>
 </html>
