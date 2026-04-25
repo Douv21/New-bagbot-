@@ -1,5 +1,3 @@
-Voici le main.py
-
 import os
 import json
 import discord
