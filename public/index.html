@@ -59,10 +59,10 @@
         .img-card { height: 110px; border-radius: 10px; border: 1px solid var(--border); position: relative; overflow: hidden; background: #000; }
         .del-img-btn { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; border-radius: 5px; padding: 8px; cursor: pointer; z-index: 20; font-size: 12px; }
 
-        /* SHOP STYLE */
-        .shop-item-card { background: #0a0a0a; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .shop-item-info b { color: var(--accent); font-size: 15px; }
-        .shop-item-info span { color: #555; font-size: 12px; display: block; }
+        /* SHOP SECTION STYLE */
+        .shop-item-card { background: #000; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .shop-item-info b { color: var(--accent); display: block; font-size: 15px; }
+        .shop-item-info span { font-size: 12px; color: #666; }
     </style>
 </head>
 <body>
@@ -160,30 +160,40 @@
         <div id="boutique" class="section">
             <div class="card">
                 <h2>📦 Ajouter un article</h2>
-                <label>Nom de l'article</label>
-                <input type="text" id="shop-name" placeholder="Ex: Grade VIP">
-                <label>Prix (💰)</label>
-                <input type="number" id="shop-price" placeholder="Ex: 5000">
-                <label>Type de récompense</label>
+                <label>Nom</label><input type="text" id="shop-name" placeholder="Ex: Grade VIP">
+                <label>Prix</label><input type="number" id="shop-price" placeholder="Prix en coins">
+                <label>Type de gain</label>
                 <select id="shop-type">
                     <option value="role">Rôle Permanent</option>
-                    <option value="temp_role">Rôle Temporaire (24h)</option>
-                    <option value="item">Item simple</option>
+                    <option value="temp_role">Rôle Temporaire</option>
+                    <option value="item">Item inventaire</option>
                 </select>
-                <label>ID du Rôle Discord (si applicable)</label>
-                <input type="text" id="shop-roleid" placeholder="ID (ex: 1234567890...)">
-                <button class="btn btn-save" style="margin-top:15px;" onclick="addShopItem()"><i class="fas fa-plus"></i> AJOUTER L'ARTICLE</button>
+                <label>ID Rôle (Optionnel)</label><input type="text" id="shop-roleid" placeholder="ID Discord">
+                <button class="btn btn-save" style="margin-top:15px;" onclick="addShopItem()"><i class="fas fa-plus"></i> CRÉER L'ARTICLE</button>
             </div>
-
             <div class="card">
-                <h2>🛒 Articles en vente</h2>
-                <div id="shop-list-container">
-                    </div>
+                <h2>🛒 En vente</h2>
+                <div id="shop-list-container"></div>
             </div>
         </div>
 
-        <div id="admin" class="section"><div class="card"><h2>Permissions</h2><div class="dropdown-select" onclick="toggleDropdown('admin-roles-drop', event)"><span id="admin-roles-label">Choisir les rôles</span><i class="fas fa-chevron-down"></i></div><div id="admin-roles-drop" class="dropdown-content"></div><button class="btn btn-save" onclick="save()" style="margin-top:20px;">APPLIQUER</button></div></div>
-        <div id="gallery" class="section"><div class="card"><h2>Galerie</h2><input type="file" id="f-in" onchange="uploadFile()" style="margin-bottom:20px;"><div id="g-list" class="gallery-grid"></div><button class="btn btn-save" onclick="showTab(localStorage.getItem('lastTab') || 'welcome')" style="margin-top:20px;">RETOUR</button></div></div>
+        <div id="admin" class="section">
+            <div class="card">
+                <h2>Permissions</h2>
+                <div class="dropdown-select" onclick="toggleDropdown('admin-roles-drop', event)"><span id="admin-roles-label">Choisir les rôles</span><i class="fas fa-chevron-down"></i></div>
+                <div id="admin-roles-drop" class="dropdown-content"></div>
+                <button class="btn btn-save" onclick="save()" style="margin-top:20px;">APPLIQUER</button>
+            </div>
+        </div>
+
+        <div id="gallery" class="section">
+            <div class="card">
+                <h2>Galerie</h2>
+                <input type="file" id="f-in" onchange="uploadFile()" style="margin-bottom:20px;">
+                <div id="g-list" class="gallery-grid"></div>
+                <button class="btn btn-save" onclick="showTab(localStorage.getItem('lastTab') || 'welcome')" style="margin-top:20px;">RETOUR</button>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -195,19 +205,22 @@
                 const res = await fetch('/api/get_data');
                 db = await res.json();
                 
+                // Remplissage salons
                 const chans = db.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
                 document.getElementById('w-channel').innerHTML = chans;
                 document.getElementById('l-channel').innerHTML = chans;
 
+                // Remplissage Dropdowns Rôles
                 const renderDrop = (listId, labelId, selected) => {
                     const cont = document.getElementById(listId);
                     if(!cont) return;
                     cont.innerHTML = db.roles.map(r => `<div class="role-opt" onclick="toggleRoleCheck(this, '${labelId}')"><input type="checkbox" value="${r}" ${selected.includes(r)?'checked':''}><span>${r}</span></div>`).join('');
                     updateLabel(listId, labelId);
                 };
-                renderDrop('w-roles-drop', 'w-roles-label', db.config.welcome.trigger_roles || []);
+                renderDrop('w-roles-drop', 'w-roles-label', db.config.welcome?.trigger_roles || []);
                 renderDrop('admin-roles-drop', 'admin-roles-label', db.config.admin_roles || []);
 
+                // Remplissage des données formulaires
                 ['welcome', 'leave'].forEach(m => {
                     const p = m[0], c = db.config[m];
                     if(!c) return;
@@ -222,67 +235,18 @@
                 });
 
                 renderGallery();
-                renderShop(); // Charger la boutique
+                renderShop();
                 sync('welcome'); sync('leave');
                 showTab(localStorage.getItem('currentPage') || 'welcome');
             } catch(e) { console.error("INIT ERROR:", e); }
         }
 
-        // --- GESTION BOUTIQUE ---
-        function renderShop() {
-            const cont = document.getElementById('shop-list-container');
-            const items = db.shop_config.items || [];
-            if(items.length === 0) {
-                cont.innerHTML = '<p style="text-align:center; color:#444; font-size:13px;">Aucun article en vente.</p>';
-                return;
-            }
-            cont.innerHTML = items.map((it, idx) => `
-                <div class="shop-item-card">
-                    <div class="shop-item-info">
-                        <b>${it.name}</b>
-                        <span>${it.price} 💰 | ${it.type}</span>
-                    </div>
-                    <i class="fas fa-trash" style="color:var(--accent); cursor:pointer;" onclick="deleteShopItem(${idx})"></i>
-                </div>
-            `).join('');
+        function addVar(inputId, v) { 
+            const i = document.getElementById(inputId); 
+            i.value += v; 
+            sync(inputId.startsWith('w') ? 'welcome' : 'leave'); 
+            i.focus(); 
         }
-
-        async function addShopItem() {
-            const name = document.getElementById('shop-name').value;
-            const price = document.getElementById('shop-price').value;
-            const type = document.getElementById('shop-type').value;
-            const roleId = document.getElementById('shop-roleid').value;
-
-            if(!name || !price) return alert("Veuillez remplir le nom et le prix !");
-
-            const newItem = { name, price: parseInt(price), type, role_id: roleId };
-            db.shop_config.items.push(newItem);
-            
-            await fetch('/api/save_shop', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(db.shop_config)
-            });
-
-            document.getElementById('shop-name').value = '';
-            document.getElementById('shop-price').value = '';
-            renderShop();
-            alert("Article ajouté !");
-        }
-
-        async function deleteShopItem(idx) {
-            if(!confirm("Supprimer cet article ?")) return;
-            db.shop_config.items.splice(idx, 1);
-            await fetch('/api/save_shop', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(db.shop_config)
-            });
-            renderShop();
-        }
-
-        // --- FONCTIONS SYNC & TOOLS ---
-        function addVar(inputId, v) { const i = document.getElementById(inputId); i.value += v; sync(inputId.startsWith('w') ? 'welcome' : 'leave'); i.focus(); }
 
         function sync(mode) {
             const p = mode[0];
@@ -299,6 +263,38 @@
             if(document.getElementById('pv-'+p+'-footer')) document.getElementById('pv-'+p+'-footer').innerText = footer;
         }
 
+        // --- SHOP ENGINE ---
+        function renderShop() {
+            const cont = document.getElementById('shop-list-container');
+            const items = db.shop_config.items || [];
+            cont.innerHTML = items.map((it, idx) => `
+                <div class="shop-item-card">
+                    <div class="shop-item-info">
+                        <b>${it.name}</b>
+                        <span>${it.price} 💰 | ${it.type}</span>
+                    </div>
+                    <i class="fas fa-trash" style="color:var(--accent); cursor:pointer;" onclick="deleteShopItem(${idx})"></i>
+                </div>
+            `).join('');
+        }
+
+        async function addShopItem() {
+            const name = document.getElementById('shop-name').value;
+            const price = document.getElementById('shop-price').value;
+            if(!name || !price) return alert("Remplis le nom et le prix");
+            db.shop_config.items.push({ name, price: parseInt(price), type: document.getElementById('shop-type').value, role_id: document.getElementById('shop-roleid').value });
+            await fetch('/api/save_shop', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(db.shop_config)});
+            renderShop();
+            document.getElementById('shop-name').value = '';
+            document.getElementById('shop-price').value = '';
+        }
+
+        async function deleteShopItem(idx) {
+            db.shop_config.items.splice(idx, 1);
+            await fetch('/api/save_shop', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(db.shop_config)});
+            renderShop();
+        }
+
         function setImg(mode, type, url) {
             const p = mode[0]; const img = document.getElementById(p+'-img-'+type); if(!img) return;
             if(url && url.length > 2) { img.src = url; img.style.display = 'block'; img.dataset.url = url; }
@@ -312,4 +308,7 @@
                     title: document.getElementById(p+'-title').value,
                     desc: document.getElementById(p+'-desc').value,
                     footer: document.getElementById(p+'-footer') ? document.getElementById(p+'-footer').value : "",
-        
+                    color: document.getElementById(p+'-color').value,
+                    channel: document.getElementById(p+'-channel').value,
+                    thumbnail: document.getElementById(p+'-img-thumbnail') ? document.getElementById(p+'-img-thumbnail').dataset.url : "",
+                    banner: document.getElementById(p+'-img-ban
