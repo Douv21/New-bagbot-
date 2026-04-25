@@ -2,6 +2,10 @@
 
 Un bot Discord complet avec dashboard web intégré pour la gestion et l'administration.
 
+## 🚀 Version Actuelle: v1.0.0
+
+Cette version inclut toutes les fonctionnalités de base pour démarrer rapidement.
+
 ## 🚀 Fonctionnalités
 
 ### Bot Discord
