@@ -1,3 +1,5 @@
+Reprend avec ce html 
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -40,7 +42,7 @@
         label { display: block; font-size: 11px; color: #777; text-transform: uppercase; margin: 15px 0 5px; font-weight: bold; }
         
         input[type="color"] { -webkit-appearance: none; border: none; width: 100%; height: 30px; background: #1a1a1a; border-radius: 10px; cursor: pointer; padding: 0; margin-bottom: 10px; }
-        input[type="text"], input[type="number"], textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 5px; font-size: 14px; }
+        input[type="text"], textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 14px; border-radius: 10px; outline: none; margin-bottom: 5px; font-size: 14px; }
         
         .var-box { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 15px; }
         .var-badge { background: #1e1f22; color: #00a8fc; padding: 6px 12px; border-radius: 5px; font-size: 12px; font-family: monospace; border: 1px solid #2b2d31; cursor: pointer; }
@@ -58,11 +60,6 @@
         .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
         .img-card { height: 110px; border-radius: 10px; border: 1px solid var(--border); position: relative; overflow: hidden; background: #000; }
         .del-img-btn { position: absolute; top: 5px; right: 5px; background: var(--accent); color: white; border: none; border-radius: 5px; padding: 8px; cursor: pointer; z-index: 20; font-size: 12px; }
-
-        /* SHOP SECTION STYLE */
-        .shop-item-card { background: #000; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .shop-item-info b { color: var(--accent); display: block; font-size: 15px; }
-        .shop-item-info span { font-size: 12px; color: #666; }
     </style>
 </head>
 <body>
@@ -81,8 +78,6 @@
             <div id="mi-welcome" class="sub-item" onclick="showTab('welcome', this)">Bienvenue</div>
             <div id="mi-leave" class="sub-item" onclick="showTab('leave', this)">Départ</div>
         </div>
-        <div id="mi-boutique" class="nav-item" onclick="showTab('boutique', this)"><span>BOUTIQUE</span><i class="fas fa-shopping-cart"></i></div>
-        
         <div id="mi-admin" class="nav-item" onclick="showTab('admin', this)">PERMISSIONS</div>
         <div id="mi-gallery" class="nav-item" onclick="showTab('gallery', this)">GALERIE</div>
     </div>
@@ -157,47 +152,12 @@
             </div>
         </div>
 
-        <div id="boutique" class="section">
-            <div class="card">
-                <h2>📦 Ajouter un article</h2>
-                <label>Nom</label><input type="text" id="shop-name" placeholder="Ex: Grade VIP">
-                <label>Prix</label><input type="number" id="shop-price" placeholder="Prix en coins">
-                <label>Type de gain</label>
-                <select id="shop-type">
-                    <option value="role">Rôle Permanent</option>
-                    <option value="temp_role">Rôle Temporaire</option>
-                    <option value="item">Item inventaire</option>
-                </select>
-                <label>ID Rôle (Optionnel)</label><input type="text" id="shop-roleid" placeholder="ID Discord">
-                <button class="btn btn-save" style="margin-top:15px;" onclick="addShopItem()"><i class="fas fa-plus"></i> CRÉER L'ARTICLE</button>
-            </div>
-            <div class="card">
-                <h2>🛒 En vente</h2>
-                <div id="shop-list-container"></div>
-            </div>
-        </div>
-
-        <div id="admin" class="section">
-            <div class="card">
-                <h2>Permissions</h2>
-                <div class="dropdown-select" onclick="toggleDropdown('admin-roles-drop', event)"><span id="admin-roles-label">Choisir les rôles</span><i class="fas fa-chevron-down"></i></div>
-                <div id="admin-roles-drop" class="dropdown-content"></div>
-                <button class="btn btn-save" onclick="save()" style="margin-top:20px;">APPLIQUER</button>
-            </div>
-        </div>
-
-        <div id="gallery" class="section">
-            <div class="card">
-                <h2>Galerie</h2>
-                <input type="file" id="f-in" onchange="uploadFile()" style="margin-bottom:20px;">
-                <div id="g-list" class="gallery-grid"></div>
-                <button class="btn btn-save" onclick="showTab(localStorage.getItem('lastTab') || 'welcome')" style="margin-top:20px;">RETOUR</button>
-            </div>
-        </div>
+        <div id="admin" class="section"><div class="card"><h2>Permissions</h2><div class="dropdown-select" onclick="toggleDropdown('admin-roles-drop', event)"><span id="admin-roles-label">Choisir les rôles</span><i class="fas fa-chevron-down"></i></div><div id="admin-roles-drop" class="dropdown-content"></div><button class="btn btn-save" onclick="save()" style="margin-top:20px;">APPLIQUER</button></div></div>
+        <div id="gallery" class="section"><div class="card"><h2>Galerie</h2><input type="file" id="f-in" onchange="uploadFile()" style="margin-bottom:20px;"><div id="g-list" class="gallery-grid"></div><button class="btn btn-save" onclick="showTab(localStorage.getItem('lastTab') || 'welcome')" style="margin-top:20px;">RETOUR</button></div></div>
     </main>
 
     <script>
-        let db = { channels: [], roles: [], config: {}, shop_config: { items: [] }, images: [] };
+        let db = { channels: [], roles: [], config: {}, images: [] };
         let activeMode = ''; let activeType = '';
 
         async function init() {
@@ -205,22 +165,19 @@
                 const res = await fetch('/api/get_data');
                 db = await res.json();
                 
-                // Remplissage salons
                 const chans = db.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
                 document.getElementById('w-channel').innerHTML = chans;
                 document.getElementById('l-channel').innerHTML = chans;
 
-                // Remplissage Dropdowns Rôles
                 const renderDrop = (listId, labelId, selected) => {
                     const cont = document.getElementById(listId);
                     if(!cont) return;
                     cont.innerHTML = db.roles.map(r => `<div class="role-opt" onclick="toggleRoleCheck(this, '${labelId}')"><input type="checkbox" value="${r}" ${selected.includes(r)?'checked':''}><span>${r}</span></div>`).join('');
                     updateLabel(listId, labelId);
                 };
-                renderDrop('w-roles-drop', 'w-roles-label', db.config.welcome?.trigger_roles || []);
+                renderDrop('w-roles-drop', 'w-roles-label', db.config.welcome.trigger_roles || []);
                 renderDrop('admin-roles-drop', 'admin-roles-label', db.config.admin_roles || []);
 
-                // Remplissage des données formulaires
                 ['welcome', 'leave'].forEach(m => {
                     const p = m[0], c = db.config[m];
                     if(!c) return;
@@ -235,18 +192,12 @@
                 });
 
                 renderGallery();
-                renderShop();
                 sync('welcome'); sync('leave');
                 showTab(localStorage.getItem('currentPage') || 'welcome');
             } catch(e) { console.error("INIT ERROR:", e); }
         }
 
-        function addVar(inputId, v) { 
-            const i = document.getElementById(inputId); 
-            i.value += v; 
-            sync(inputId.startsWith('w') ? 'welcome' : 'leave'); 
-            i.focus(); 
-        }
+        function addVar(inputId, v) { const i = document.getElementById(inputId); i.value += v; sync(inputId.startsWith('w') ? 'welcome' : 'leave'); i.focus(); }
 
         function sync(mode) {
             const p = mode[0];
@@ -261,38 +212,6 @@
             if(document.getElementById('pv-'+p+'-title')) document.getElementById('pv-'+p+'-title').innerText = title.replace(/{user}/g, "Pseudo");
             if(document.getElementById('pv-'+p+'-desc')) document.getElementById('pv-'+p+'-desc').innerText = desc.replace(/{server}/g, "Mon Serveur").replace(/{count}/g, "12").replace(/{user}/g, "@Pseudo");
             if(document.getElementById('pv-'+p+'-footer')) document.getElementById('pv-'+p+'-footer').innerText = footer;
-        }
-
-        // --- SHOP ENGINE ---
-        function renderShop() {
-            const cont = document.getElementById('shop-list-container');
-            const items = db.shop_config.items || [];
-            cont.innerHTML = items.map((it, idx) => `
-                <div class="shop-item-card">
-                    <div class="shop-item-info">
-                        <b>${it.name}</b>
-                        <span>${it.price} 💰 | ${it.type}</span>
-                    </div>
-                    <i class="fas fa-trash" style="color:var(--accent); cursor:pointer;" onclick="deleteShopItem(${idx})"></i>
-                </div>
-            `).join('');
-        }
-
-        async function addShopItem() {
-            const name = document.getElementById('shop-name').value;
-            const price = document.getElementById('shop-price').value;
-            if(!name || !price) return alert("Remplis le nom et le prix");
-            db.shop_config.items.push({ name, price: parseInt(price), type: document.getElementById('shop-type').value, role_id: document.getElementById('shop-roleid').value });
-            await fetch('/api/save_shop', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(db.shop_config)});
-            renderShop();
-            document.getElementById('shop-name').value = '';
-            document.getElementById('shop-price').value = '';
-        }
-
-        async function deleteShopItem(idx) {
-            db.shop_config.items.splice(idx, 1);
-            await fetch('/api/save_shop', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(db.shop_config)});
-            renderShop();
         }
 
         function setImg(mode, type, url) {
@@ -311,4 +230,52 @@
                     color: document.getElementById(p+'-color').value,
                     channel: document.getElementById(p+'-channel').value,
                     thumbnail: document.getElementById(p+'-img-thumbnail') ? document.getElementById(p+'-img-thumbnail').dataset.url : "",
-                    banner: document.getElementById(p+'-img-ban
+                    banner: document.getElementById(p+'-img-banner').dataset.url || "",
+                    footer_icon: document.getElementById(p+'-img-footer_icon') ? document.getElementById(p+'-img-footer_icon').dataset.url : "",
+                    trigger_roles: m === 'welcome' ? Array.from(document.querySelectorAll('#w-roles-drop input:checked')).map(i => i.value) : []
+                };
+            };
+            const config = { welcome: getM('welcome'), leave: getM('leave'), admin_roles: Array.from(document.querySelectorAll('#admin-roles-drop input:checked')).map(i => i.value) };
+            await fetch('/api/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(config)});
+            alert("Sauvegardé !");
+        }
+
+        async function sendTest(mode) { await save(); fetch('/api/test_embed', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({mode})}); alert("Test envoyé !"); }
+
+        function showTab(id, el) { 
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(id); if(target) target.classList.add('active');
+            localStorage.setItem('currentPage', id); if(id !== 'gallery') localStorage.setItem('lastTab', id);
+            closeSidebar();
+        }
+
+        function openPicker(m, t) { activeMode = m; activeType = t; showTab('gallery'); }
+
+        async function uploadFile() {
+            const f = document.getElementById('f-in').files[0]; if(!f) return;
+            const fd = new FormData(); fd.append('file', f);
+            const r = await (await fetch('/api/upload', {method:'POST', body:fd})).json();
+            db.images.push(r.path); renderGallery(); selectImage(r.path);
+        }
+
+        function renderGallery() { document.getElementById('g-list').innerHTML = db.images.map(i => `<div class="img-card"><button class="del-img-btn" onclick="deleteImg('${i}', event)">✕</button><img src="${i}" style="display:block;cursor:pointer" onclick="selectImage('${i}')"></div>`).join(''); }
+
+        async function deleteImg(path, e) {
+            e.stopPropagation(); if(!confirm("Supprimer l'image ?")) return;
+            const res = await fetch('/api/delete_image', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path})});
+            if(res.ok) { db.images = db.images.filter(img => img !== path); renderGallery(); }
+        }
+
+        function selectImage(url) { setImg(activeMode, activeType, url); showTab(localStorage.getItem('lastTab')); sync(activeMode); }
+        function detachImg(e, m, t) { e.stopPropagation(); setImg(m, t, ''); sync(m); }
+        function toggleSidebar(e) { e.stopPropagation(); document.getElementById('sidebar').classList.toggle('open'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show')); }
+        function toggleSubmenu(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
+        function toggleDropdown(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
+        function toggleRoleCheck(el, labelId) { const i = el.querySelector('input'); i.checked = !i.checked; updateLabel(el.parentElement.id, labelId); }
+        function updateLabel(listId, labelId) { document.getElementById(labelId).innerText = document.querySelectorAll('#'+listId+' input:checked').length + ' sélectionnés'; }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
