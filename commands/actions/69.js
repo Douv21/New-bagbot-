@@ -13,19 +13,21 @@ module.exports = {
         .setDescription('Zone spécifique (ex: lit, canapé...)')
         .setRequired(false)
         .setAutocomplete(true))
-    .setDMPermission(true),
+    .setDMPermission(true)
+    .setContexts([0, 1, 2])
+    .setIntegrationTypes([0, 1]),
 
   async autocomplete(interaction) {
     try {
       const guildId = interaction.guild?.id;
-      let zones = ["le lit", "le canapé", "la douche", "la table"]; // Zones par défaut
+      // Zones par défaut si la config est vide
+      let zones = ["le lit", "le canapé", "la douche", "la table", "le tapis"];
 
-      // On essaie de récupérer les zones depuis la config si possible
       if (guildId && global.getEconomyConfig) {
-        const config = await global.getEconomyConfig(guildId);
-        const configZones = config?.actions?.config?.sixtynine?.zones;
-        if (configZones && configZones.length > 0) {
-          zones = configZones;
+        const eco = await global.getEconomyConfig(guildId);
+        const actionConfig = eco?.actions?.config?.sixtynine;
+        if (actionConfig?.zones && actionConfig.zones.length > 0) {
+          zones = actionConfig.zones;
         }
       }
 
@@ -36,30 +38,31 @@ module.exports = {
 
       return await interaction.respond(filtered.slice(0, 25));
     } catch (error) {
-      console.error('[69 Autocomplete Error]:', error);
       return interaction.respond([]);
     }
   },
 
   async execute(interaction) {
-    // 1. On sécurise immédiatement l'interaction pour éviter le "ne répond pas"
+    // 1. On sécurise l'interaction immédiatement (plus de "ne répond pas")
     await interaction.deferReply();
 
     try {
-      // 2. On vérifie si le handler global est bien présent
+      // 2. Si le handler d'économie est là, on l'utilise
       if (global.handleEconomyAction) {
         return await global.handleEconomyAction(interaction, 'sixtynine');
-      } else {
-        // Fallback si le handler n'est pas chargé (pour éviter l'erreur)
-        const cible = interaction.options.getUser('cible');
-        const zone = interaction.options.getString('zone') || 'le lit';
-        return await interaction.editReply({ 
-          content: `🔥 **${interaction.user.username}** fait un 69 avec **${cible.username}** dans **${zone}** !` 
-        });
-      }
+      } 
+      
+      // 3. Fallback (si le handler a un souci, on affiche quand même l'action)
+      const cible = interaction.options.getUser('cible');
+      const zone = interaction.options.getString('zone') || 'le lit';
+      
+      return await interaction.editReply({ 
+        content: `🔥 **${interaction.user.username}** fait un 69 avec **${cible.username}** dans **${zone}** !` 
+      });
+
     } catch (err) {
       console.error('[69 Execute Error]:', err);
-      return await interaction.editReply({ content: '❌ Une erreur est survenue lors de l\'action.' });
+      return await interaction.editReply({ content: '❌ Une erreur est survenue.' });
     }
   }
 };
