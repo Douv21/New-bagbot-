@@ -1,112 +1,111 @@
-const { Client, GatewayIntentBits, Events, Collection } = require('discord.js');
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
-require('dotenv').config();
+let db = {};
+let activeP = { mode: '', type: '' };
 
-// 1. Import du Handler d'économie
-const eco = require('./handlers/economyHandlers');
+// Navigation & Sidebar
+document.getElementById('burger-btn').onclick = () => document.getElementById('sidebar').classList.toggle('open');
 
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds, 
-        GatewayIntentBits.GuildMessages, 
-        GatewayIntentBits.GuildMembers
-    ]
-});
-
-// 2. Rendre l'économie accessible globalement
-global.handleEconomyAction = eco.handleEconomyAction;
-global.getEconomyConfig = eco.getEconomyConfig;
-
-// Collection pour stocker les commandes
-client.commands = new Collection();
-
-// 3. FONCTION DE CHARGEMENT RÉCURSIF DES COMMANDES
-// Cette fonction cherche dans /commands et tous ses sous-dossiers
-const loadCommands = (dir) => {
-    const files = fs.readdirSync(dir);
-    for (const file of files) {
-        const filePath = path.join(dir, file);
-        const stat = fs.lstatSync(filePath);
-
-        if (stat.isDirectory()) {
-            loadCommands(filePath); // Si c'est un dossier, on regarde dedans
-        } else if (file.endsWith('.js')) {
-            const command = require(filePath);
-            if ('data' in command && 'execute' in command) {
-                client.commands.set(command.data.name, command);
-                console.log(`✅ Commande chargée : ${command.data.name}`);
-            }
-        }
-    }
-};
-
-const commandsPath = path.join(__dirname, 'commands');
-if (fs.existsSync(commandsPath)) {
-    loadCommands(commandsPath);
-} else {
-    console.error("❌ Erreur : Le dossier 'commands' n'existe pas !");
+function tab(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.getElementById('sidebar').classList.remove('open');
+    if(id !== 'gallery') localStorage.setItem('last', id);
 }
 
-// 4. GESTION DES INTERACTIONS
-client.on(Events.InteractionCreate, async interaction => {
-    // --- Commandes Slash ---
-    if (interaction.isChatInputCommand()) {
-        const command = client.commands.get(interaction.commandName);
-        if (!command) return;
+// Live Sync Discord Preview
+function sync() {
+    ['welcome', 'leave'].forEach(m => {
+        const p = m[0];
+        const color = document.getElementById(p+'-color').value;
+        const title = document.getElementById(p+'-title').value;
+        const desc = document.getElementById(p+'-desc').value;
 
-        try {
-            await command.execute(interaction);
-        } catch (error) {
-            console.error(`[Erreur Execute] ${interaction.commandName}:`, error);
-            const errorMsg = { content: 'Une erreur est survenue !', ephemeral: true };
-            if (interaction.replied || interaction.deferred) {
-                await interaction.followUp(errorMsg);
-            } else {
-                await interaction.reply(errorMsg);
-            }
-        }
-    }
-
-    // --- Autocomplétion (pour les zones du /69 par exemple) ---
-    if (interaction.isAutocomplete()) {
-        const command = client.commands.get(interaction.commandName);
-        if (command && command.autocomplete) {
-            try {
-                await command.autocomplete(interaction);
-            } catch (error) {
-                console.error(`[Erreur Autocomplete]`, error);
-            }
-        }
-    }
-});
-
-// 5. ÉVÉNEMENT PRÊT
-client.once(Events.ClientReady, (readyClient) => {
-    console.log(`🚀 Bot prêt ! Connecté en tant que ${readyClient.user.tag}`);
-});
-
-// 6. DASHBOARD & PLUGINS
-const app = express();
-app.use(express.json());
-app.use(express.static('public'));
-
-// Chargement du plugin autorole si présent
-try {
-    const autorolePath = './plugins/autorole/index.js';
-    if (fs.existsSync(autorolePath)) {
-        const autorole = require(autorolePath);
-        autorole(app, client);
-    }
-} catch (err) {
-    console.error("⚠️ Erreur chargement plugin autorole:", err.message);
+        document.getElementById('pv-'+p+'-box').style.borderLeftColor = color;
+        document.getElementById('pv-'+p+'-title').innerText = title || "Titre";
+        document.getElementById('pv-'+p+'-desc').innerText = desc || "Message...";
+        if(p === 'w') document.getElementById('pv-w-footer').innerText = document.getElementById('w-footer').value || "Footer";
+    });
 }
 
-// Lancement du serveur Web pour le Dashboard
-app.listen(49500, '0.0.0.0', () => {
-    console.log("🌐 Dashboard API sur le port 49500");
-});
+// Image Selection
+function pick(mode, type) {
+    activeP = { mode, type };
+    tab('gallery');
+}
 
-// Connexion au bot
-client.login(process.env.DISCORD_TOKEN);
+function selectImg(url) {
+    const img = document.getElementById(`img-${activeP.mode[0]}-${activeP.type}`);
+    img.src = url;
+    img.style.display = 'block';
+    img.dataset.url = url;
+    tab(localStorage.getItem('last'));
+}
+
+// Data Handling
+async function init() {
+    const res = await fetch('/api/get_data');
+    db = await res.json();
+    
+    const opts = db.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+    document.getElementById('w-channel').innerHTML = opts;
+    document.getElementById('l-channel').innerHTML = opts;
+
+    ['welcome', 'leave'].forEach(m => {
+        const p = m[0], conf = db.config[m];
+        document.getElementById(p+'-title').value = conf.title || "";
+        document.getElementById(p+'-desc').value = conf.desc || "";
+        document.getElementById(p+'-color').value = conf.color || "#ed4245";
+        document.getElementById(p+'-channel').value = conf.channel || "";
+        if(p === 'w') document.getElementById('w-footer').value = conf.footer || "";
+        
+        ['banner', 'thumbnail', 'footer_icon'].forEach(t => {
+            if(conf[t]) {
+                const el = document.getElementById(`img-${p}-${t}`);
+                if(el) { el.src = conf[t]; el.style.display = 'block'; el.dataset.url = conf[t]; }
+            }
+        });
+    });
+
+    renderG();
+    sync();
+}
+
+function renderG() {
+    document.getElementById('g-list').innerHTML = db.images.map(url => `
+        <div class="g-img" onclick="selectImg('${url}')"><img src="${url}" style="display:block"></div>
+    `).join('');
+}
+
+async function upload() {
+    const file = document.getElementById('up-input').files[0];
+    const fd = new FormData(); fd.append('file', file);
+    const r = await fetch('/api/upload', { method: 'POST', body: fd });
+    const res = await r.json();
+    db.images.push(res.path); renderG(); selectImg(res.path);
+}
+
+async function save() {
+    const config = {
+        welcome: {
+            title: document.getElementById('w-title').value,
+            desc: document.getElementById('w-desc').value,
+            color: document.getElementById('w-color').value,
+            footer: document.getElementById('w-footer').value,
+            channel: document.getElementById('w-channel').value,
+            banner: document.getElementById('img-w-banner').dataset.url || "",
+            thumbnail: document.getElementById('img-w-thumbnail').dataset.url || "",
+            footer_icon: document.getElementById('img-w-footer_icon').dataset.url || ""
+        },
+        leave: {
+            title: document.getElementById('l-title').value,
+            desc: document.getElementById('l-desc').value,
+            color: document.getElementById('l-color').value,
+            channel: document.getElementById('l-channel').value,
+            banner: document.getElementById('img-l-banner').dataset.url || ""
+        }
+    };
+    await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config) });
+    alert("✅ Config Elite V9 Sauvegardée !");
+}
+
+function addV(id, v) { document.getElementById(id).value += v; sync(); }
+window.onload = init;
